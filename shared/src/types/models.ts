@@ -1,0 +1,105 @@
+import {
+  ActeurLocalCategory,
+  EventType,
+  LocalRelaisRetraitStatus,
+  PostStatus,
+  PostType,
+  PreferredLanguage,
+  RelaisCreneauType,
+  UserRole,
+} from './enums.js';
+
+export interface User {
+  id: string;
+  nom: string;
+  email: string;
+  role: UserRole;
+  badgeVerifie: boolean;
+  adresse: string;
+  languePreferee: PreferredLanguage;
+  pointsFidelite: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PostAnnonce {
+  id: string;
+  auteurId: string;
+  titre: string;
+  description: string;
+  type: PostType;
+  prix: number | null;
+  statut: PostStatus;
+  photos: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RelaisCreneau {
+  id: string;
+  date: string;
+  heureDebut: string;
+  heureFin: string;
+  type: RelaisCreneauType;
+  capacite: number;
+  reserves: number;
+}
+
+export interface LocalRelais {
+  id: string;
+  postId: string;
+  userId: string;
+  codeQrValidation: string;
+  dateDepot: string;
+  statutRetrait: LocalRelaisRetraitStatus;
+  creneauDepotId: string | null;
+  creneauRetraitId: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ActeurLocal {
+  id: string;
+  userId: string;
+  nomCommerce: string;
+  categorie: ActeurLocalCategory;
+  description: string;
+  adresse: string;
+  photos: string[];
+  offreVip: string | null;
+  pointsRequisVip: number;
+  qrCodeVitrine: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AgendaEvenement {
+  id: string;
+  organisateurId: string;
+  titre: string;
+  description: string;
+  dateDebut: string;
+  dateFin: string;
+  image: string | null;
+  type: EventType;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CarteFideliteScan {
+  id: string;
+  userId: string;
+  commerceId: string;
+  pointsGagnes: number;
+  date: string;
+}
+
+export interface DatabaseSchema {
+  users: User[];
+  postsAnnonces: PostAnnonce[];
+  localRelais: LocalRelais[];
+  relaisCreneaux: RelaisCreneau[];
+  acteursLocaux: ActeurLocal[];
+  agendaEvenements: AgendaEvenement[];
+  cartesFideliteScans: CarteFideliteScan[];
+}
