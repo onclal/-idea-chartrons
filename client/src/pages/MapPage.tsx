@@ -1,5 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   ActeurLocalCategory,
@@ -10,8 +10,12 @@ import {
 } from '@idea-chartrons/shared';
 import { Badge, Button, Card, Loading } from '../components/ui';
 import { PageHelp } from '../components/PageHelp';
+import { FavoriteButton } from '../components/FavoriteButton';
+import { FavoritesDrawer } from '../components/FavoritesDrawer';
 import type { MapPin, MapPinKind } from '../components/NeighborhoodMap';
+import { useFavorites } from '../context/FavoritesContext';
 import { useToast } from '../context/ToastContext';
+import type { FavoriteInput } from '../lib/favorites';
 import { api } from '../lib/api';
 
 const NeighborhoodMap = lazy(() =>
@@ -32,15 +36,31 @@ function acteurHref(acteur: ActeurLocal): string {
   return acteur.categorie === ActeurLocalCategory.TourismeConciergerie ? '/tourisme' : '/acteurs';
 }
 
+function pinToFavorite(pin: MapPin): FavoriteInput {
+  return {
+    id: pin.id,
+    kind: pin.kind,
+    title: pin.title,
+    subtitle: pin.subtitle,
+    adresse: pin.adresse,
+    latitude: pin.latitude,
+    longitude: pin.longitude,
+    href: pin.href ?? '/carte',
+  };
+}
+
 export function MapPage() {
   const { t } = useTranslation();
   const { showToast } = useToast();
+  const { favorites } = useFavorites();
+  const [searchParams] = useSearchParams();
   const [acteurs, setActeurs] = useState<ActeurLocal[]>([]);
   const [events, setEvents] = useState<AgendaEvenement[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeLayers, setActiveLayers] = useState<Set<MapLayer>>(new Set(LAYERS));
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(searchParams.get('pin'));
   const [locateToken, setLocateToken] = useState(0);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const handleLocated = useCallback(() => showToast(t('map.located')), [showToast, t]);
   const handleLocateError = useCallback(() => showToast(t('map.locateError'), 'error'), [showToast, t]);
 
@@ -91,12 +111,21 @@ export function MapPage() {
     return [...fromActeurs, ...fromEvents, ...fromPois];
   }, [acteurs, events, t]);
 
+  const selected = allPins.find((pin) => pin.id === selectedId) ?? null;
   const visiblePins = useMemo(
     () => allPins.filter((pin) => activeLayers.has(pin.kind)),
     [allPins, activeLayers],
   );
 
-  const selected = visiblePins.find((pin) => pin.id === selectedId) ?? null;
+  useEffect(() => {
+    const pinId = searchParams.get('pin');
+    if (!pinId) return;
+    setSelectedId(pinId);
+    const pin = allPins.find((item) => item.id === pinId);
+    if (pin) {
+      setActiveLayers((current) => new Set(current).add(pin.kind));
+    }
+  }, [searchParams, allPins]);
 
   const toggleLayer = (layer: MapLayer) => {
     setActiveLayers((current) => {
@@ -120,7 +149,22 @@ export function MapPage() {
           <h2 className="text-xl font-bold text-chartrons-bordeaux">{t('map.title')}</h2>
           <p className="text-sm text-chartrons-warm-gray mt-1">{t('map.subtitle')}</p>
         </div>
-        <PageHelp page="carte" />
+        <div className="flex items-center gap-1.5 shrink-0">
+          <button
+            type="button"
+            onClick={() => setDrawerOpen(true)}
+            className="relative touch-target w-11 h-11 rounded-full border border-chartrons-beige bg-white text-chartrons-bordeaux"
+            aria-label={t('favorites.openDrawer')}
+          >
+            ♥
+            {favorites.length > 0 && (
+              <span className="absolute -top-1 -right-1 min-w-[1.15rem] h-[1.15rem] px-1 rounded-full bg-chartrons-bordeaux text-white text-[10px] font-bold flex items-center justify-center">
+                {favorites.length}
+              </span>
+            )}
+          </button>
+          <PageHelp page="carte" />
+        </div>
       </div>
 
       <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
@@ -175,6 +219,7 @@ export function MapPage() {
               </div>
               <p className="text-xs text-chartrons-warm-gray mt-2">📍 {selected.adresse}</p>
             </div>
+            <FavoriteButton place={pinToFavorite(selected)} />
           </div>
           {selected.href && (
             <Link
@@ -188,6 +233,8 @@ export function MapPage() {
       ) : (
         <p className="text-xs text-chartrons-warm-gray text-center">{t('map.tapHint')}</p>
       )}
+
+      <FavoritesDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
     </div>
   );
 }

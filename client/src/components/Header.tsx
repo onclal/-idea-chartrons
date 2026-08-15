@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { useSearch } from '../context/SearchContext';
 import { useAdmin } from '../context/AdminContext';
+import { useFavorites } from '../context/FavoritesContext';
 import { CategoryTabs } from './CategoryTabs';
 import { Badge } from './ui';
 
@@ -9,6 +10,7 @@ export function Header() {
   const { t, i18n } = useTranslation();
   const { query, setQuery } = useSearch();
   const { isAdminMode } = useAdmin();
+  const { favorites } = useFavorites();
 
   const setLanguage = (lang: 'fr' | 'en') => {
     i18n.changeLanguage(lang);
@@ -39,6 +41,18 @@ export function Header() {
                   </Badge>
                 </>
               )}
+              <Link
+                to="/favoris"
+                className="relative touch-target w-10 h-10 rounded-xl bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-colors"
+                aria-label={t('favorites.title')}
+              >
+                ♥
+                {favorites.length > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-[1.1rem] h-[1.1rem] px-1 rounded-full bg-white text-chartrons-bordeaux text-[10px] font-bold flex items-center justify-center">
+                    {favorites.length}
+                  </span>
+                )}
+              </Link>
               <div className="flex items-center gap-1 bg-white/10 rounded-xl p-0.5" role="group" aria-label={t('common.language')}>
               {(['fr', 'en'] as const).map((lang) => (
                 <button

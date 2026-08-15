@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { SearchProvider } from './context/SearchContext';
+import { FavoritesProvider } from './context/FavoritesContext';
 import { AuthProvider } from './context/AuthContext';
 import { AdminProvider } from './context/AdminContext';
 import { ToastProvider } from './context/ToastContext';
@@ -11,6 +12,7 @@ import { RelaisPage } from './pages/RelaisPage';
 import { ActeursPage } from './pages/ActeursPage';
 import { MapPage } from './pages/MapPage';
 import { TourismePage } from './pages/TourismePage';
+import { FavoritesPage } from './pages/FavoritesPage';
 import { EventsPage } from './pages/EventsPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { CgvPage } from './pages/CgvPage';
@@ -27,6 +29,7 @@ export function App() {
     <AuthProvider>
       <AdminProvider>
         <ToastProvider>
+          <FavoritesProvider>
           <SearchProvider>
             <BrowserRouter>
               <Routes>
@@ -42,10 +45,11 @@ export function App() {
                   <Route path="/" element={<HomePage />} />
                   <Route path="/posts" element={<PostsPage />} />
                   <Route path="/relais" element={<RelaisPage />} />
-                <Route path="/acteurs" element={<ActeursPage />} />
-                <Route path="/carte" element={<MapPage />} />
-                <Route path="/tourisme" element={<TourismePage />} />
-                <Route path="/events" element={<EventsPage />} />
+                  <Route path="/acteurs" element={<ActeursPage />} />
+                  <Route path="/carte" element={<MapPage />} />
+                  <Route path="/tourisme" element={<TourismePage />} />
+                  <Route path="/favoris" element={<FavoritesPage />} />
+                  <Route path="/events" element={<EventsPage />} />
                   <Route path="/profile" element={<ProfilePage />} />
                   <Route path="/cgv" element={<CgvPage />} />
                   <Route path="/faq" element={<FaqPage />} />
@@ -53,6 +57,7 @@ export function App() {
               </Routes>
             </BrowserRouter>
           </SearchProvider>
+          </FavoritesProvider>
         </ToastProvider>
       </AdminProvider>
     </AuthProvider>

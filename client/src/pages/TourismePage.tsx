@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ActeurLocalCategory, LOCAL_RELAIS_ADDRESS, type ActeurLocal, type AgendaEvenement } from '@idea-chartrons/shared';
+import { ActeurLocalCategory, LOCAL_RELAIS_ADDRESS, STATIC_MAP_POIS, type ActeurLocal, type AgendaEvenement } from '@idea-chartrons/shared';
 import { Badge, Button, Card, EmptyState, Loading } from '../components/ui';
 import { PageHelp } from '../components/PageHelp';
+import { FavoriteButton } from '../components/FavoriteButton';
 import { api } from '../lib/api';
 
 export function TourismePage() {
@@ -36,6 +37,8 @@ export function TourismePage() {
     [events],
   );
 
+  const relaisPoi = STATIC_MAP_POIS.find((poi) => poi.id === 'poi-relais');
+
   if (loading) return <Loading message={t('common.loading')} />;
 
   return (
@@ -63,8 +66,26 @@ export function TourismePage() {
         </h3>
         <p className="text-sm text-chartrons-warm-gray leading-relaxed">{t('tourisme.consignes.hint')}</p>
         <Card className="!p-4">
-          <p className="font-semibold text-chartrons-olive-dark">{t('map.pois.relaisTitle')}</p>
-          <p className="text-xs text-chartrons-warm-gray mt-1">📍 {LOCAL_RELAIS_ADDRESS}</p>
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0">
+              <p className="font-semibold text-chartrons-olive-dark">{t('map.pois.relaisTitle')}</p>
+              <p className="text-xs text-chartrons-warm-gray mt-1">📍 {LOCAL_RELAIS_ADDRESS}</p>
+            </div>
+            {relaisPoi && (
+              <FavoriteButton
+                place={{
+                  id: relaisPoi.id,
+                  kind: 'relais',
+                  title: t('map.pois.relaisTitle'),
+                  subtitle: t('map.pois.relaisHint'),
+                  adresse: LOCAL_RELAIS_ADDRESS,
+                  latitude: relaisPoi.latitude,
+                  longitude: relaisPoi.longitude,
+                  href: '/relais',
+                }}
+              />
+            )}
+          </div>
           <p className="text-sm text-chartrons-warm-gray mt-2">{t('tourisme.consignes.relais')}</p>
           <Link to="/relais" className="mt-3 inline-flex text-sm font-semibold text-chartrons-bordeaux">
             {t('tourisme.consignes.relaisCta')} →
@@ -86,9 +107,25 @@ export function TourismePage() {
                 <img src={acteur.photos[0]} alt="" className="w-full h-36 object-cover" />
               )}
               <div className="p-4">
-                <h4 className="font-semibold text-chartrons-olive-dark">{acteur.nomCommerce}</h4>
-                <div className="mt-1.5">
-                  <Badge variant="brass">{t(`acteurs.categories.${acteur.categorie}`)}</Badge>
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <h4 className="font-semibold text-chartrons-olive-dark">{acteur.nomCommerce}</h4>
+                    <div className="mt-1.5">
+                      <Badge variant="brass">{t(`acteurs.categories.${acteur.categorie}`)}</Badge>
+                    </div>
+                  </div>
+                  <FavoriteButton
+                    place={{
+                      id: acteur.id,
+                      kind: 'tourisme',
+                      title: acteur.nomCommerce,
+                      subtitle: t(`acteurs.categories.${acteur.categorie}`),
+                      adresse: acteur.adresse,
+                      latitude: acteur.latitude,
+                      longitude: acteur.longitude,
+                      href: '/tourisme',
+                    }}
+                  />
                 </div>
                 <p className="text-sm text-chartrons-warm-gray mt-2">{acteur.description}</p>
                 <p className="text-xs text-chartrons-warm-gray mt-2">📍 {acteur.adresse}</p>
@@ -108,11 +145,27 @@ export function TourismePage() {
         ) : (
           experiences.map((event) => (
             <Card key={event.id} className="!p-4">
-              <h4 className="font-semibold text-chartrons-olive-dark">{event.titre}</h4>
-              <p className="text-sm text-chartrons-warm-gray mt-1">{event.description}</p>
-              {event.lieu && (
-                <p className="text-xs text-chartrons-warm-gray mt-2">📍 {event.lieu}</p>
-              )}
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <h4 className="font-semibold text-chartrons-olive-dark">{event.titre}</h4>
+                  <p className="text-sm text-chartrons-warm-gray mt-1">{event.description}</p>
+                  {event.lieu && (
+                    <p className="text-xs text-chartrons-warm-gray mt-2">📍 {event.lieu}</p>
+                  )}
+                </div>
+                <FavoriteButton
+                  place={{
+                    id: event.id,
+                    kind: 'event',
+                    title: event.titre,
+                    subtitle: t(`events.types.${event.type}`),
+                    adresse: event.lieu ?? event.description,
+                    latitude: event.latitude,
+                    longitude: event.longitude,
+                    href: '/events',
+                  }}
+                />
+              </div>
             </Card>
           ))
         )}
