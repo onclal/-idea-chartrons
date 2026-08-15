@@ -22,8 +22,9 @@ export async function shareOrCopy(payload: {
 }
 
 export function appUrl(path: string): string {
-  if (typeof window === 'undefined') return path;
-  return new URL(path, window.location.origin).toString();
+  const normalized = path.startsWith('/') ? path.slice(1) : path;
+  if (typeof window === 'undefined') return `${import.meta.env.BASE_URL}${normalized}`;
+  return new URL(normalized, `${window.location.origin}${import.meta.env.BASE_URL}`).toString();
 }
 
 export function placeShareText(place: { title: string; adresse: string }): string {

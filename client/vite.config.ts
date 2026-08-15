@@ -1,9 +1,12 @@
+import { copyFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
+  base: '/-idea-chartrons/',
   plugins: [
     react(),
     tailwindcss(),
@@ -18,7 +21,8 @@ export default defineConfig({
         background_color: '#F5F0E8',
         display: 'standalone',
         orientation: 'portrait-primary',
-        start_url: '/',
+        start_url: '/-idea-chartrons/',
+        scope: '/-idea-chartrons/',
         lang: 'fr',
         icons: [
           {
@@ -41,7 +45,7 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
-        navigateFallback: 'index.html',
+        navigateFallback: '/-idea-chartrons/index.html',
         runtimeCaching: [
           {
             urlPattern: /^https?:\/\/localhost:3001\/api\/.*/i,
@@ -62,6 +66,15 @@ export default defineConfig({
         ],
       },
     }),
+    {
+      name: 'github-pages-spa-fallback',
+      apply: 'build',
+      enforce: 'post',
+      closeBundle() {
+        const dist = resolve(__dirname, 'dist');
+        copyFileSync(resolve(dist, 'index.html'), resolve(dist, '404.html'));
+      },
+    },
   ],
   server: {
     port: 5173,

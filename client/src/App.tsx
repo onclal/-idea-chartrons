@@ -35,7 +35,7 @@ export function App() {
           <FavoritesProvider>
           <RoutesProvider>
           <SearchProvider>
-            <BrowserRouter>
+            <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '')}>
               <Routes>
                 <Route path="/admin" element={<AdminLayout />}>
                   <Route index element={<AdminDashboardPage />} />
