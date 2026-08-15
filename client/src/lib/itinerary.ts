@@ -105,6 +105,15 @@ export function walkingDirectionsUrl(destination: GeoPoint, waypoints: GeoPoint[
   return `https://www.google.com/maps/dir/?${params.toString()}`;
 }
 
+export function moveItem<T>(items: T[], from: number, delta: number): T[] {
+  const to = from + delta;
+  if (to < 0 || to >= items.length) return items;
+  const next = [...items];
+  const [item] = next.splice(from, 1);
+  next.splice(to, 0, item);
+  return next;
+}
+
 export function walkingItineraryUrl(stops: GeoPoint[]): string | null {
   if (stops.length === 0) return null;
   if (stops.length === 1) return walkingDirectionsUrl(stops[0]);

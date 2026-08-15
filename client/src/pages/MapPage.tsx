@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -15,11 +15,14 @@ import { FavoriteButton } from '../components/FavoriteButton';
 import { FavoritesDrawer } from '../components/FavoritesDrawer';
 import { DirectionsButton } from '../components/DirectionsButton';
 import { ShareButton } from '../components/ShareButton';
+import { SaveRouteModal } from '../components/SaveRouteModal';
 import type { MapPin, MapPinKind } from '../components/NeighborhoodMap';
 import { useFavorites } from '../context/FavoritesContext';
+import { useSavedRoutes } from '../context/RoutesContext';
 import { useToast } from '../context/ToastContext';
 import type { FavoriteInput, FavoritePlace } from '../lib/favorites';
-import { formatDistance, itineraryDistanceKm, orderItinerary } from '../lib/itinerary';
+import { formatDistance, itineraryDistanceKm, moveItem, orderItinerary } from '../lib/itinerary';
+import { createSavedRoute, exportRouteGpx, exportRouteJson, type RouteStop } from '../lib/routes';
 import { appUrl, listShareText, placeShareText } from '../lib/share';
 import { api } from '../lib/api';
 
@@ -54,7 +57,16 @@ function pinToFavorite(pin: MapPin): FavoriteInput {
   };
 }
 
-function favoriteToPin(place: FavoritePlace & { latitude: number; longitude: number }): MapPin {
+function favoriteToPin(place: {
+  id: string;
+  kind: MapPinKind;
+  title: string;
+  subtitle: string;
+  adresse: string;
+  latitude: number;
+  longitude: number;
+  href: string;
+}): MapPin {
   return {
     id: place.id,
     kind: place.kind,
@@ -67,10 +79,35 @@ function favoriteToPin(place: FavoritePlace & { latitude: number; longitude: num
   };
 }
 
+function asRouteStops(
+  stops: Array<{
+    id: string;
+    kind: FavoritePlace['kind'];
+    title: string;
+    subtitle: string;
+    adresse: string;
+    latitude: number;
+    longitude: number;
+    href: string;
+  }>,
+): RouteStop[] {
+  return stops.map((stop) => ({
+    id: stop.id,
+    kind: stop.kind,
+    title: stop.title,
+    subtitle: stop.subtitle,
+    adresse: stop.adresse,
+    latitude: stop.latitude,
+    longitude: stop.longitude,
+    href: stop.href,
+  }));
+}
+
 export function MapPage() {
   const { t, i18n } = useTranslation();
   const { showToast } = useToast();
   const { favorites } = useFavorites();
+  const { getRoute, saveRoute, updateRoute } = useSavedRoutes();
   const [searchParams, setSearchParams] = useSearchParams();
   const [acteurs, setActeurs] = useState<ActeurLocal[]>([]);
   const [events, setEvents] = useState<AgendaEvenement[]>([]);
@@ -82,8 +119,18 @@ export function MapPage() {
   const [favoritesOnly, setFavoritesOnly] = useState(
     searchParams.get('favoris') === '1' || searchParams.get('parcours') === '1',
   );
-  const [showRoute, setShowRoute] = useState(searchParams.get('parcours') === '1');
+  const [showRoute, setShowRoute] = useState(
+    Boolean(searchParams.get('parcours')),
+  );
   const [userPos, setUserPos] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [manualOrderIds, setManualOrderIds] = useState<string[] | null>(null);
+  const [activeRouteId, setActiveRouteId] = useState<string | null>(
+    searchParams.get('parcours') && searchParams.get('parcours') !== '1'
+      ? searchParams.get('parcours')
+      : null,
+  );
+  const [saveOpen, setSaveOpen] = useState(false);
+  const lastParcoursParam = useRef<string | null>(searchParams.get('parcours'));
 
   const handleLocated = useCallback(
     (lat: number, lng: number) => {
@@ -143,10 +190,29 @@ export function MapPage() {
 
   const favoriteIds = useMemo(() => favorites.map((place) => place.id), [favorites]);
   const geoFavorites = useMemo(() => favorites.filter(hasCoordinates), [favorites]);
-  const orderedFavorites = useMemo(
+  const autoOrdered = useMemo(
     () => orderItinerary(geoFavorites, userPos ?? CHARTRONS_MAP_CENTER),
     [geoFavorites, userPos],
   );
+  const savedRoute = activeRouteId ? getRoute(activeRouteId) : undefined;
+  const orderedFavorites = useMemo(() => {
+    if (savedRoute) {
+      if (!manualOrderIds) return savedRoute.stops;
+      const byId = new Map(savedRoute.stops.map((stop) => [stop.id, stop]));
+      return manualOrderIds
+        .map((id) => byId.get(id))
+        .filter((stop): stop is RouteStop => Boolean(stop));
+    }
+    if (manualOrderIds) {
+      const byId = new Map(geoFavorites.map((place) => [place.id, place]));
+      const ordered = manualOrderIds
+        .map((id) => byId.get(id))
+        .filter((place): place is (typeof geoFavorites)[number] => Boolean(place));
+      const rest = geoFavorites.filter((place) => !manualOrderIds.includes(place.id));
+      return [...ordered, ...rest];
+    }
+    return autoOrdered;
+  }, [savedRoute, manualOrderIds, geoFavorites, autoOrdered]);
   const routePositions = useMemo<[number, number][]>(
     () => (showRoute ? orderedFavorites.map((place) => [place.latitude, place.longitude]) : []),
     [showRoute, orderedFavorites],
@@ -190,10 +256,15 @@ export function MapPage() {
         setActiveLayers((current) => new Set(current).add(pin.kind));
       }
     }
-    const parcours = searchParams.get('parcours') === '1';
+    const parcoursParam = searchParams.get('parcours');
     const favoris = searchParams.get('favoris') === '1';
-    setShowRoute(parcours);
-    setFavoritesOnly(favoris || parcours);
+    if (lastParcoursParam.current !== parcoursParam) {
+      lastParcoursParam.current = parcoursParam;
+      setManualOrderIds(null);
+      setActiveRouteId(parcoursParam && parcoursParam !== '1' ? parcoursParam : null);
+    }
+    setShowRoute(Boolean(parcoursParam));
+    setFavoritesOnly(favoris || Boolean(parcoursParam));
   }, [searchParams, allPins]);
 
   const patchParams = (mutate: (params: URLSearchParams) => void) => {
@@ -225,6 +296,8 @@ export function MapPage() {
     setFavoritesOnly(next);
     if (!next) {
       setShowRoute(false);
+      setManualOrderIds(null);
+      setActiveRouteId(null);
       patchParams((params) => {
         params.delete('favoris');
         params.delete('parcours');
@@ -243,11 +316,15 @@ export function MapPage() {
     setShowRoute(next);
     if (next) {
       setFavoritesOnly(true);
+      setManualOrderIds(null);
+      setActiveRouteId(null);
       patchParams((params) => {
         params.set('parcours', '1');
         params.set('favoris', '1');
       });
     } else {
+      setManualOrderIds(null);
+      setActiveRouteId(null);
       patchParams((params) => params.delete('parcours'));
     }
   };
@@ -256,6 +333,42 @@ export function MapPage() {
 
   const selectedSharePath = selectedPin ? `/carte?pin=${encodeURIComponent(selectedPin.id)}` : '/carte';
   const itineraryDistance = formatDistance(itineraryDistanceKm(orderedFavorites), i18n.language);
+  const defaultRouteName =
+    savedRoute?.name ??
+    t('routes.defaultName', {
+      date: new Date().toLocaleDateString(i18n.language.startsWith('fr') ? 'fr-FR' : 'en-GB', {
+        day: 'numeric',
+        month: 'short',
+      }),
+    });
+
+  const handleMoveStop = (index: number, delta: number) => {
+    setManualOrderIds(moveItem(orderedFavorites.map((stop) => stop.id), index, delta));
+  };
+
+  const handleExport = (format: 'json' | 'gpx') => {
+    const route = createSavedRoute(defaultRouteName, asRouteStops(orderedFavorites));
+    if (savedRoute) {
+      route.id = savedRoute.id;
+      route.createdAt = savedRoute.createdAt;
+    }
+    if (format === 'json') exportRouteJson(route);
+    else exportRouteGpx(route);
+    showToast(t('routes.exported'));
+  };
+
+  const handleSaveRoute = async (name: string) => {
+    const stops = asRouteStops(orderedFavorites);
+    if (savedRoute) {
+      await updateRoute(savedRoute.id, { name, stops });
+      showToast(t('routes.updated'));
+      return;
+    }
+    const created = await saveRoute(name, stops);
+    setActiveRouteId(created.id);
+    patchParams((params) => params.set('parcours', created.id));
+    showToast(t('routes.saved'));
+  };
 
   return (
     <div className="space-y-4 animate-fade-in">
@@ -351,7 +464,9 @@ export function MapPage() {
 
       {showRoute && (
         <Card className="!p-4">
-          <h3 className="font-semibold text-chartrons-olive-dark">{t('map.itinerary.title')}</h3>
+          <h3 className="font-semibold text-chartrons-olive-dark">
+            {savedRoute ? savedRoute.name : t('map.itinerary.title')}
+          </h3>
           {orderedFavorites.length < 2 ? (
             <p className="text-sm text-chartrons-warm-gray mt-2">{t('map.itinerary.needTwo')}</p>
           ) : (
@@ -359,13 +474,36 @@ export function MapPage() {
               <p className="text-sm text-chartrons-warm-gray mt-1">
                 {t('map.itinerary.meta', { count: orderedFavorites.length, distance: itineraryDistance })}
               </p>
+              {savedRoute && (
+                <p className="text-xs text-chartrons-olive mt-1">{t('routes.offlineReady')}</p>
+              )}
               <ol className="mt-3 space-y-2">
                 {orderedFavorites.map((place, index) => (
-                  <li key={place.id}>
+                  <li key={place.id} className="flex items-center gap-2">
+                    <div className="flex flex-col gap-0.5 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => handleMoveStop(index, -1)}
+                        disabled={index === 0}
+                        className="touch-target w-8 h-8 rounded-lg border border-chartrons-beige text-chartrons-olive-dark disabled:opacity-30"
+                        aria-label={t('routes.moveUp', { name: place.title })}
+                      >
+                        ↑
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleMoveStop(index, 1)}
+                        disabled={index === orderedFavorites.length - 1}
+                        className="touch-target w-8 h-8 rounded-lg border border-chartrons-beige text-chartrons-olive-dark disabled:opacity-30"
+                        aria-label={t('routes.moveDown', { name: place.title })}
+                      >
+                        ↓
+                      </button>
+                    </div>
                     <button
                       type="button"
                       onClick={() => setSelectedId(place.id)}
-                      className={`w-full text-left text-sm rounded-xl px-3 py-2 border ${
+                      className={`flex-1 min-w-0 text-left text-sm rounded-xl px-3 py-2 border ${
                         selectedPin?.id === place.id
                           ? 'border-chartrons-bordeaux bg-chartrons-bordeaux/5 text-chartrons-olive-dark'
                           : 'border-chartrons-beige text-chartrons-olive-dark'
@@ -380,11 +518,27 @@ export function MapPage() {
               <div className="flex flex-wrap gap-2 mt-3">
                 <DirectionsButton stops={orderedFavorites} label={t('map.itinerary.go')} />
                 <ShareButton
-                  title={t('map.itinerary.title')}
+                  title={savedRoute?.name ?? t('map.itinerary.title')}
                   text={listShareText(orderedFavorites, t('share.listIntro'))}
-                  url={appUrl('/carte?parcours=1')}
+                  url={appUrl(savedRoute ? `/carte?parcours=${encodeURIComponent(savedRoute.id)}` : '/carte?parcours=1')}
                   label={t('share.list')}
                 />
+              </div>
+              <div className="flex flex-wrap gap-2 mt-2">
+                <Button type="button" size="sm" variant="bordeaux" className="flex-1" onClick={() => setSaveOpen(true)}>
+                  {savedRoute ? t('routes.update') : t('routes.save')}
+                </Button>
+                {manualOrderIds && !savedRoute && (
+                  <Button type="button" size="sm" variant="secondary" className="flex-1" onClick={() => setManualOrderIds(null)}>
+                    {t('routes.resetOrder')}
+                  </Button>
+                )}
+                <Button type="button" size="sm" variant="secondary" className="flex-1" onClick={() => handleExport('gpx')}>
+                  {t('routes.exportGpx')}
+                </Button>
+                <Button type="button" size="sm" variant="secondary" className="flex-1" onClick={() => handleExport('json')}>
+                  {t('routes.exportJson')}
+                </Button>
               </div>
             </>
           )}
@@ -424,6 +578,15 @@ export function MapPage() {
       )}
 
       <FavoritesDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
+      <SaveRouteModal
+        open={saveOpen}
+        onClose={() => setSaveOpen(false)}
+        defaultName={defaultRouteName}
+        isUpdate={Boolean(savedRoute)}
+        onConfirm={(name) => {
+          void handleSaveRoute(name);
+        }}
+      />
     </div>
   );
 }

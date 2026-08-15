@@ -41,6 +41,7 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        navigateFallback: 'index.html',
         runtimeCaching: [
           {
             urlPattern: /^https?:\/\/localhost:3001\/api\/.*/i,
@@ -48,6 +49,14 @@ export default defineConfig({
             options: {
               cacheName: 'api-cache',
               expiration: { maxEntries: 50, maxAgeSeconds: 300 },
+            },
+          },
+          {
+            urlPattern: /^https:\/\/[a-z]+\.tile\.openstreetmap\.org\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'osm-tiles',
+              expiration: { maxEntries: 220, maxAgeSeconds: 60 * 60 * 24 * 14 },
             },
           },
         ],

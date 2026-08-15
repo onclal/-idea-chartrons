@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { SearchProvider } from './context/SearchContext';
 import { FavoritesProvider } from './context/FavoritesContext';
+import { RoutesProvider } from './context/RoutesContext';
 import { AuthProvider } from './context/AuthContext';
 import { AdminProvider } from './context/AdminContext';
 import { ToastProvider } from './context/ToastContext';
@@ -30,6 +31,7 @@ export function App() {
       <AdminProvider>
         <ToastProvider>
           <FavoritesProvider>
+          <RoutesProvider>
           <SearchProvider>
             <BrowserRouter>
               <Routes>
@@ -57,6 +59,7 @@ export function App() {
               </Routes>
             </BrowserRouter>
           </SearchProvider>
+          </RoutesProvider>
           </FavoritesProvider>
         </ToastProvider>
       </AdminProvider>
