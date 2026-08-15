@@ -1,0 +1,5 @@
+# Formulaire statique Netlify Forms (ne pas réécrire vers l'SPA)
+/contact.html  /contact.html  200
+
+# Netlify SPA fallback (utilisé si netlify.toml n'est pas détecté)
+/*    /index.html   200
