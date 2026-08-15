@@ -6,6 +6,7 @@ import fideliteRouter from './routes/fidelite.js';
 import postsRouter from './routes/posts.js';
 import relaisRouter from './routes/relais.js';
 import usersRouter from './routes/users.js';
+import syncRouter from './routes/sync.js';
 
 const app = express();
 const PORT = process.env.PORT ?? 3001;
@@ -23,6 +24,7 @@ app.use('/api/acteurs', acteursRouter);
 app.use('/api/events', eventsRouter);
 app.use('/api/relais', relaisRouter);
 app.use('/api/fidelite', fideliteRouter);
+app.use('/api/sync', syncRouter);
 
 app.listen(PORT, () => {
   console.log(`🏘️  IDÉA CHARTRONS API running on http://localhost:${PORT}`);

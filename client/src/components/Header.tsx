@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useSearch } from '../context/SearchContext';
 import { useAdmin } from '../context/AdminContext';
 import { useFavorites } from '../context/FavoritesContext';
+import { usePwa } from '../context/PwaContext';
 import { CategoryTabs } from './CategoryTabs';
 import { Badge } from './ui';
 
@@ -11,6 +12,7 @@ export function Header() {
   const { query, setQuery } = useSearch();
   const { isAdminMode } = useAdmin();
   const { favorites } = useFavorites();
+  const { online } = usePwa();
 
   const setLanguage = (lang: 'fr' | 'en') => {
     i18n.changeLanguage(lang);
@@ -40,6 +42,11 @@ export function Header() {
                     {t('admin.badge')}
                   </Badge>
                 </>
+              )}
+              {!online && (
+                <span className="px-2 py-1 rounded-lg bg-chartrons-brass text-chartrons-olive-dark text-[10px] font-bold">
+                  {t('pwa.offlineBadge')}
+                </span>
               )}
               <Link
                 to="/favoris"

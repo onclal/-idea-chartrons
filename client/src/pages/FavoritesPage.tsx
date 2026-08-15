@@ -9,7 +9,9 @@ import { useFavorites } from '../context/FavoritesContext';
 import { useSavedRoutes } from '../context/RoutesContext';
 import { useToast } from '../context/ToastContext';
 import { appUrl, listShareText, placeShareText } from '../lib/share';
-import { exportRouteGpx, exportRouteJson } from '../lib/routes';
+import { exportRouteGpx, exportRouteJson, parseRouteFile } from '../lib/routes';
+import { isDeviceSyncPayload, parseCarnet } from '../lib/sync';
+import { FileImportButton } from '../components/FileImportButton';
 import {
   loadAlertsSettings,
   saveAlertsSettings,
@@ -20,10 +22,39 @@ export function FavoritesPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { showToast } = useToast();
-  const { favorites, removeFavorite } = useFavorites();
-  const { routes, deleteRoute } = useSavedRoutes();
+  const { favorites, removeFavorite, mergeFavorites } = useFavorites();
+  const { routes, deleteRoute, importRoute } = useSavedRoutes();
   const geoCount = favorites.filter(hasCoordinates).length;
   const [alertSettings, setAlertSettings] = useState(loadAlertsSettings);
+
+  const handleImportFile = async (content: string, filename: string) => {
+    try {
+      if (!filename.toLowerCase().endsWith('.gpx') && !content.includes('<gpx')) {
+        try {
+          const parsed = JSON.parse(content) as unknown;
+          if (isDeviceSyncPayload(parsed)) {
+            const carnet = parseCarnet(content);
+            mergeFavorites(carnet.favorites);
+            for (const route of carnet.routes) {
+              await importRoute(route, true);
+            }
+            saveAlertsSettings(carnet.alerts);
+            showToast(t('sync.imported', { favorites: carnet.favorites.length, routes: carnet.routes.length }));
+            return;
+          }
+        } catch {
+          // Fall through to route parser.
+        }
+      }
+      const imported = parseRouteFile(content, filename);
+      for (const route of imported) {
+        await importRoute(route, false);
+      }
+      showToast(t('routes.importedCount', { count: imported.length }));
+    } catch {
+      showToast(t('sync.invalidFile'), 'error');
+    }
+  };
 
   const openItinerary = () => {
     if (geoCount < 2) {
@@ -67,12 +98,19 @@ export function FavoritesPage() {
       </div>
 
       {favorites.length === 0 && routes.length === 0 ? (
-        <EmptyState
-          icon="♡"
-          title={t('favorites.emptyTitle')}
-          message={t('favorites.emptyHint')}
-          action={{ label: t('favorites.goMap'), onClick: () => navigate('/carte') }}
-        />
+        <>
+          <FileImportButton
+            accept=".json,.gpx,application/json,application/gpx+xml,text/xml"
+            label={t('routes.import')}
+            onText={handleImportFile}
+          />
+          <EmptyState
+            icon="♡"
+            title={t('favorites.emptyTitle')}
+            message={t('favorites.emptyHint')}
+            action={{ label: t('favorites.goMap'), onClick: () => navigate('/carte') }}
+          />
+        </>
       ) : (
         <>
           {favorites.length > 0 && (
@@ -91,6 +129,11 @@ export function FavoritesPage() {
                 url={appUrl(geoCount >= 2 ? '/carte?parcours=1' : '/favoris')}
                 label={t('share.list')}
               />
+              <FileImportButton
+                accept=".json,.gpx,application/json,application/gpx+xml,text/xml"
+                label={t('routes.import')}
+                onText={handleImportFile}
+              />
             </div>
           )}
 
@@ -107,6 +150,11 @@ export function FavoritesPage() {
               <h3 className="text-sm font-bold uppercase tracking-wide text-chartrons-olive">
                 {t('routes.savedTitle')}
               </h3>
+              <FileImportButton
+                accept=".json,.gpx,application/json,application/gpx+xml,text/xml"
+                label={t('routes.import')}
+                onText={handleImportFile}
+              />
               {routes.map((route) => (
                 <Card key={route.id} className="!p-4">
                   <div className="flex items-start justify-between gap-2">

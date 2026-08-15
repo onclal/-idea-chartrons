@@ -15,6 +15,8 @@ interface RoutesContextValue {
   saveRoute: (name: string, stops: RouteStop[]) => Promise<SavedRoute>;
   updateRoute: (id: string, patch: { name?: string; stops?: RouteStop[] }) => Promise<SavedRoute | null>;
   deleteRoute: (id: string) => Promise<void>;
+  importRoute: (route: SavedRoute, keepId?: boolean) => Promise<SavedRoute>;
+  replaceRoutes: (incoming: SavedRoute[]) => Promise<void>;
 }
 
 const RoutesContext = createContext<RoutesContextValue | null>(null);
@@ -61,9 +63,30 @@ export function RoutesProvider({ children }: { children: ReactNode }) {
     [persist, routes],
   );
 
+  const importRoute = useCallback(
+    async (route: SavedRoute, keepId = false) => {
+      const incoming: SavedRoute = keepId
+        ? { ...route, updatedAt: new Date().toISOString() }
+        : { ...route, id: `route-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+      const without = routes.filter((item) => item.id !== incoming.id);
+      persist([incoming, ...without]);
+      await rememberRouteOffline(incoming);
+      return incoming;
+    },
+    [persist, routes],
+  );
+
+  const replaceRoutes = useCallback(
+    async (incoming: SavedRoute[]) => {
+      persist(incoming);
+      await Promise.all(incoming.map((route) => rememberRouteOffline(route)));
+    },
+    [persist],
+  );
+
   const value = useMemo(
-    () => ({ routes, getRoute, saveRoute, updateRoute, deleteRoute }),
-    [routes, getRoute, saveRoute, updateRoute, deleteRoute],
+    () => ({ routes, getRoute, saveRoute, updateRoute, deleteRoute, importRoute, replaceRoutes }),
+    [routes, getRoute, saveRoute, updateRoute, deleteRoute, importRoute, replaceRoutes],
   );
 
   return <RoutesContext.Provider value={value}>{children}</RoutesContext.Provider>;

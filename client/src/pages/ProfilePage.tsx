@@ -4,6 +4,8 @@ import { getFideliteNiveau, UserRole } from '@idea-chartrons/shared';
 import { Badge, Button, Card, Loading } from '../components/ui';
 import { AdminPanel } from '../components/AdminPanel';
 import { FideliteHistory } from '../components/FideliteHistory';
+import { CarnetSyncCard } from '../components/CarnetSyncCard';
+import { PageHelp } from '../components/PageHelp';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { api, type VipStatusEntry } from '../lib/api';
@@ -61,9 +63,14 @@ export function ProfilePage() {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-bold text-chartrons-bordeaux">{t('profile.title')}</h2>
+      <div className="flex items-start justify-between gap-2">
+        <h2 className="text-xl font-bold text-chartrons-bordeaux">{t('profile.title')}</h2>
+        <PageHelp page="profile" />
+      </div>
 
       <AdminPanel />
+
+      <CarnetSyncCard />
 
       <Card>
         <h4 className="text-sm font-semibold text-chartrons-green-dark mb-3">

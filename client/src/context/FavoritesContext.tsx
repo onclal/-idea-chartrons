@@ -11,6 +11,8 @@ interface FavoritesContextValue {
   isFavorite: (id: string) => boolean;
   toggleFavorite: (place: FavoriteInput) => boolean;
   removeFavorite: (id: string) => void;
+  mergeFavorites: (incoming: FavoritePlace[]) => void;
+  replaceFavorites: (incoming: FavoritePlace[]) => void;
 }
 
 const FavoritesContext = createContext<FavoritesContextValue | null>(null);
@@ -43,9 +45,25 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
     [favorites, persist],
   );
 
+  const mergeFavorites = useCallback(
+    (incoming: FavoritePlace[]) => {
+      const byId = new Map(favorites.map((item) => [item.id, item]));
+      for (const place of incoming) {
+        byId.set(place.id, place);
+      }
+      persist([...byId.values()]);
+    },
+    [favorites, persist],
+  );
+
+  const replaceFavorites = useCallback(
+    (incoming: FavoritePlace[]) => persist(incoming),
+    [persist],
+  );
+
   const value = useMemo(
-    () => ({ favorites, isFavorite, toggleFavorite, removeFavorite }),
-    [favorites, isFavorite, toggleFavorite, removeFavorite],
+    () => ({ favorites, isFavorite, toggleFavorite, removeFavorite, mergeFavorites, replaceFavorites }),
+    [favorites, isFavorite, toggleFavorite, removeFavorite, mergeFavorites, replaceFavorites],
   );
 
   return <FavoritesContext.Provider value={value}>{children}</FavoritesContext.Provider>;

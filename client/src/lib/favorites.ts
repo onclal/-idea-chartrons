@@ -36,7 +36,7 @@ export function saveFavorites(favorites: FavoritePlace[]): void {
   }
 }
 
-function isFavoritePlace(value: unknown): value is FavoritePlace {
+export function isFavoritePlace(value: unknown): value is FavoritePlace {
   if (!value || typeof value !== 'object') return false;
   const item = value as Record<string, unknown>;
   return typeof item.id === 'string' && typeof item.title === 'string' && typeof item.kind === 'string';
