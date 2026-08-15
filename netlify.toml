@@ -5,6 +5,12 @@
 [build.environment]
   NODE_VERSION = "20"
 
+# Formulaire statique Netlify Forms — ne pas réécrire vers l'SPA
+[[redirects]]
+  from = "/contact.html"
+  to = "/contact.html"
+  status = 200
+
 # Redirection SPA — toutes les routes React Router → index.html
 [[redirects]]
   from = "/*"

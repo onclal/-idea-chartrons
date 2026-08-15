@@ -1,5 +1,21 @@
-import type { CarteFideliteScan, FideliteNiveau } from '@idea-chartrons/shared';
+import type {
+  ActeurLocal,
+  ActeurLocalCategory,
+  AgendaEvenement,
+  CarteFideliteScan,
+  EventType,
+  FideliteNiveau,
+  PostAnnonce,
+  PostStatus,
+  PostType,
+  PreferredLanguage,
+  RelaisCreneau,
+  RelaisCreneauType,
+  User,
+  UserRole,
+} from '@idea-chartrons/shared';
 import { localDb, withDelay, resetLocalDb } from './localDb';
+import { loadContactMessages, saveContactMessage, type ContactMessage } from './contact';
 
 export interface FideliteScanResult {
   scan: CarteFideliteScan;
@@ -36,28 +52,87 @@ export const api = {
   createPost: (data: {
     titre: string;
     description: string;
-    type: import('@idea-chartrons/shared').PostType;
+    type: PostType;
     prix: number | null;
     photos: string[];
     auteurId: string;
+    statut?: PostStatus;
   }) => withDelay(() => localDb.createPost(data)),
+  updatePost: (postId: string, patch: Partial<Omit<PostAnnonce, 'id' | 'createdAt'>>) =>
+    withDelay(() => localDb.updatePost(postId, patch)),
+  deletePost: (postId: string) => withDelay(() => {
+    localDb.deletePost(postId);
+    return { ok: true };
+  }),
+  getActeurs: () => withDelay(() => localDb.getAll('acteursLocaux')),
+  createActeur: (data: {
+    userId: string;
+    nomCommerce: string;
+    categorie: ActeurLocalCategory;
+    description: string;
+    adresse: string;
+    photos: string[];
+    offreVip: string | null;
+    pointsRequisVip: number;
+    activerFidelite?: boolean;
+  }) => withDelay(() => localDb.createActeur(data)),
+  generateQrVitrine: (acteurId: string) => withDelay(() => localDb.generateQrVitrine(acteurId)),
+  updateActeur: (
+    acteurId: string,
+    patch: Partial<Omit<ActeurLocal, 'id' | 'createdAt' | 'qrCodeVitrine'>>,
+  ) => withDelay(() => localDb.updateActeur(acteurId, patch)),
+  deleteActeur: (acteurId: string) => withDelay(() => {
+    localDb.deleteActeur(acteurId);
+    return { ok: true };
+  }),
+  getEvents: () => withDelay(() => localDb.getAll('agendaEvenements')),
+  createEvent: (data: {
+    organisateurId: string;
+    titre: string;
+    description: string;
+    dateDebut: string;
+    dateFin: string;
+    image: string | null;
+    type: EventType;
+  }) => withDelay(() => localDb.createEvent(data)),
+  updateEvent: (
+    eventId: string,
+    patch: Partial<Omit<AgendaEvenement, 'id' | 'createdAt'>>,
+  ) => withDelay(() => localDb.updateEvent(eventId, patch)),
+  deleteEvent: (eventId: string) => withDelay(() => {
+    localDb.deleteEvent(eventId);
+    return { ok: true };
+  }),
+  createUser: (data: {
+    nom: string;
+    email: string;
+    role: UserRole;
+    badgeVerifie: boolean;
+    adresse: string;
+    languePreferee: PreferredLanguage;
+    pointsFidelite: number;
+  }) => withDelay(() => localDb.createUser(data)),
+  updateUser: (userId: string, patch: Partial<Omit<User, 'id' | 'createdAt'>>) =>
+    withDelay(() => localDb.updateUser(userId, patch)),
   getRelais: () => withDelay(() => localDb.getRelais()),
   getRelaisByUser: (userId: string) => withDelay(() => localDb.getRelaisByUser(userId)),
-  getCreneaux: (type?: import('@idea-chartrons/shared').RelaisCreneauType) =>
+  getCreneaux: (type?: RelaisCreneauType) =>
     withDelay(() => localDb.getCreneaux(type)),
+  getAllCreneaux: () => withDelay((): RelaisCreneau[] => localDb.getAllCreneaux()),
   proposeDepotLocal: (data: { postId: string; userId: string; creneauDepotId: string }) =>
     withDelay(() => localDb.proposeDepotLocal(data)),
   reserverRetrait: (relaisId: string, creneauRetraitId: string) =>
     withDelay(() => localDb.reserverRetrait(relaisId, creneauRetraitId)),
   avancerStatutRelais: (relaisId: string) =>
     withDelay(() => localDb.avancerStatutRelais(relaisId)),
-  getActeurs: () => withDelay(() => localDb.getAll('acteursLocaux')),
-  getEvents: () => withDelay(() => localDb.getAll('agendaEvenements')),
   scanFidelite: (data: { userId: string; commerceId: string; qrCode: string }) =>
     withDelay(() => localDb.scanFidelite(data)),
   getFideliteHistory: (userId: string) => withDelay(() => localDb.getFideliteHistory(userId)),
   getVipStatus: (userId: string) => withDelay(() => localDb.getVipStatus(userId)),
   getFidelite: () => withDelay(() => localDb.getAll('cartesFideliteScans')),
+  sendContact: (data: { name: string; email: string; message: string; context: string }) =>
+    withDelay(() => saveContactMessage(data)),
+  getContactMessages: () => withDelay((): ContactMessage[] => loadContactMessages()),
   resetDemoData: () => withDelay(() => {
     resetLocalDb();
     return { ok: true };

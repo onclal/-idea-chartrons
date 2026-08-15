@@ -6,7 +6,7 @@ import { Badge, Button, Card } from './ui';
 import { QrCodeDisplay } from './QrCodeDisplay';
 import { RelaisSlotPicker } from './RelaisSlotPicker';
 
-export const LOCAL_RELAIS_ADDRESS = '18 Cours Portal, 33000 Bordeaux';
+export const LOCAL_RELAIS_ADDRESS = '26 place Jean Jaques Rabaud';
 
 interface LocalRelaisCardProps {
   relaisList: LocalRelais[];

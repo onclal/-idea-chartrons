@@ -2,6 +2,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LocalRelaisRetraitStatus, PostType, type LocalRelais, type PostAnnonce } from '@idea-chartrons/shared';
 import { Badge, Button, Card, EmptyState, Loading } from '../components/ui';
+import { PageHelp } from '../components/PageHelp';
+import { ContactForm } from '../components/ContactForm';
+import { AdminDeleteButton } from '../components/AdminDeleteButton';
 import { PostCreateForm } from '../components/PostCreateForm';
 import { DepotSlotModal } from '../components/RelaisSlotPicker';
 import { useAuth } from '../context/AuthContext';
@@ -31,6 +34,7 @@ export function PostsPage() {
   const [showCreate, setShowCreate] = useState(false);
   const [depotPostId, setDepotPostId] = useState<string | null>(null);
   const [depotLoading, setDepotLoading] = useState(false);
+  const [contactContext, setContactContext] = useState<string | null>(null);
 
   const loadPosts = () => {
     setLoading(true);
@@ -75,18 +79,27 @@ export function PostsPage() {
     }
   };
 
+  const handleDeletePost = async (postId: string) => {
+    await api.deletePost(postId);
+    loadPosts();
+    showToast(t('admin.deleteSuccess'));
+  };
+
   if (loading) return <Loading message={t('common.loading')} />;
 
   return (
     <div className="space-y-4 animate-fade-in">
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <h2 className="text-xl font-bold text-chartrons-bordeaux">{t('posts.title')}</h2>
-          {query && (
-            <p className="text-xs text-chartrons-warm-gray mt-0.5">
-              {t('search.results', { count: filteredPosts.length, query })}
-            </p>
-          )}
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex items-start gap-2 min-w-0">
+          <div className="min-w-0">
+            <h2 className="text-xl font-bold text-chartrons-bordeaux">{t('posts.title')}</h2>
+            {query && (
+              <p className="text-xs text-chartrons-warm-gray mt-0.5">
+                {t('search.results', { count: filteredPosts.length, query })}
+              </p>
+            )}
+          </div>
+          <PageHelp page="posts" />
         </div>
         <Button size="sm" variant="bordeaux" onClick={() => setShowCreate(true)}>
           + {t('posts.create.button')}
@@ -172,6 +185,20 @@ export function PostsPage() {
                       📦 {t('posts.depotLocal')}
                     </Button>
                   )}
+                  <Button
+                    variant="ghost"
+                    size="md"
+                    className="w-full mt-2 border border-chartrons-beige"
+                    onClick={() => setContactContext(t('contact.postContext', { title: post.titre }))}
+                  >
+                    {t('contact.askQuestion')}
+                  </Button>
+                  <AdminDeleteButton
+                    label={t('admin.deletePost')}
+                    confirmMessage={t('admin.deletePostConfirm', { title: post.titre })}
+                    onDelete={() => handleDeletePost(post.id)}
+                    className="mt-2"
+                  />
                 </div>
               </Card>
             );
@@ -190,6 +217,12 @@ export function PostsPage() {
         onClose={() => setDepotPostId(null)}
         onConfirm={handleDepotConfirm}
         loading={depotLoading}
+      />
+
+      <ContactForm
+        open={!!contactContext}
+        onClose={() => setContactContext(null)}
+        context={contactContext ?? undefined}
       />
     </div>
   );

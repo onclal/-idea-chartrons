@@ -6,6 +6,7 @@ const categories = [
   { path: '/relais', key: 'relais' },
   { path: '/acteurs', key: 'acteurs' },
   { path: '/events', key: 'events' },
+  { path: '/faq', key: 'faq' },
 ] as const;
 
 export function CategoryTabs() {

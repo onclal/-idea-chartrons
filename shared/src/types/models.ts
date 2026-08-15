@@ -68,7 +68,7 @@ export interface ActeurLocal {
   photos: string[];
   offreVip: string | null;
   pointsRequisVip: number;
-  qrCodeVitrine: string;
+  qrCodeVitrine: string | null;
   createdAt: string;
   updatedAt: string;
 }

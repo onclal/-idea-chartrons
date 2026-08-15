@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { EventType, type AgendaEvenement } from '@idea-chartrons/shared';
 import { Badge, Button, Card, EmptyState, Loading } from '../components/ui';
+import { AdminDeleteButton } from '../components/AdminDeleteButton';
 import { matchesSearch, useSearch } from '../context/SearchContext';
 import { useToast } from '../context/ToastContext';
 import { api } from '../lib/api';
@@ -100,6 +101,13 @@ export function EventsPage() {
     showToast(t('toast.eventAdded'));
   };
 
+  const handleDeleteEvent = async (eventId: string) => {
+    await api.deleteEvent(eventId);
+    const eventsData = await api.getEvents();
+    setEvents(eventsData);
+    showToast(t('admin.deleteSuccess'));
+  };
+
   if (loading) return <Loading message={t('common.loading')} />;
 
   return (
@@ -181,6 +189,12 @@ export function EventsPage() {
                       {addedIds.has(event.id) ? `✓ ${t('events.added')}` : `📅 ${t('events.addToCalendar')}`}
                     </Button>
                   )}
+                  <AdminDeleteButton
+                    label={t('admin.deleteEvent')}
+                    confirmMessage={t('admin.deleteEventConfirm', { title: event.titre })}
+                    onDelete={() => handleDeleteEvent(event.id)}
+                    className="mt-2"
+                  />
                 </div>
               </Card>
             );

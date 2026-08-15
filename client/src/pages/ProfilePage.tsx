@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getFideliteNiveau, UserRole } from '@idea-chartrons/shared';
 import { Badge, Button, Card, Loading } from '../components/ui';
+import { AdminPanel } from '../components/AdminPanel';
 import { FideliteHistory } from '../components/FideliteHistory';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -61,6 +62,8 @@ export function ProfilePage() {
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-bold text-chartrons-bordeaux">{t('profile.title')}</h2>
+
+      <AdminPanel />
 
       <Card>
         <h4 className="text-sm font-semibold text-chartrons-green-dark mb-3">

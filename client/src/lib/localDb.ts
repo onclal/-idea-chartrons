@@ -1,6 +1,8 @@
 import {
+  ActeurLocalCategory,
   calculateScanPoints,
   createSeedData,
+  generateQrVitrineCode,
   getFideliteNiveau,
   getNextStatus,
   isCreneauAvailable,
@@ -9,13 +11,22 @@ import {
   PostStatus,
   PostType,
   RelaisCreneauType,
+  type ActeurLocal,
+  type AgendaEvenement,
   type DatabaseSchema,
+  type EventType,
   type FideliteNiveau,
   type PostAnnonce,
+  type PreferredLanguage,
   type LocalRelais,
   type RelaisCreneau,
   type User,
+  type UserRole,
 } from '@idea-chartrons/shared';
+
+const LEGACY_ACTEUR_CATEGORIES: Record<string, ActeurLocalCategory> = {
+  Brocanteur_Rue_Notre_Dame: ActeurLocalCategory.Brocanteur,
+};
 
 const DB_STORAGE_KEY = 'idea-chartrons-db';
 
@@ -30,7 +41,7 @@ class LocalDatabase {
     try {
       const raw = localStorage.getItem(DB_STORAGE_KEY);
       if (raw) {
-        return JSON.parse(raw) as DatabaseSchema;
+        return this.migrateActeurs(JSON.parse(raw) as DatabaseSchema);
       }
     } catch {
       // corrupted storage — fall back to seed
@@ -38,6 +49,30 @@ class LocalDatabase {
     const seed = createSeedData();
     this.persist(seed);
     return seed;
+  }
+
+  private migrateActeurs(data: DatabaseSchema): DatabaseSchema {
+    let changed = false;
+    const acteursLocaux = (data.acteursLocaux ?? []).map((acteur) => {
+      const nextCategory = LEGACY_ACTEUR_CATEGORIES[acteur.categorie] ?? acteur.categorie;
+      const nextQr = acteur.qrCodeVitrine || null;
+      if (nextCategory !== acteur.categorie || nextQr !== acteur.qrCodeVitrine) {
+        changed = true;
+      }
+      return { ...acteur, categorie: nextCategory, qrCodeVitrine: nextQr };
+    });
+
+    const knownIds = new Set(acteursLocaux.map((acteur) => acteur.id));
+    for (const seedActeur of createSeedData().acteursLocaux) {
+      if (!knownIds.has(seedActeur.id)) {
+        acteursLocaux.push(seedActeur);
+        changed = true;
+      }
+    }
+
+    const migrated = changed ? { ...data, acteursLocaux } : data;
+    if (changed) this.persist(migrated);
+    return migrated;
   }
 
   private persist(data: DatabaseSchema = this.data): void {
@@ -83,6 +118,26 @@ class LocalDatabase {
     return items[index];
   }
 
+  private remove<K extends keyof DatabaseSchema>(
+    collection: K,
+    id: string,
+  ): boolean {
+    const items = this.data[collection] as DatabaseSchema[K][number][];
+    const index = items.findIndex((item) => (item as { id: string }).id === id);
+    if (index === -1) return false;
+    items.splice(index, 1);
+    this.persist();
+    return true;
+  }
+
+  private releaseCreneau(creneauId: string | null | undefined): void {
+    if (!creneauId) return;
+    const creneau = this.getById('relaisCreneaux', creneauId);
+    if (creneau && creneau.reserves > 0) {
+      this.update('relaisCreneaux', creneauId, { reserves: creneau.reserves - 1 });
+    }
+  }
+
   // ── Users ──
 
   getUsers(): User[] {
@@ -93,6 +148,36 @@ class LocalDatabase {
     const user = this.getById('users', id);
     if (!user) throw new Error('User not found');
     return user;
+  }
+
+  createUser(data: {
+    nom: string;
+    email: string;
+    role: UserRole;
+    badgeVerifie: boolean;
+    adresse: string;
+    languePreferee: PreferredLanguage;
+    pointsFidelite: number;
+  }): User {
+    const now = new Date().toISOString();
+    return this.create('users', {
+      id: `user-${Date.now()}`,
+      nom: data.nom,
+      email: data.email,
+      role: data.role,
+      badgeVerifie: data.badgeVerifie,
+      adresse: data.adresse,
+      languePreferee: data.languePreferee,
+      pointsFidelite: data.pointsFidelite,
+      createdAt: now,
+      updatedAt: now,
+    });
+  }
+
+  updateUser(userId: string, patch: Partial<Omit<User, 'id' | 'createdAt'>>): User {
+    const updated = this.update('users', userId, patch);
+    if (!updated) throw new Error('User not found');
+    return updated;
   }
 
   // ── Posts ──
@@ -108,6 +193,7 @@ class LocalDatabase {
     prix: number | null;
     photos: string[];
     auteurId: string;
+    statut?: PostStatus;
   }): PostAnnonce {
     const now = new Date().toISOString();
     return this.create('postsAnnonces', {
@@ -117,11 +203,133 @@ class LocalDatabase {
       description: data.description,
       type: data.type,
       prix: data.prix,
-      statut: PostStatus.Disponible,
+      statut: data.statut ?? PostStatus.Disponible,
       photos: data.photos,
       createdAt: now,
       updatedAt: now,
     });
+  }
+
+  updatePost(postId: string, patch: Partial<Omit<PostAnnonce, 'id' | 'createdAt'>>): PostAnnonce {
+    const updated = this.update('postsAnnonces', postId, patch);
+    if (!updated) throw new Error('Post not found');
+    return updated;
+  }
+
+  deletePost(postId: string): void {
+    const post = this.getById('postsAnnonces', postId);
+    if (!post) throw new Error('Post not found');
+
+    const relaisEntries = this.getAll('localRelais').filter((r) => r.postId === postId);
+    for (const relais of relaisEntries) {
+      this.releaseCreneau(relais.creneauDepotId);
+      this.releaseCreneau(relais.creneauRetraitId);
+      this.remove('localRelais', relais.id);
+    }
+
+    if (!this.remove('postsAnnonces', postId)) {
+      throw new Error('Post not found');
+    }
+  }
+
+  createActeur(data: {
+    userId: string;
+    nomCommerce: string;
+    categorie: ActeurLocalCategory;
+    description: string;
+    adresse: string;
+    photos: string[];
+    offreVip: string | null;
+    pointsRequisVip: number;
+    activerFidelite?: boolean;
+  }): ActeurLocal {
+    const now = new Date().toISOString();
+    return this.create('acteursLocaux', {
+      id: `acteur-${Date.now()}`,
+      userId: data.userId,
+      nomCommerce: data.nomCommerce,
+      categorie: data.categorie,
+      description: data.description,
+      adresse: data.adresse,
+      photos: data.photos,
+      offreVip: data.offreVip,
+      pointsRequisVip: data.pointsRequisVip,
+      qrCodeVitrine: data.activerFidelite ? generateQrVitrineCode(data.nomCommerce) : null,
+      createdAt: now,
+      updatedAt: now,
+    });
+  }
+
+  generateQrVitrine(acteurId: string): ActeurLocal {
+    const acteur = this.getById('acteursLocaux', acteurId);
+    if (!acteur) throw new Error('Acteur not found');
+    if (acteur.qrCodeVitrine) return acteur;
+    const updated = this.update('acteursLocaux', acteurId, {
+      qrCodeVitrine: generateQrVitrineCode(acteur.nomCommerce),
+    });
+    if (!updated) throw new Error('Acteur not found');
+    return updated;
+  }
+
+  updateActeur(
+    acteurId: string,
+    patch: Partial<Omit<ActeurLocal, 'id' | 'createdAt' | 'qrCodeVitrine'>>,
+  ): ActeurLocal {
+    const updated = this.update('acteursLocaux', acteurId, patch);
+    if (!updated) throw new Error('Acteur not found');
+    return updated;
+  }
+
+  deleteActeur(acteurId: string): void {
+    if (!this.getById('acteursLocaux', acteurId)) throw new Error('Acteur not found');
+
+    this.data.cartesFideliteScans = this.data.cartesFideliteScans.filter(
+      (scan) => scan.commerceId !== acteurId,
+    );
+    this.persist();
+
+    if (!this.remove('acteursLocaux', acteurId)) {
+      throw new Error('Acteur not found');
+    }
+  }
+
+  createEvent(data: {
+    organisateurId: string;
+    titre: string;
+    description: string;
+    dateDebut: string;
+    dateFin: string;
+    image: string | null;
+    type: EventType;
+  }): AgendaEvenement {
+    const now = new Date().toISOString();
+    return this.create('agendaEvenements', {
+      id: `event-${Date.now()}`,
+      organisateurId: data.organisateurId,
+      titre: data.titre,
+      description: data.description,
+      dateDebut: data.dateDebut,
+      dateFin: data.dateFin,
+      image: data.image,
+      type: data.type,
+      createdAt: now,
+      updatedAt: now,
+    });
+  }
+
+  updateEvent(
+    eventId: string,
+    patch: Partial<Omit<AgendaEvenement, 'id' | 'createdAt'>>,
+  ): AgendaEvenement {
+    const updated = this.update('agendaEvenements', eventId, patch);
+    if (!updated) throw new Error('Event not found');
+    return updated;
+  }
+
+  deleteEvent(eventId: string): void {
+    if (!this.remove('agendaEvenements', eventId)) {
+      throw new Error('Event not found');
+    }
   }
 
   // ── Relais ──
@@ -138,6 +346,10 @@ class LocalDatabase {
     let creneaux = this.getAll('relaisCreneaux');
     if (type) creneaux = creneaux.filter((c) => c.type === type);
     return creneaux.filter(isCreneauAvailable);
+  }
+
+  getAllCreneaux(): RelaisCreneau[] {
+    return this.getAll('relaisCreneaux');
   }
 
   proposeDepotLocal(data: {
@@ -217,7 +429,7 @@ class LocalDatabase {
 
   scanFidelite(data: { userId: string; commerceId: string; qrCode: string }) {
     const acteur = this.getById('acteursLocaux', data.commerceId);
-    if (!acteur || acteur.qrCodeVitrine !== data.qrCode) {
+    if (!acteur?.qrCodeVitrine || acteur.qrCodeVitrine !== data.qrCode) {
       throw new Error('Invalid QR code for this merchant');
     }
 

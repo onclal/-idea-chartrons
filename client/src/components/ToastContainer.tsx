@@ -1,6 +1,6 @@
 import { useToast } from '../context/ToastContext';
 
-export function ToastContainer() {
+export function ToastContainer({ className = 'top-[5.5rem]' }: { className?: string }) {
   const { toasts, dismissToast } = useToast();
 
   if (toasts.length === 0) return null;
@@ -18,7 +18,7 @@ export function ToastContainer() {
   };
 
   return (
-    <div className="fixed top-[5.5rem] inset-x-0 z-[60] flex flex-col items-center gap-2 px-4 pointer-events-none">
+    <div className={`fixed ${className} inset-x-0 z-[60] flex flex-col items-center gap-2 px-4 pointer-events-none`}>
       {toasts.map((toast) => (
         <div
           key={toast.id}

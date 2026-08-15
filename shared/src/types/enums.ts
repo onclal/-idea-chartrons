@@ -37,8 +37,9 @@ export enum RelaisCreneauType {
 
 export enum ActeurLocalCategory {
   Commercant = 'Commerçant',
-  BrocanteurRueNotreDame = 'Brocanteur_Rue_Notre_Dame',
   Artisan = 'Artisan',
+  Brocanteur = 'Brocanteur',
+  SanteServices = 'Santé_Services_Proximité',
   Liberal = 'Libéral',
   Association = 'Association',
 }

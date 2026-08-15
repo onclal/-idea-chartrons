@@ -1,11 +1,14 @@
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { useSearch } from '../context/SearchContext';
+import { useAdmin } from '../context/AdminContext';
 import { CategoryTabs } from './CategoryTabs';
+import { Badge } from './ui';
 
 export function Header() {
   const { t, i18n } = useTranslation();
   const { query, setQuery } = useSearch();
+  const { isAdminMode } = useAdmin();
 
   const setLanguage = (lang: 'fr' | 'en') => {
     i18n.changeLanguage(lang);
@@ -22,7 +25,21 @@ export function Header() {
               </h1>
               <p className="text-[10px] text-white/65 truncate">{t('app.subtitle')}</p>
             </Link>
-            <div className="flex items-center gap-1 shrink-0 bg-white/10 rounded-xl p-0.5" role="group" aria-label={t('common.language')}>
+            <div className="flex items-center gap-2 shrink-0">
+              {isAdminMode && (
+                <>
+                  <Link
+                    to="/admin"
+                    className="touch-target hidden sm:inline-flex items-center px-3 py-1.5 rounded-xl bg-white/15 text-white text-xs font-semibold hover:bg-white/25 transition-colors"
+                  >
+                    {t('admin.openDashboard')}
+                  </Link>
+                  <Badge variant="brass" icon="🛡️" className="hidden sm:inline-flex">
+                    {t('admin.badge')}
+                  </Badge>
+                </>
+              )}
+              <div className="flex items-center gap-1 bg-white/10 rounded-xl p-0.5" role="group" aria-label={t('common.language')}>
               {(['fr', 'en'] as const).map((lang) => (
                 <button
                   key={lang}
@@ -36,6 +53,7 @@ export function Header() {
                   {lang.toUpperCase()}
                 </button>
               ))}
+              </div>
             </div>
           </div>
 

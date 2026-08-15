@@ -58,7 +58,7 @@ router.post('/scan', (req, res) => {
   }
 
   const acteur = store.getById('acteursLocaux', commerceId);
-  if (!acteur || acteur.qrCodeVitrine !== qrCode) {
+  if (!acteur?.qrCodeVitrine || acteur.qrCodeVitrine !== qrCode) {
     res.status(400).json({ error: 'Invalid QR code for this merchant' });
     return;
   }

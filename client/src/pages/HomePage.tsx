@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { EventType, getFideliteNiveau, UserRole } from '@idea-chartrons/shared';
 import type { AgendaEvenement, LocalRelais, PostAnnonce } from '@idea-chartrons/shared';
 import { Badge, Card, Loading } from '../components/ui';
+import { PageHelp } from '../components/PageHelp';
 import { PickupAlert } from '../components/PickupAlert';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../lib/api';
@@ -52,6 +53,7 @@ export function HomePage() {
     { to: '/relais', label: t('home.cta.relais'), icon: '📦', gradient: 'from-chartrons-olive to-chartrons-olive-light' },
     { to: '/acteurs', label: t('home.cta.acteurs'), icon: '🏪', gradient: 'from-chartrons-brass to-chartrons-brick-light' },
     { to: '/events', label: t('home.cta.events'), icon: '📅', gradient: 'from-chartrons-bordeaux-light to-chartrons-bordeaux' },
+    { to: '/faq', label: t('home.cta.faq'), icon: '❓', gradient: 'from-chartrons-olive-dark to-chartrons-olive' },
   ];
 
   return (
@@ -64,7 +66,10 @@ export function HomePage() {
         </div>
       )}
 
-      <section className="text-center py-2">
+      <section className="text-center py-2 relative">
+        <div className="absolute top-0 right-0">
+          <PageHelp page="home" />
+        </div>
         <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-br from-chartrons-beige to-chartrons-sand mb-4 shadow-card">
           <span className="text-4xl" aria-hidden>🏘️</span>
         </div>

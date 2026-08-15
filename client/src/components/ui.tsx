@@ -1,4 +1,4 @@
-import { ReactNode, type ButtonHTMLAttributes, type InputHTMLAttributes, type TextareaHTMLAttributes } from 'react';
+import { ReactNode, type ButtonHTMLAttributes, type InputHTMLAttributes, type SelectHTMLAttributes, type TextareaHTMLAttributes } from 'react';
 
 interface CardProps {
   children: ReactNode;
@@ -192,20 +192,52 @@ export function Textarea({ label, className = '', id, ...props }: TextareaProps)
   );
 }
 
+interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
+  label?: string;
+  options: { value: string; label: string }[];
+}
+
+export function Select({ label, className = '', id, options, ...props }: SelectProps) {
+  const selectId = id ?? label?.toLowerCase().replace(/\s+/g, '-');
+  return (
+    <div className="space-y-1.5">
+      {label && (
+        <label htmlFor={selectId} className="block text-xs font-semibold text-chartrons-warm-gray uppercase tracking-wide">
+          {label}
+        </label>
+      )}
+      <select
+        id={selectId}
+        className={`w-full px-4 py-3 rounded-xl border border-chartrons-beige bg-white text-base text-chartrons-olive-dark focus:outline-none focus:ring-2 focus:ring-chartrons-bordeaux/25 focus:border-chartrons-bordeaux/30 min-h-[48px] cursor-pointer ${className}`}
+        {...props}
+      >
+        {options.map((opt) => (
+          <option key={opt.value} value={opt.value}>
+            {opt.label}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
 interface ModalProps {
   open: boolean;
   onClose: () => void;
   title: string;
   children: ReactNode;
+  size?: 'md' | 'lg';
 }
 
-export function Modal({ open, onClose, title, children }: ModalProps) {
+export function Modal({ open, onClose, title, children, size = 'md' }: ModalProps) {
   if (!open) return null;
 
+  const width = size === 'lg' ? 'max-w-2xl' : 'max-w-lg';
+
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div className="absolute inset-0 bg-chartrons-olive-dark/50 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-lg max-h-[90dvh] overflow-y-auto bg-chartrons-stone rounded-t-3xl sm:rounded-3xl shadow-card-hover mx-auto animate-slide-down">
+      <div className={`relative w-full ${width} max-h-[92dvh] overflow-y-auto bg-chartrons-stone rounded-t-3xl sm:rounded-3xl shadow-card-hover mx-auto animate-slide-down`}>
         <div className="sticky top-0 bg-chartrons-stone/95 backdrop-blur-md px-5 py-4 border-b border-chartrons-beige flex items-center justify-between">
           <h3 className="text-lg font-bold text-chartrons-bordeaux">{title}</h3>
           <button

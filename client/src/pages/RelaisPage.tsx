@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { LocalRelais, PostAnnonce } from '@idea-chartrons/shared';
-import { Loading } from '../components/ui';
+import { Button, Loading } from '../components/ui';
+import { PageHelp } from '../components/PageHelp';
+import { ContactForm } from '../components/ContactForm';
 import { LocalRelaisCard } from '../components/LocalRelaisCard';
 import { PickupAlert } from '../components/PickupAlert';
 import { useAuth } from '../context/AuthContext';
@@ -16,6 +18,7 @@ export function RelaisPage() {
   const [posts, setPosts] = useState<PostAnnonce[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedQr, setSelectedQr] = useState<string | null>(null);
+  const [contactOpen, setContactOpen] = useState(false);
 
   const loadData = useCallback(() => {
     setLoading(true);
@@ -56,9 +59,12 @@ export function RelaisPage() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h2 className="text-xl font-bold text-chartrons-bordeaux">{t('relais.pageTitle')}</h2>
-        <p className="text-sm text-chartrons-warm-gray mt-1">{t('relais.pageDescription')}</p>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h2 className="text-xl font-bold text-chartrons-bordeaux">{t('relais.pageTitle')}</h2>
+          <p className="text-sm text-chartrons-warm-gray mt-1">{t('relais.pageDescription')}</p>
+        </div>
+        <PageHelp page="relais" />
       </div>
 
       <PickupAlert relaisList={relaisList} posts={posts} userId={currentUserId} />
@@ -82,6 +88,24 @@ export function RelaisPage() {
           <li>{t('relais.hoursSat')}</li>
         </ul>
       </div>
+
+      <div className="rounded-2xl border border-chartrons-beige bg-white/90 p-4 shadow-card">
+        <p className="text-sm font-semibold text-chartrons-olive-dark">{t('contact.relaisTitle')}</p>
+        <p className="text-sm text-chartrons-warm-gray mt-1 leading-relaxed">{t('contact.relaisHint')}</p>
+        <Button
+          variant="bordeaux"
+          className="w-full mt-3"
+          onClick={() => setContactOpen(true)}
+        >
+          {t('contact.association')}
+        </Button>
+      </div>
+
+      <ContactForm
+        open={contactOpen}
+        onClose={() => setContactOpen(false)}
+        context={t('relais.title')}
+      />
     </div>
   );
 }

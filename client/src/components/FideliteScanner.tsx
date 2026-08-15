@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { ActeurLocal } from '@idea-chartrons/shared';
-import { Badge, Button, Card } from './ui';
+import { hasQrVitrine, type ActeurLocal } from '@idea-chartrons/shared';
+import { Badge, Button, Card, Select } from './ui';
 import { api, type FideliteScanResult } from '../lib/api';
 
 interface FideliteScannerProps {
@@ -19,18 +19,25 @@ export function FideliteScanner({
 }: FideliteScannerProps) {
   const { t } = useTranslation();
   const [scanning, setScanning] = useState(false);
-  const [selectedActeur, setSelectedActeur] = useState<string | null>(null);
+  const [selectedActeur, setSelectedActeur] = useState('');
   const [result, setResult] = useState<FideliteScanResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [displayPoints, setDisplayPoints] = useState(userPoints);
+
+  const partenaires = useMemo(() => acteurs.filter(hasQrVitrine), [acteurs]);
 
   useEffect(() => {
     setDisplayPoints(userPoints);
   }, [userPoints]);
 
+  useEffect(() => {
+    if (selectedActeur && !partenaires.some((a) => a.id === selectedActeur)) {
+      setSelectedActeur('');
+    }
+  }, [partenaires, selectedActeur]);
+
   const simulateScan = async () => {
-    if (!selectedActeur) return;
-    const acteur = acteurs.find((a) => a.id === selectedActeur);
+    const acteur = partenaires.find((a) => a.id === selectedActeur);
     if (!acteur) return;
 
     setScanning(true);
@@ -105,28 +112,26 @@ export function FideliteScanner({
           )}
         </div>
 
-        <div className="space-y-2">
-          <p className="text-xs font-medium text-chartrons-warm-gray">{t('fidelite.selectMerchant')}</p>
-          <div className="flex flex-wrap gap-2">
-            {acteurs.map((acteur) => (
-              <button
-                key={acteur.id}
-                onClick={() => setSelectedActeur(acteur.id)}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                  selectedActeur === acteur.id
-                    ? 'bg-chartrons-green text-white border-chartrons-green'
-                    : 'bg-white text-chartrons-green-dark border-chartrons-gold/20'
-                }`}
-              >
-                {acteur.nomCommerce}
-              </button>
-            ))}
-          </div>
-        </div>
+        {partenaires.length === 0 ? (
+          <p className="text-xs text-chartrons-warm-gray text-center">{t('fidelite.noPartners')}</p>
+        ) : (
+          <Select
+            label={t('fidelite.selectMerchant')}
+            value={selectedActeur}
+            onChange={(e) => setSelectedActeur(e.target.value)}
+            options={[
+              { value: '', label: t('fidelite.selectMerchantPlaceholder') },
+              ...partenaires.map((acteur) => ({
+                value: acteur.id,
+                label: acteur.nomCommerce,
+              })),
+            ]}
+          />
+        )}
 
         <Button
           onClick={simulateScan}
-          disabled={!selectedActeur || scanning}
+          disabled={!selectedActeur || scanning || partenaires.length === 0}
           className="w-full"
           variant="gold"
         >

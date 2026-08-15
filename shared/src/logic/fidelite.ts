@@ -3,8 +3,9 @@ import type { ActeurLocal, CarteFideliteScan, User } from '../types/models.js';
 
 const BASE_POINTS: Record<ActeurLocalCategory, number> = {
   [ActeurLocalCategory.Commercant]: 5,
-  [ActeurLocalCategory.BrocanteurRueNotreDame]: 10,
   [ActeurLocalCategory.Artisan]: 8,
+  [ActeurLocalCategory.Brocanteur]: 10,
+  [ActeurLocalCategory.SanteServices]: 6,
   [ActeurLocalCategory.Liberal]: 6,
   [ActeurLocalCategory.Association]: 5,
 };
@@ -25,7 +26,7 @@ export function calculateScanPoints(
   user: User,
   previousScans: CarteFideliteScan[],
 ): PointsCalculation {
-  const base = BASE_POINTS[acteur.categorie];
+  const base = BASE_POINTS[acteur.categorie] ?? 5;
   const hasScannedToday = previousScans.some(
     (s) =>
       s.commerceId === acteur.id &&
@@ -63,6 +64,21 @@ export function getFideliteNiveau(points: number): FideliteNiveau {
   if (points >= 100) return FideliteNiveau.Or;
   if (points >= 50) return FideliteNiveau.Argent;
   return FideliteNiveau.Bronze;
+}
+
+export function hasQrVitrine(acteur: ActeurLocal): acteur is ActeurLocal & { qrCodeVitrine: string } {
+  return Boolean(acteur.qrCodeVitrine);
+}
+
+export function generateQrVitrineCode(nomCommerce: string): string {
+  const slug = nomCommerce
+    .toUpperCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^A-Z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 16);
+  return `QR-VITRINE-${slug || 'COMMERCE'}-${String(Date.now()).slice(-4)}`;
 }
 
 export function isVipUnlocked(userPoints: number, acteur: ActeurLocal): boolean {
