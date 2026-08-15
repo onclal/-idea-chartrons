@@ -176,6 +176,7 @@ const resources = {
         locateError: 'Localisation indisponible. Vérifiez l’autorisation du navigateur.',
         tapHint: 'Touchez une épingle pour voir le détail.',
         seeMore: 'Voir la fiche',
+        goThere: 'Y aller',
         layers: {
           commerce: 'Commerces',
           sante: 'Santé',
@@ -183,6 +184,14 @@ const resources = {
           relais: 'Local Relais',
           marche: 'Marchés',
           event: 'Événements',
+          favoris: 'Favoris',
+          parcours: 'Parcours',
+        },
+        itinerary: {
+          title: 'Parcours des favoris',
+          meta: '{{count}} arrêts · {{distance}} à pied',
+          needTwo: 'Enregistrez au moins deux lieux géolocalisés pour tracer un parcours.',
+          go: 'Y aller (parcours)',
         },
         pois: {
           relaisTitle: 'Local Relais IDÉA',
@@ -228,8 +237,17 @@ const resources = {
         removeLabel: 'Retirer {{name}} des favoris',
         openDrawer: 'Ouvrir mes favoris',
         seeMap: 'Voir sur la carte',
+        seeLayer: 'Calque favoris',
+        seeRoute: 'Voir le parcours',
         open: 'Ouvrir',
         goMap: 'Parcourir la carte',
+      },
+      share: {
+        button: 'Partager',
+        list: 'Partager la liste',
+        listIntro: 'Mes favoris IDÉA CHARTRONS',
+        copied: 'Lien copié dans le presse-papiers',
+        failed: 'Le partage n’est pas disponible sur cet appareil.',
       },
       fidelite: {
         title: 'Carte Fidélité',
@@ -592,10 +610,11 @@ const resources = {
         carte: {
           title: 'Carte interactive',
           purpose:
-            'La carte rassemble les commerces, la santé, le Local Relais, les marchés et les événements du quartier. Chaque épingle ouvre le détail du lieu.',
+            'La carte rassemble les commerces, la santé, le Local Relais, les marchés et les événements du quartier. Chaque épingle ouvre le détail du lieu. Le calque Favoris et le parcours relient vos lieux enregistrés.',
           steps: [
-            'Activez ou désactivez les calques (commerces, santé, tourisme, relais, marchés, événements).',
-            'Touchez une épingle pour lire l’adresse et ouvrir la fiche.',
+            'Activez ou désactivez les calques (commerces, santé, tourisme, relais, marchés, événements, favoris).',
+            'Touchez une épingle pour lire l’adresse, partager le lieu ou ouvrir « Y aller ».',
+            'Activez Parcours pour tracer un itinéraire à pied entre vos favoris.',
             'Utilisez « Me localiser » pour afficher votre position (autorisation du navigateur).',
           ],
         },
@@ -612,10 +631,11 @@ const resources = {
         favoris: {
           title: 'Favoris enregistrés',
           purpose:
-            'Les cœurs sur la carte et dans Tourisme enregistrent un lieu dans le navigateur. La liste reste disponible après un rechargement.',
+            'Les cœurs sur la carte et dans Tourisme enregistrent un lieu dans le navigateur. Vous pouvez afficher le calque Favoris, tracer un parcours et partager un lieu ou la liste.',
           steps: [
             'Ouvrez une fiche (carte ou tourisme) et touchez le cœur pour l’enregistrer.',
             'Retrouvez la liste dans l’onglet Favoris ou le tiroir de la carte.',
+            'Lancez le parcours pour relier les favoris sur la carte, ou partagez un lieu.',
             'Touchez à nouveau le cœur pour retirer un lieu.',
           ],
         },
@@ -859,6 +879,7 @@ const resources = {
         locateError: 'Location unavailable. Check the browser permission.',
         tapHint: 'Tap a pin to see details.',
         seeMore: 'Open listing',
+        goThere: 'Go there',
         layers: {
           commerce: 'Shops',
           sante: 'Health',
@@ -866,6 +887,14 @@ const resources = {
           relais: 'Local Hub',
           marche: 'Markets',
           event: 'Events',
+          favoris: 'Favorites',
+          parcours: 'Route',
+        },
+        itinerary: {
+          title: 'Favorites route',
+          meta: '{{count}} stops · {{distance}} on foot',
+          needTwo: 'Save at least two geolocated places to draw a route.',
+          go: 'Go (full route)',
         },
         pois: {
           relaisTitle: 'IDÉA Local Hub',
@@ -911,8 +940,17 @@ const resources = {
         removeLabel: 'Remove {{name}} from favorites',
         openDrawer: 'Open my favorites',
         seeMap: 'View on the map',
+        seeLayer: 'Favorites layer',
+        seeRoute: 'View the route',
         open: 'Open',
         goMap: 'Browse the map',
+      },
+      share: {
+        button: 'Share',
+        list: 'Share the list',
+        listIntro: 'My IDÉA CHARTRONS favorites',
+        copied: 'Link copied to the clipboard',
+        failed: 'Sharing is not available on this device.',
       },
       fidelite: {
         title: 'Loyalty Card',
@@ -1275,10 +1313,11 @@ const resources = {
         carte: {
           title: 'Interactive map',
           purpose:
-            'The map gathers shops, health services, the Local Hub, markets and events. Each pin opens the place details.',
+            'The map gathers shops, health services, the Local Hub, markets and events. Each pin opens the place details. The Favorites layer and the route connect your saved places.',
           steps: [
-            'Toggle layers (shops, health, tourism, hub, markets, events).',
-            'Tap a pin to read the address and open the listing.',
+            'Toggle layers (shops, health, tourism, hub, markets, events, favorites).',
+            'Tap a pin to read the address, share the place or open “Go there”.',
+            'Turn on Route to draw a walking itinerary between your favorites.',
             'Use “Find me” to show your position (browser permission required).',
           ],
         },
@@ -1295,10 +1334,11 @@ const resources = {
         favoris: {
           title: 'Saved favorites',
           purpose:
-            'Hearts on the map and in Tourism save a place in the browser. The list remains after a reload.',
+            'Hearts on the map and in Tourism save a place in the browser. You can show the Favorites layer, draw a route and share a place or the list.',
           steps: [
             'Open a card (map or tourism) and tap the heart to save it.',
             'Find the list in the Favorites tab or the map drawer.',
+            'Start the route to connect favorites on the map, or share a place.',
             'Tap the heart again to remove a place.',
           ],
         },

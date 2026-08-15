@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet';
+import { MapContainer, Marker, Polyline, Popup, TileLayer, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { CHARTRONS_MAP_CENTER } from '@idea-chartrons/shared';
@@ -26,15 +26,27 @@ const PIN_STYLE: Record<MapPinKind, { color: string; emoji: string }> = {
   event: { color: '#2D6650', emoji: '📅' },
 };
 
-function pinIcon(kind: MapPinKind, selected: boolean) {
+function pinIcon(
+  kind: MapPinKind,
+  selected: boolean,
+  options?: { stopNumber?: number; favorite?: boolean },
+) {
   const { color, emoji } = PIN_STYLE[kind];
   const size = selected ? 42 : 34;
+  const inner =
+    options?.stopNumber != null
+      ? `<span style="transform:rotate(45deg);font-size:${selected ? 15 : 13}px;font-weight:700;color:#fff;line-height:1">${options.stopNumber}</span>`
+      : `<span style="transform:rotate(45deg);font-size:${selected ? 16 : 13}px;line-height:1">${emoji}</span>`;
+  const heart =
+    options?.favorite && options.stopNumber == null
+      ? '<span style="position:absolute;top:-5px;right:-4px;transform:rotate(45deg);font-size:11px;line-height:1">♥</span>'
+      : '';
   return L.divIcon({
     className: 'chartrons-map-pin',
     iconSize: [size, size],
     iconAnchor: [size / 2, size],
     popupAnchor: [0, -size + 4],
-    html: `<div style="width:${size}px;height:${size}px;display:flex;align-items:center;justify-content:center;border-radius:${size / 2}px ${size / 2}px ${size / 2}px 6px;transform:rotate(-45deg);background:${color};border:2px solid #fff;box-shadow:0 2px 8px rgba(61,74,50,.35)"><span style="transform:rotate(45deg);font-size:${selected ? 16 : 13}px;line-height:1">${emoji}</span></div>`,
+    html: `<div style="position:relative;width:${size}px;height:${size}px;display:flex;align-items:center;justify-content:center;border-radius:${size / 2}px ${size / 2}px ${size / 2}px 6px;transform:rotate(-45deg);background:${color};border:2px solid #fff;box-shadow:0 2px 8px rgba(61,74,50,.35)">${inner}${heart}</div>`,
   });
 }
 
@@ -44,6 +56,18 @@ function FlyToSelection({ pin }: { pin: MapPin | null }) {
     if (!pin) return;
     map.flyTo([pin.latitude, pin.longitude], Math.max(map.getZoom(), 16), { duration: 0.6 });
   }, [map, pin]);
+  return null;
+}
+
+function FitRoute({ positions }: { positions: [number, number][] }) {
+  const map = useMap();
+  const key = positions.map((point) => point.join(',')).join(';');
+  useEffect(() => {
+    if (positions.length < 2) return;
+    map.fitBounds(positions, { padding: [36, 36], maxZoom: 16 });
+    // `key` captures the coordinates so we don't refit on a new array identity.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [map, key]);
   return null;
 }
 
@@ -100,6 +124,9 @@ interface NeighborhoodMapProps {
   locateToken: number;
   onLocated: (lat: number, lng: number) => void;
   onLocateError: () => void;
+  route?: [number, number][];
+  stopNumbers?: Record<string, number>;
+  favoriteIds?: string[];
 }
 
 export function NeighborhoodMap({
@@ -109,8 +136,12 @@ export function NeighborhoodMap({
   locateToken,
   onLocated,
   onLocateError,
+  route = [],
+  stopNumbers = {},
+  favoriteIds = [],
 }: NeighborhoodMapProps) {
   const selected = pins.find((pin) => pin.id === selectedId) ?? null;
+  const favoriteSet = new Set(favoriteIds);
 
   return (
     <MapContainer
@@ -124,13 +155,23 @@ export function NeighborhoodMap({
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
+      {route.length >= 2 && <FitRoute positions={route} />}
       <FlyToSelection pin={selected} />
+      {route.length >= 2 && (
+        <Polyline
+          positions={route}
+          pathOptions={{ color: '#C4A35A', weight: 4, opacity: 0.9, lineJoin: 'round' }}
+        />
+      )}
       <LocateUser active={locateToken} onLocated={onLocated} onError={onLocateError} />
       {pins.map((pin) => (
         <Marker
           key={pin.id}
           position={[pin.latitude, pin.longitude]}
-          icon={pinIcon(pin.kind, pin.id === selectedId)}
+          icon={pinIcon(pin.kind, pin.id === selectedId, {
+            stopNumber: stopNumbers[pin.id],
+            favorite: favoriteSet.has(pin.id),
+          })}
           eventHandlers={{ click: () => onSelect(pin.id) }}
         >
           <Popup>

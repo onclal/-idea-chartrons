@@ -5,6 +5,9 @@ import { ActeurLocalCategory, LOCAL_RELAIS_ADDRESS, STATIC_MAP_POIS, type Acteur
 import { Badge, Button, Card, EmptyState, Loading } from '../components/ui';
 import { PageHelp } from '../components/PageHelp';
 import { FavoriteButton } from '../components/FavoriteButton';
+import { DirectionsButton } from '../components/DirectionsButton';
+import { ShareButton } from '../components/ShareButton';
+import { appUrl, placeShareText } from '../lib/share';
 import { api } from '../lib/api';
 
 export function TourismePage() {
@@ -53,11 +56,18 @@ export function TourismePage() {
 
       <Card className="!p-4 bg-gradient-to-br from-chartrons-beige/70 to-white">
         <p className="text-sm text-chartrons-olive-dark leading-relaxed">{t('tourisme.intro')}</p>
-        <Link to="/carte" className="mt-3 inline-flex">
-          <Button size="sm" variant="bordeaux">
-            {t('tourisme.openMap')}
-          </Button>
-        </Link>
+        <div className="flex flex-wrap gap-2 mt-3">
+          <Link to="/carte">
+            <Button size="sm" variant="bordeaux">
+              {t('tourisme.openMap')}
+            </Button>
+          </Link>
+          <Link to="/carte?favoris=1">
+            <Button size="sm" variant="secondary">
+              {t('favorites.seeLayer')}
+            </Button>
+          </Link>
+        </div>
       </Card>
 
       <section className="space-y-3">
@@ -87,9 +97,21 @@ export function TourismePage() {
             )}
           </div>
           <p className="text-sm text-chartrons-warm-gray mt-2">{t('tourisme.consignes.relais')}</p>
-          <Link to="/relais" className="mt-3 inline-flex text-sm font-semibold text-chartrons-bordeaux">
-            {t('tourisme.consignes.relaisCta')} →
-          </Link>
+          <div className="flex flex-wrap gap-2 mt-3">
+            {relaisPoi && (
+              <DirectionsButton latitude={relaisPoi.latitude} longitude={relaisPoi.longitude} />
+            )}
+            <ShareButton
+              title={t('map.pois.relaisTitle')}
+              text={placeShareText({ title: t('map.pois.relaisTitle'), adresse: LOCAL_RELAIS_ADDRESS })}
+              url={appUrl('/carte?pin=poi-relais')}
+            />
+            <Link to="/relais" className="flex-1">
+              <Button type="button" size="sm" variant="secondary" className="w-full">
+                {t('tourisme.consignes.relaisCta')}
+              </Button>
+            </Link>
+          </div>
         </Card>
       </section>
 
@@ -129,6 +151,16 @@ export function TourismePage() {
                 </div>
                 <p className="text-sm text-chartrons-warm-gray mt-2">{acteur.description}</p>
                 <p className="text-xs text-chartrons-warm-gray mt-2">📍 {acteur.adresse}</p>
+                <div className="flex flex-wrap gap-2 mt-3">
+                  {acteur.latitude != null && acteur.longitude != null && (
+                    <DirectionsButton latitude={acteur.latitude} longitude={acteur.longitude} />
+                  )}
+                  <ShareButton
+                    title={acteur.nomCommerce}
+                    text={placeShareText({ title: acteur.nomCommerce, adresse: acteur.adresse })}
+                    url={appUrl(`/carte?pin=${encodeURIComponent(acteur.id)}`)}
+                  />
+                </div>
               </div>
             </Card>
           ))
@@ -164,6 +196,19 @@ export function TourismePage() {
                     longitude: event.longitude,
                     href: '/events',
                   }}
+                />
+              </div>
+              <div className="flex flex-wrap gap-2 mt-3">
+                {event.latitude != null && event.longitude != null && (
+                  <DirectionsButton latitude={event.latitude} longitude={event.longitude} />
+                )}
+                <ShareButton
+                  title={event.titre}
+                  text={placeShareText({
+                    title: event.titre,
+                    adresse: event.lieu ?? event.description,
+                  })}
+                  url={appUrl(`/carte?pin=${encodeURIComponent(event.id)}`)}
                 />
               </div>
             </Card>

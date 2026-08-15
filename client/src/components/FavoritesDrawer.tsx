@@ -1,7 +1,11 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { hasCoordinates } from '@idea-chartrons/shared';
 import { Badge, Button, EmptyState, Modal } from './ui';
+import { DirectionsButton } from './DirectionsButton';
+import { ShareButton } from './ShareButton';
 import { useFavorites } from '../context/FavoritesContext';
+import { appUrl, placeShareText } from '../lib/share';
 
 interface FavoritesDrawerProps {
   open: boolean;
@@ -17,7 +21,15 @@ export function FavoritesDrawer({ open, onClose }: FavoritesDrawerProps) {
       {favorites.length === 0 ? (
         <EmptyState icon="♡" title={t('favorites.emptyTitle')} message={t('favorites.emptyHint')} />
       ) : (
-        <ul className="space-y-3">
+        <>
+          {favorites.filter(hasCoordinates).length >= 2 && (
+            <Link to="/carte?parcours=1" onClick={onClose} className="mb-3 block">
+              <Button type="button" size="sm" variant="bordeaux" className="w-full">
+                {t('favorites.seeRoute')}
+              </Button>
+            </Link>
+          )}
+          <ul className="space-y-3">
           {favorites.map((place) => (
             <li key={place.id} className="rounded-2xl border border-chartrons-beige bg-white p-3">
               <div className="flex items-start justify-between gap-2">
@@ -37,14 +49,22 @@ export function FavoritesDrawer({ open, onClose }: FavoritesDrawerProps) {
                   ♥
                 </button>
               </div>
-              <div className="flex gap-2 mt-3">
+              <div className="flex flex-wrap gap-2 mt-3">
                 {place.latitude != null && place.longitude != null && (
-                  <Link to={`/carte?pin=${encodeURIComponent(place.id)}`} onClick={onClose} className="flex-1">
-                    <Button type="button" size="sm" variant="bordeaux" className="w-full">
-                      {t('favorites.seeMap')}
-                    </Button>
-                  </Link>
+                  <>
+                    <Link to={`/carte?pin=${encodeURIComponent(place.id)}`} onClick={onClose} className="flex-1">
+                      <Button type="button" size="sm" variant="secondary" className="w-full">
+                        {t('favorites.seeMap')}
+                      </Button>
+                    </Link>
+                    <DirectionsButton latitude={place.latitude} longitude={place.longitude} />
+                  </>
                 )}
+                <ShareButton
+                  title={place.title}
+                  text={placeShareText(place)}
+                  url={appUrl(`/carte?pin=${encodeURIComponent(place.id)}`)}
+                />
                 <Link to={place.href} onClick={onClose} className="flex-1">
                   <Button type="button" size="sm" variant="secondary" className="w-full">
                     {t('favorites.open')}
@@ -53,7 +73,8 @@ export function FavoritesDrawer({ open, onClose }: FavoritesDrawerProps) {
               </div>
             </li>
           ))}
-        </ul>
+          </ul>
+        </>
       )}
     </Modal>
   );
