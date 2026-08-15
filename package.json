@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "description": "Plateforme hyper-locale pour le quartier des Chartrons à Bordeaux",
+  "homepage": "https://onclal.github.io/-idea-chartrons/",
   "workspaces": [
     "client",
     "server",
@@ -15,10 +16,12 @@
     "build": "npm run build --workspace=shared && npm run build --workspace=server && npm run build --workspace=client",
     "build:client": "npm run build --workspace=shared && npm run build --workspace=client",
     "preview": "npm run preview --workspace=client",
-    "start": "npm run start --workspace=server"
+    "start": "npm run start --workspace=server",
+    "deploy": "npm run build:client && gh-pages -d client/dist -t -b gh-pages"
   },
   "devDependencies": {
-    "concurrently": "^9.1.2"
+    "concurrently": "^9.1.2",
+    "gh-pages": "^6.3.0"
   },
   "engines": {
     "node": ">=18"
