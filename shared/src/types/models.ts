@@ -65,6 +65,8 @@ export interface ActeurLocal {
   categorie: ActeurLocalCategory;
   description: string;
   adresse: string;
+  latitude: number | null;
+  longitude: number | null;
   photos: string[];
   offreVip: string | null;
   pointsRequisVip: number;
@@ -82,6 +84,9 @@ export interface AgendaEvenement {
   dateFin: string;
   image: string | null;
   type: EventType;
+  lieu: string | null;
+  latitude: number | null;
+  longitude: number | null;
   createdAt: string;
   updatedAt: string;
 }

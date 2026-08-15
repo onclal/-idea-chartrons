@@ -1,6 +1,7 @@
 import {
   ActeurLocalCategory,
   calculateScanPoints,
+  CHARTRONS_MAP_CENTER,
   createSeedData,
   generateQrVitrineCode,
   getFideliteNiveau,
@@ -41,7 +42,7 @@ class LocalDatabase {
     try {
       const raw = localStorage.getItem(DB_STORAGE_KEY);
       if (raw) {
-        return this.migrateActeurs(JSON.parse(raw) as DatabaseSchema);
+        return this.migrateSchema(JSON.parse(raw) as DatabaseSchema);
       }
     } catch {
       // corrupted storage — fall back to seed
@@ -51,28 +52,63 @@ class LocalDatabase {
     return seed;
   }
 
-  private migrateActeurs(data: DatabaseSchema): DatabaseSchema {
+  private migrateSchema(data: DatabaseSchema): DatabaseSchema {
     let changed = false;
+    const seed = createSeedData();
+
     const acteursLocaux = (data.acteursLocaux ?? []).map((acteur) => {
       const nextCategory = LEGACY_ACTEUR_CATEGORIES[acteur.categorie] ?? acteur.categorie;
       const nextQr = acteur.qrCodeVitrine || null;
-      if (nextCategory !== acteur.categorie || nextQr !== acteur.qrCodeVitrine) {
+      const seedMatch = seed.acteursLocaux.find((item) => item.id === acteur.id);
+      const nextLat = acteur.latitude ?? seedMatch?.latitude ?? null;
+      const nextLng = acteur.longitude ?? seedMatch?.longitude ?? null;
+      if (
+        nextCategory !== acteur.categorie ||
+        nextQr !== acteur.qrCodeVitrine ||
+        nextLat !== acteur.latitude ||
+        nextLng !== acteur.longitude
+      ) {
         changed = true;
       }
-      return { ...acteur, categorie: nextCategory, qrCodeVitrine: nextQr };
+      return {
+        ...acteur,
+        categorie: nextCategory,
+        qrCodeVitrine: nextQr,
+        latitude: nextLat,
+        longitude: nextLng,
+      };
     });
 
-    const knownIds = new Set(acteursLocaux.map((acteur) => acteur.id));
-    for (const seedActeur of createSeedData().acteursLocaux) {
-      if (!knownIds.has(seedActeur.id)) {
+    const knownActeurIds = new Set(acteursLocaux.map((acteur) => acteur.id));
+    for (const seedActeur of seed.acteursLocaux) {
+      if (!knownActeurIds.has(seedActeur.id)) {
         acteursLocaux.push(seedActeur);
         changed = true;
       }
     }
 
-    const migrated = changed ? { ...data, acteursLocaux } : data;
+    const agendaEvenements = (data.agendaEvenements ?? []).map((event) => {
+      const seedMatch = seed.agendaEvenements.find((item) => item.id === event.id);
+      const nextLieu = event.lieu ?? seedMatch?.lieu ?? null;
+      const nextLat = event.latitude ?? seedMatch?.latitude ?? null;
+      const nextLng = event.longitude ?? seedMatch?.longitude ?? null;
+      if (nextLieu !== event.lieu || nextLat !== event.latitude || nextLng !== event.longitude) {
+        changed = true;
+      }
+      return { ...event, lieu: nextLieu, latitude: nextLat, longitude: nextLng };
+    });
+
+    const knownEventIds = new Set(agendaEvenements.map((event) => event.id));
+    for (const seedEvent of seed.agendaEvenements) {
+      if (!knownEventIds.has(seedEvent.id)) {
+        agendaEvenements.push(seedEvent);
+        changed = true;
+      }
+    }
+
+    const migrated = { ...data, acteursLocaux, agendaEvenements };
     if (changed) this.persist(migrated);
-    return migrated;
+    return changed ? migrated : data;
   }
 
   private persist(data: DatabaseSchema = this.data): void {
@@ -242,6 +278,8 @@ class LocalDatabase {
     offreVip: string | null;
     pointsRequisVip: number;
     activerFidelite?: boolean;
+    latitude?: number | null;
+    longitude?: number | null;
   }): ActeurLocal {
     const now = new Date().toISOString();
     return this.create('acteursLocaux', {
@@ -255,6 +293,8 @@ class LocalDatabase {
       offreVip: data.offreVip,
       pointsRequisVip: data.pointsRequisVip,
       qrCodeVitrine: data.activerFidelite ? generateQrVitrineCode(data.nomCommerce) : null,
+      latitude: data.latitude ?? CHARTRONS_MAP_CENTER.latitude,
+      longitude: data.longitude ?? CHARTRONS_MAP_CENTER.longitude,
       createdAt: now,
       updatedAt: now,
     });
@@ -301,6 +341,9 @@ class LocalDatabase {
     dateFin: string;
     image: string | null;
     type: EventType;
+    lieu?: string | null;
+    latitude?: number | null;
+    longitude?: number | null;
   }): AgendaEvenement {
     const now = new Date().toISOString();
     return this.create('agendaEvenements', {
@@ -312,6 +355,9 @@ class LocalDatabase {
       dateFin: data.dateFin,
       image: data.image,
       type: data.type,
+      lieu: data.lieu ?? null,
+      latitude: data.latitude ?? CHARTRONS_MAP_CENTER.latitude,
+      longitude: data.longitude ?? CHARTRONS_MAP_CENTER.longitude,
       createdAt: now,
       updatedAt: now,
     });

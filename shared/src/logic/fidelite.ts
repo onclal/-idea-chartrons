@@ -6,6 +6,7 @@ const BASE_POINTS: Record<ActeurLocalCategory, number> = {
   [ActeurLocalCategory.Artisan]: 8,
   [ActeurLocalCategory.Brocanteur]: 10,
   [ActeurLocalCategory.SanteServices]: 6,
+  [ActeurLocalCategory.TourismeConciergerie]: 5,
   [ActeurLocalCategory.Liberal]: 6,
   [ActeurLocalCategory.Association]: 5,
 };

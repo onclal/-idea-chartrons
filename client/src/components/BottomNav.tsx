@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 const navItems = [
   { path: '/', icon: '🏠', key: 'home' },
   { path: '/posts', icon: '📋', key: 'posts' },
+  { path: '/carte', icon: '🗺️', key: 'carte' },
   { path: '/relais', icon: '📦', key: 'relais' },
   { path: '/acteurs', icon: '🏪', key: 'acteurs' },
   { path: '/profile', icon: '👤', key: 'profile' },

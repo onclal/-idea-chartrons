@@ -5,6 +5,8 @@ const categories = [
   { path: '/posts', key: 'posts' },
   { path: '/relais', key: 'relais' },
   { path: '/acteurs', key: 'acteurs' },
+  { path: '/carte', key: 'carte' },
+  { path: '/tourisme', key: 'tourisme' },
   { path: '/events', key: 'events' },
   { path: '/faq', key: 'faq' },
 ] as const;

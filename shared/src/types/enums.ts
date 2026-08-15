@@ -40,6 +40,7 @@ export enum ActeurLocalCategory {
   Artisan = 'Artisan',
   Brocanteur = 'Brocanteur',
   SanteServices = 'Santé_Services_Proximité',
+  TourismeConciergerie = 'Tourisme_Conciergeries',
   Liberal = 'Libéral',
   Association = 'Association',
 }

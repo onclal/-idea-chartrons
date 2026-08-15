@@ -9,6 +9,8 @@ import { HomePage } from './pages/HomePage';
 import { PostsPage } from './pages/PostsPage';
 import { RelaisPage } from './pages/RelaisPage';
 import { ActeursPage } from './pages/ActeursPage';
+import { MapPage } from './pages/MapPage';
+import { TourismePage } from './pages/TourismePage';
 import { EventsPage } from './pages/EventsPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { CgvPage } from './pages/CgvPage';
@@ -40,8 +42,10 @@ export function App() {
                   <Route path="/" element={<HomePage />} />
                   <Route path="/posts" element={<PostsPage />} />
                   <Route path="/relais" element={<RelaisPage />} />
-                  <Route path="/acteurs" element={<ActeursPage />} />
-                  <Route path="/events" element={<EventsPage />} />
+                <Route path="/acteurs" element={<ActeursPage />} />
+                <Route path="/carte" element={<MapPage />} />
+                <Route path="/tourisme" element={<TourismePage />} />
+                <Route path="/events" element={<EventsPage />} />
                   <Route path="/profile" element={<ProfilePage />} />
                   <Route path="/cgv" element={<CgvPage />} />
                   <Route path="/faq" element={<FaqPage />} />

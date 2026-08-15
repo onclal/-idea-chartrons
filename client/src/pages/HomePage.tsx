@@ -51,7 +51,9 @@ export function HomePage() {
   const ctaLinks = [
     { to: '/posts', label: t('home.cta.posts'), icon: '📋', gradient: 'from-chartrons-bordeaux to-chartrons-brick' },
     { to: '/relais', label: t('home.cta.relais'), icon: '📦', gradient: 'from-chartrons-olive to-chartrons-olive-light' },
+    { to: '/carte', label: t('home.cta.carte'), icon: '🗺️', gradient: 'from-chartrons-olive to-chartrons-olive-light' },
     { to: '/acteurs', label: t('home.cta.acteurs'), icon: '🏪', gradient: 'from-chartrons-brass to-chartrons-brick-light' },
+    { to: '/tourisme', label: t('home.cta.tourisme'), icon: '🧳', gradient: 'from-chartrons-brass to-chartrons-olive' },
     { to: '/events', label: t('home.cta.events'), icon: '📅', gradient: 'from-chartrons-bordeaux-light to-chartrons-bordeaux' },
     { to: '/faq', label: t('home.cta.faq'), icon: '❓', gradient: 'from-chartrons-olive-dark to-chartrons-olive' },
   ];

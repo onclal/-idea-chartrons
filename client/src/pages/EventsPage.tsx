@@ -173,6 +173,9 @@ export function EventsPage() {
                     <Badge variant="brocante" icon="🎪" className="mb-2">{t('badges.brocante')}</Badge>
                   )}
                   <p className="text-sm text-chartrons-warm-gray mb-2 leading-relaxed">{event.description}</p>
+                  {event.lieu && (
+                    <p className="text-xs text-chartrons-warm-gray mb-2">📍 {event.lieu}</p>
+                  )}
                   <p className="text-xs font-semibold text-chartrons-bordeaux mb-3">
                     🕐 {formatDate(event.dateDebut, i18n.language)}
                     {event.dateFin !== event.dateDebut && (
