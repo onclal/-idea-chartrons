@@ -3,6 +3,7 @@ import {
   calculateAwardPoints,
   calculateScanPoints,
   CHARTRONS_MAP_CENTER,
+  computeTourDeControle,
   createSeedData,
   createUpcomingMarcheChartronsEvents,
   defaultRegleForCategory,
@@ -77,6 +78,7 @@ function compactSchema(data: DatabaseSchema, aggressive = false): DatabaseSchema
       })
       .map((event) => (aggressive ? { ...event, image: null } : event)),
     cartesFideliteScans: (data.cartesFideliteScans ?? []).slice(-80),
+    privilegeConsommations: (data.privilegeConsommations ?? []).slice(-80),
     localRelais: aggressive
       ? (data.localRelais ?? []).filter(
           (relais) => relais.statutRetrait !== LocalRelaisRetraitStatus.Recupere,
@@ -222,6 +224,16 @@ class LocalDatabase {
       changed = true;
     }
 
+    const privilegeConsommations = [...(data.privilegeConsommations ?? [])];
+    const knownPrivilegeIds = new Set(privilegeConsommations.map((item) => item.id));
+    for (const seedPrivilege of seed.privilegeConsommations) {
+      if (!knownPrivilegeIds.has(seedPrivilege.id)) {
+        privilegeConsommations.push(seedPrivilege);
+        knownPrivilegeIds.add(seedPrivilege.id);
+        changed = true;
+      }
+    }
+
     const migrated = {
       ...data,
       users,
@@ -230,6 +242,7 @@ class LocalDatabase {
       postsAnnonces,
       relaisCreneaux,
       localRelais,
+      privilegeConsommations,
     };
     if (changed) this.persist(migrated);
     return changed ? migrated : { ...data, relaisCreneaux };
@@ -556,6 +569,9 @@ class LocalDatabase {
 
     this.data.cartesFideliteScans = this.data.cartesFideliteScans.filter(
       (scan) => scan.commerceId !== acteurId,
+    );
+    this.data.privilegeConsommations = (this.data.privilegeConsommations ?? []).filter(
+      (item) => item.commerceId !== acteurId,
     );
     this.persist();
 
@@ -885,6 +901,17 @@ class LocalDatabase {
         ...scan,
         clientNom: users.find((user) => user.id === scan.userId)?.nom ?? 'Client',
       }));
+  }
+
+  getTourDeControle() {
+    return computeTourDeControle({
+      users: this.getAll('users'),
+      posts: this.getAll('postsAnnonces'),
+      relais: this.getAll('localRelais'),
+      acteurs: this.getAll('acteursLocaux'),
+      scans: this.getAll('cartesFideliteScans'),
+      consommations: this.getAll('privilegeConsommations') ?? [],
+    });
   }
 }
 

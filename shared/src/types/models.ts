@@ -105,6 +105,14 @@ export interface CarteFideliteScan {
   date: string;
 }
 
+export interface PrivilegeConsommation {
+  id: string;
+  userId: string;
+  commerceId: string;
+  offreVip: string;
+  date: string;
+}
+
 export interface DatabaseSchema {
   users: User[];
   postsAnnonces: PostAnnonce[];
@@ -113,4 +121,5 @@ export interface DatabaseSchema {
   acteursLocaux: ActeurLocal[];
   agendaEvenements: AgendaEvenement[];
   cartesFideliteScans: CarteFideliteScan[];
+  privilegeConsommations: PrivilegeConsommation[];
 }

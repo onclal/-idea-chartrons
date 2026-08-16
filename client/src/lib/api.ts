@@ -151,6 +151,7 @@ export const api = {
     withDelay(() => localDb.getCommerceFideliteHistory(commerceId)),
   getVipStatus: (userId: string) => withDelay(() => localDb.getVipStatus(userId)),
   getFidelite: () => withDelay(() => localDb.getAll('cartesFideliteScans')),
+  getTourDeControle: () => withDelay(() => localDb.getTourDeControle()),
   sendContact: (data: { name: string; email: string; message: string; context: string }) =>
     withDelay(() => saveContactMessage(data)),
   getContactMessages: () => withDelay((): ContactMessage[] => loadContactMessages()),

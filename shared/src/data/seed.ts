@@ -524,6 +524,29 @@ export function createSeedData(): DatabaseSchema {
         date: new Date(Date.now() - 86400000).toISOString(),
       },
     ],
+    privilegeConsommations: [
+      {
+        id: 'privilege-1',
+        userId: 'user-1',
+        commerceId: 'acteur-2',
+        offreVip: 'Café offert',
+        date: new Date(Date.now() - 2 * 86400000).toISOString(),
+      },
+      {
+        id: 'privilege-2',
+        userId: 'user-1',
+        commerceId: 'acteur-1',
+        offreVip: '-10% sur votre prochain achat',
+        date: new Date(Date.now() - 86400000).toISOString(),
+      },
+      {
+        id: 'privilege-3',
+        userId: 'user-2',
+        commerceId: 'acteur-2',
+        offreVip: 'Café offert',
+        date: new Date(Date.now() - 5 * 3600000).toISOString(),
+      },
+    ],
   };
 
   return {

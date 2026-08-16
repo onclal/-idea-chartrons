@@ -2,5 +2,6 @@ export * from './types/enums.js';
 export * from './types/models.js';
 export * from './logic/relais.js';
 export * from './logic/fidelite.js';
+export * from './logic/tourDeControle.js';
 export * from './data/seed.js';
 export * from './data/mapPois.js';

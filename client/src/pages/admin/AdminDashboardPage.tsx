@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import type { AgendaEvenement, LocalRelais, PostAnnonce, User } from '@idea-chartrons/shared';
+import type { AgendaEvenement, LocalRelais, PostAnnonce, TourDeControleStats } from '@idea-chartrons/shared';
 import { AdminPageHeader } from '../../components/admin/AdminPageHeader';
 import { Badge, Button, Card, Loading } from '../../components/ui';
 import { useToast } from '../../context/ToastContext';
@@ -22,33 +22,27 @@ export function AdminDashboardPage() {
   const { showToast } = useToast();
   const [loading, setLoading] = useState(true);
   const [resetting, setResetting] = useState(false);
-  const [users, setUsers] = useState<User[]>([]);
   const [posts, setPosts] = useState<PostAnnonce[]>([]);
-  const [acteursCount, setActeursCount] = useState(0);
   const [events, setEvents] = useState<AgendaEvenement[]>([]);
   const [relais, setRelais] = useState<LocalRelais[]>([]);
-  const [scansCount, setScansCount] = useState(0);
   const [messages, setMessages] = useState<ContactMessage[]>([]);
+  const [stats, setStats] = useState<TourDeControleStats | null>(null);
 
   const load = () => {
     setLoading(true);
     Promise.all([
-      api.getUsers(),
       api.getPosts(),
-      api.getActeurs(),
       api.getEvents(),
       api.getRelais(),
-      api.getFidelite(),
       api.getContactMessages(),
+      api.getTourDeControle(),
     ])
-      .then(([usersData, postsData, acteurs, eventsData, relaisData, scans, inbox]) => {
-        setUsers(usersData);
+      .then(([postsData, eventsData, relaisData, inbox, tour]) => {
         setPosts(postsData);
-        setActeursCount(acteurs.length);
         setEvents(eventsData);
         setRelais(relaisData);
-        setScansCount(scans.length);
         setMessages(inbox);
+        setStats(tour);
       })
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -70,7 +64,7 @@ export function AdminDashboardPage() {
     }
   };
 
-  if (loading) return <Loading message={t('common.loading')} />;
+  if (loading || !stats) return <Loading message={t('common.loading')} />;
 
   const pendingRelais = relais.filter((r) => r.statutRetrait !== 'Récupéré');
   const upcomingEvents = [...events]
@@ -81,13 +75,45 @@ export function AdminDashboardPage() {
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 4);
 
-  const kpis = [
-    { value: users.length, label: t('adminSpace.dashboard.kpis.users'), color: 'text-chartrons-bordeaux' },
-    { value: posts.length, label: t('adminSpace.dashboard.kpis.posts'), color: 'text-chartrons-olive' },
-    { value: acteursCount, label: t('adminSpace.dashboard.kpis.acteurs'), color: 'text-chartrons-brick' },
-    { value: events.length, label: t('adminSpace.dashboard.kpis.events'), color: 'text-chartrons-brass' },
-    { value: pendingRelais.length, label: t('adminSpace.dashboard.kpis.relais'), color: 'text-chartrons-bordeaux' },
-    { value: scansCount, label: t('adminSpace.dashboard.kpis.scans'), color: 'text-chartrons-olive' },
+  const maxCommercePoints = Math.max(1, ...stats.commercesActifs.map((item) => item.points));
+  const heroKpis = [
+    {
+      icon: '⭐',
+      value: stats.pointsDistribues,
+      label: t('adminSpace.dashboard.kpis.points'),
+      hint: t('adminSpace.dashboard.kpis.pointsHint', {
+        credits: stats.creditsEnregistres,
+        viaCredits: stats.pointsViaCredits,
+      }),
+      accent: 'text-chartrons-brass',
+    },
+    {
+      icon: '🎁',
+      value: `${stats.privilegesDebloques} / ${stats.privilegesConsommes}`,
+      label: t('adminSpace.dashboard.kpis.privileges'),
+      hint: t('adminSpace.dashboard.kpis.privilegesHint', {
+        unlocked: stats.privilegesDebloques,
+        consumed: stats.privilegesConsommes,
+      }),
+      accent: 'text-chartrons-bordeaux',
+    },
+    {
+      icon: '🏪',
+      value: stats.commercesActifs.length,
+      label: t('adminSpace.dashboard.kpis.ranking'),
+      hint: t('adminSpace.dashboard.kpis.rankingHint', { count: stats.commercesActifs.length }),
+      accent: 'text-chartrons-olive',
+    },
+    {
+      icon: '📦',
+      value: `${stats.annonces} / ${stats.relaisTotal}`,
+      label: t('adminSpace.dashboard.kpis.sharing'),
+      hint: t('adminSpace.dashboard.kpis.sharingHint', {
+        posts: stats.annonces,
+        relais: stats.relaisTotal,
+      }),
+      accent: 'text-chartrons-brick',
+    },
   ];
 
   return (
@@ -97,15 +123,113 @@ export function AdminDashboardPage() {
         subtitle={t('adminSpace.dashboard.welcomeSub')}
       />
 
-      <section className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 lg:gap-4">
-        {kpis.map((kpi) => (
-          <Card key={kpi.label} className="text-center !p-4 lg:!p-5">
-            <p className={`text-2xl lg:text-3xl font-bold ${kpi.color}`}>{kpi.value}</p>
-            <p className="text-[10px] lg:text-xs text-chartrons-warm-gray mt-1 font-medium uppercase tracking-wide leading-tight">
-              {kpi.label}
-            </p>
+      <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 lg:gap-4">
+        {heroKpis.map((kpi) => (
+          <Card key={kpi.label} className="!p-4 lg:!p-5 bg-chartrons-beige/35 border-chartrons-beige">
+            <div className="flex items-start gap-3">
+              <div className="w-11 h-11 rounded-2xl bg-white border border-chartrons-beige flex items-center justify-center text-xl shrink-0 shadow-sm">
+                <span aria-hidden>{kpi.icon}</span>
+              </div>
+              <div className="min-w-0">
+                <p className={`text-2xl lg:text-3xl font-bold leading-none ${kpi.accent}`}>{kpi.value}</p>
+                <p className="text-xs font-semibold text-chartrons-olive-dark mt-1.5 uppercase tracking-wide">
+                  {kpi.label}
+                </p>
+                <p className="text-[11px] text-chartrons-warm-gray mt-1 leading-snug">{kpi.hint}</p>
+              </div>
+            </div>
           </Card>
         ))}
+      </section>
+
+      <section className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6">
+        <Card className="!p-4 lg:!p-5">
+          <h2 className="font-semibold text-chartrons-bordeaux">{t('adminSpace.dashboard.privilegesTitle')}</h2>
+          <p className="text-xs text-chartrons-warm-gray mt-1 mb-4">{t('adminSpace.dashboard.privilegesSub')}</p>
+          {stats.privilegeOffres.length === 0 ? (
+            <p className="text-sm text-chartrons-warm-gray">{t('adminSpace.dashboard.empty')}</p>
+          ) : (
+            <ul className="space-y-3">
+              {stats.privilegeOffres.map((offer) => (
+                <li
+                  key={offer.commerceId}
+                  className="rounded-xl border border-chartrons-beige bg-chartrons-stone/50 p-3"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-chartrons-olive-dark truncate">{offer.offreVip}</p>
+                      <p className="text-xs text-chartrons-warm-gray truncate">{offer.commerceNom}</p>
+                    </div>
+                    <div className="flex gap-1.5 shrink-0">
+                      <Badge variant="olive">{offer.debloques} {t('adminSpace.dashboard.unlocked')}</Badge>
+                      <Badge variant="brass">{offer.consommes} {t('adminSpace.dashboard.consumed')}</Badge>
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+
+        <Card className="!p-4 lg:!p-5">
+          <h2 className="font-semibold text-chartrons-bordeaux">{t('adminSpace.dashboard.rankingTitle')}</h2>
+          <p className="text-xs text-chartrons-warm-gray mt-1 mb-4">{t('adminSpace.dashboard.rankingSub')}</p>
+          {stats.commercesActifs.length === 0 ? (
+            <p className="text-sm text-chartrons-warm-gray">{t('adminSpace.dashboard.rankingEmpty')}</p>
+          ) : (
+            <ol className="space-y-3">
+              {stats.commercesActifs.map((commerce, index) => (
+                <li key={commerce.commerceId}>
+                  <div className="flex items-center justify-between gap-3 mb-1.5">
+                    <p className="text-sm font-medium text-chartrons-olive-dark truncate">
+                      <span className="text-chartrons-brass font-bold mr-2">{index + 1}.</span>
+                      {commerce.commerceNom}
+                    </p>
+                    <p className="text-xs font-semibold text-chartrons-olive-dark whitespace-nowrap">
+                      {t('adminSpace.dashboard.rankingPoints', { points: commerce.points })}
+                    </p>
+                  </div>
+                  <div className="h-2 rounded-full bg-chartrons-beige overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-chartrons-olive"
+                      style={{ width: `${Math.round((commerce.points / maxCommercePoints) * 100)}%` }}
+                    />
+                  </div>
+                  <p className="text-[11px] text-chartrons-warm-gray mt-1">
+                    {t('adminSpace.dashboard.rankingCredits', { count: commerce.credits })}
+                  </p>
+                </li>
+              ))}
+            </ol>
+          )}
+        </Card>
+      </section>
+
+      <section className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <Card className="text-center !p-4">
+          <p className="text-2xl font-bold text-chartrons-olive">{stats.annonces}</p>
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-chartrons-warm-gray mt-1">
+            {t('adminSpace.dashboard.sharingPosts')}
+          </p>
+        </Card>
+        <Card className="text-center !p-4">
+          <p className="text-2xl font-bold text-chartrons-bordeaux">{stats.relaisTotal}</p>
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-chartrons-warm-gray mt-1">
+            {t('adminSpace.dashboard.sharingRelais')}
+          </p>
+        </Card>
+        <Card className="text-center !p-4">
+          <p className="text-2xl font-bold text-chartrons-brass">{stats.relaisEnCours}</p>
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-chartrons-warm-gray mt-1">
+            {t('adminSpace.dashboard.sharingPending')}
+          </p>
+        </Card>
+        <Card className="text-center !p-4">
+          <p className="text-2xl font-bold text-chartrons-olive-dark">{stats.relaisRecuperes}</p>
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-chartrons-warm-gray mt-1">
+            {t('adminSpace.dashboard.sharingDone')}
+          </p>
+        </Card>
       </section>
 
       <section>
