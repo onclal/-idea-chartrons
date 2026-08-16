@@ -1,1 +1,25 @@
-if(!self.define){let e,s={};const i=(i,n)=>(i=new URL(i+".js",n).href,s[i]||new Promise(s=>{if("document"in self){const e=document.createElement("script");e.src=i,e.onload=s,document.head.appendChild(e)}else e=i,importScripts(i),s()}).then(()=>{let e=s[i];if(!e)throw new Error(`Module ${i} didn’t register its module`);return e}));self.define=(n,r)=>{const a=e||("document"in self?document.currentScript.src:"")||location.href;if(s[a])return;let o={};const c=e=>i(e,a),t={module:{uri:a},exports:o,require:c};s[a]=Promise.all(n.map(e=>t[e]||c(e))).then(e=>(r(...e),o))}}define(["./workbox-e7476de2"],function(e){"use strict";e.setCacheNameDetails({prefix:"idea-chartrons-v2"}),self.skipWaiting(),e.clientsClaim(),e.precacheAndRoute([{url:"pwa-512x512.png",revision:"34ec8c637dea7bba9a35b0bcea2db1a7"},{url:"pwa-192x192.png",revision:"1914a5aa5ccb6327ef97b0be6dc96f0b"},{url:"manifest.webmanifest",revision:"9d49d8e2ab1097b6801b3bb42f781fec"},{url:"index.html",revision:"9644f827ed08bf622af639332c8d09d7"},{url:"favicon.svg",revision:"05e4c9a7cd147bc0cf918223bbd02bf6"},{url:"contact.html",revision:"87949c5f324e7ebc438093b491456406"},{url:"assets/workbox-window.prod.es5-BBnX5xw4.js",revision:null},{url:"assets/virtual_pwa-register-lfvG7Zei.js",revision:null},{url:"assets/index-B_Wrl65U.css",revision:null},{url:"assets/index-BEYyAHzC.js",revision:null},{url:"assets/NeighborhoodMap-dT_FUqp-.js",revision:null},{url:"assets/NeighborhoodMap-CIGW-MKW.css",revision:null},{url:"favicon.svg",revision:"05e4c9a7cd147bc0cf918223bbd02bf6"},{url:"pwa-192x192.png",revision:"1914a5aa5ccb6327ef97b0be6dc96f0b"},{url:"pwa-512x512.png",revision:"34ec8c637dea7bba9a35b0bcea2db1a7"},{url:"manifest.webmanifest",revision:"9d49d8e2ab1097b6801b3bb42f781fec"}],{}),e.cleanupOutdatedCaches(),e.registerRoute(new e.NavigationRoute(e.createHandlerBoundToURL("/-idea-chartrons/index.html"))),e.registerRoute(/^https?:\/\/localhost:3001\/api\/.*/i,new e.NetworkFirst({cacheName:"api-cache",plugins:[new e.ExpirationPlugin({maxEntries:50,maxAgeSeconds:300})]}),"GET"),e.registerRoute(/^https:\/\/[a-z]+\.tile\.openstreetmap\.org\/.*/i,new e.CacheFirst({cacheName:"osm-tiles",plugins:[new e.ExpirationPlugin({maxEntries:220,maxAgeSeconds:1209600})]}),"GET")});
+
+self.addEventListener('install', (e) => {
+  self.skipWaiting();
+});
+self.addEventListener('activate', (e) => {
+  self.registration.unregister()
+    .then(() => self.clients.matchAll())
+    .then((clients) => {
+      clients.forEach((client) => {
+        if (client instanceof WindowClient)
+          client.navigate(client.url);
+      });
+      return Promise.resolve();
+    })
+    .then(() => {
+      self.caches.keys().then((cacheNames) => {
+        Promise.all(
+          cacheNames.map((cacheName) => {
+            return self.caches.delete(cacheName);
+          }),
+        );
+      })
+    });
+});
+    
