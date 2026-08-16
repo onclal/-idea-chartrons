@@ -1,6 +1,7 @@
 import type {
   ActeurLocal,
   ActeurLocalCategory,
+  CommerceMenuSection,
   AgendaEvenement,
   CarteFideliteScan,
   EventType,
@@ -16,6 +17,7 @@ import type {
   UserRole,
 } from '@idea-chartrons/shared';
 import { localDb, withDelay, resetLocalDb } from './localDb';
+import { getMenus, updateMenus, upsertAppointmentLink } from './gbp';
 import { loadContactMessages, saveContactMessage, type ContactMessage } from './contact';
 
 export interface FideliteScanResult {
@@ -93,12 +95,18 @@ export const api = {
     pointsRequisVip: number;
     activerFidelite?: boolean;
     telephone?: string | null;
+    appointmentUrl?: string | null;
   }) => withDelay(() => localDb.createActeur(data)),
   generateQrVitrine: (acteurId: string) => withDelay(() => localDb.generateQrVitrine(acteurId)),
   updateActeur: (
     acteurId: string,
     patch: Partial<Omit<ActeurLocal, 'id' | 'createdAt' | 'qrCodeVitrine'>>,
   ) => withDelay(() => localDb.updateActeur(acteurId, patch)),
+  getActeurMenu: (acteurId: string) => withDelay(() => getMenus(acteurId)),
+  updateActeurMenu: (acteurId: string, menu: CommerceMenuSection[]) =>
+    withDelay(() => updateMenus(acteurId, menu)),
+  updateAppointmentLink: (acteurId: string, url: string | null) =>
+    withDelay(() => upsertAppointmentLink(acteurId, url)),
   deleteActeur: (acteurId: string) => withDelay(() => {
     localDb.deleteActeur(acteurId);
     return { ok: true };

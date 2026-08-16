@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActeurLocalCategory, DIRECTORY_CATEGORIES } from '@idea-chartrons/shared';
+import { ActeurLocalCategory, DIRECTORY_CATEGORIES, isServiceCategory } from '@idea-chartrons/shared';
 import { Button, Input, Modal, Select, Textarea } from './ui';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -20,6 +20,7 @@ export function ActeurCreateForm({ open, onClose, onCreated }: ActeurCreateFormP
   const [description, setDescription] = useState('');
   const [adresse, setAdresse] = useState('');
   const [telephone, setTelephone] = useState('');
+  const [appointmentUrl, setAppointmentUrl] = useState('');
   const [categorie, setCategorie] = useState<ActeurLocalCategory>(ActeurLocalCategory.CommercesArtisanat);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [activerFidelite, setActiverFidelite] = useState(false);
@@ -31,6 +32,7 @@ export function ActeurCreateForm({ open, onClose, onCreated }: ActeurCreateFormP
     setDescription('');
     setAdresse('');
     setTelephone('');
+    setAppointmentUrl('');
     setCategorie(ActeurLocalCategory.CommercesArtisanat);
     setPhotoPreview(null);
     setActiverFidelite(false);
@@ -57,6 +59,7 @@ export function ActeurCreateForm({ open, onClose, onCreated }: ActeurCreateFormP
         description: description.trim(),
         adresse: adresse.trim(),
         telephone: telephone.trim() || null,
+        appointmentUrl: isServiceCategory(categorie) ? appointmentUrl.trim() || null : null,
         photos: photoPreview ? [photoPreview] : [],
         offreVip: null,
         pointsRequisVip: 0,
@@ -120,6 +123,16 @@ export function ActeurCreateForm({ open, onClose, onCreated }: ActeurCreateFormP
           onChange={(e) => setTelephone(e.target.value)}
           placeholder={t('common.phonePlaceholder')}
         />
+
+        {isServiceCategory(categorie) && (
+          <Input
+            type="url"
+            label={t('proSpace.appointment.url')}
+            value={appointmentUrl}
+            onChange={(e) => setAppointmentUrl(e.target.value)}
+            placeholder={t('proSpace.appointment.placeholder')}
+          />
+        )}
 
         <div className="space-y-2">
           <label className="block text-xs font-semibold text-chartrons-warm-gray uppercase tracking-wide">

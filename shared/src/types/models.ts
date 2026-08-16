@@ -75,6 +75,19 @@ export interface LocalRelais {
   updatedAt: string;
 }
 
+export interface CommerceMenuItem {
+  id: string;
+  nom: string;
+  description: string;
+  prix: number;
+}
+
+export interface CommerceMenuSection {
+  id: string;
+  titre: string;
+  items: CommerceMenuItem[];
+}
+
 export interface ActeurLocal {
   id: string;
   userId: string;
@@ -91,6 +104,8 @@ export interface ActeurLocal {
   qrCodeVitrine: string | null;
   regleFideliteMode: FideliteRegleMode;
   regleFideliteValeur: number;
+  menu: CommerceMenuSection[] | null;
+  appointmentUrl: string | null;
   createdAt: string;
   updatedAt: string;
 }

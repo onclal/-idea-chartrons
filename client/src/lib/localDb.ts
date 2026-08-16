@@ -155,6 +155,8 @@ class LocalDatabase {
       const nextLat = acteur.latitude ?? seedMatch?.latitude ?? null;
       const nextLng = acteur.longitude ?? seedMatch?.longitude ?? null;
       const nextTel = acteur.telephone ?? seedMatch?.telephone ?? null;
+      const nextMenu = acteur.menu ?? seedMatch?.menu ?? null;
+      const nextAppointment = acteur.appointmentUrl ?? seedMatch?.appointmentUrl ?? null;
       const fallbackRule = seedMatch
         ? { mode: seedMatch.regleFideliteMode, valeur: seedMatch.regleFideliteValeur }
         : defaultRegleForCategory(nextCategory as ActeurLocalCategory);
@@ -166,6 +168,8 @@ class LocalDatabase {
         nextLat !== acteur.latitude ||
         nextLng !== acteur.longitude ||
         nextTel !== acteur.telephone ||
+        nextMenu !== acteur.menu ||
+        nextAppointment !== acteur.appointmentUrl ||
         nextMode !== acteur.regleFideliteMode ||
         nextValeur !== acteur.regleFideliteValeur
       ) {
@@ -178,6 +182,8 @@ class LocalDatabase {
         latitude: nextLat,
         longitude: nextLng,
         telephone: nextTel,
+        menu: nextMenu,
+        appointmentUrl: nextAppointment,
         regleFideliteMode: nextMode,
         regleFideliteValeur: nextValeur,
       };
@@ -552,6 +558,8 @@ class LocalDatabase {
     latitude?: number | null;
     longitude?: number | null;
     telephone?: string | null;
+    menu?: ActeurLocal['menu'];
+    appointmentUrl?: string | null;
   }): ActeurLocal {
     const now = new Date().toISOString();
     const rule = defaultRegleForCategory(data.categorie);
@@ -571,6 +579,8 @@ class LocalDatabase {
       longitude: data.longitude ?? CHARTRONS_MAP_CENTER.longitude,
       regleFideliteMode: rule.mode,
       regleFideliteValeur: rule.valeur,
+      menu: data.menu ?? null,
+      appointmentUrl: data.appointmentUrl?.trim() || null,
       createdAt: now,
       updatedAt: now,
     });

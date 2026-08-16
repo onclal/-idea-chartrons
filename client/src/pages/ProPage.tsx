@@ -8,12 +8,17 @@ import {
   generateQrClientCode,
   getActeurFideliteRegle,
   UserRole,
+  isRestaurantCategory,
+  isServiceCategory,
   type ActeurLocal,
+  type CommerceMenuSection,
   type PostAnnonce,
   type User,
 } from '@idea-chartrons/shared';
 import { Badge, Button, Card, EmptyState, Input, Loading, Modal, Select } from '../components/ui';
 import { PageHelp } from '../components/PageHelp';
+import { AppointmentLinkEditor } from '../components/AppointmentLinkEditor';
+import { RestaurantMenuEditor } from '../components/RestaurantMenuEditor';
 import { useAdmin } from '../context/AdminContext';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -47,6 +52,9 @@ export function ProPage() {
   const [awardResult, setAwardResult] = useState<FideliteAwardResult | null>(null);
   const [awardError, setAwardError] = useState<string | null>(null);
   const [history, setHistory] = useState<FideliteCommerceHistoryEntry[]>([]);
+  const [proTab, setProTab] = useState<'fidelite' | 'menu' | 'rdv'>('fidelite');
+  const [savingMenu, setSavingMenu] = useState(false);
+  const [savingAppointment, setSavingAppointment] = useState(false);
 
   const canAccess = isMerchant || isAdminMode;
   const isDemoOrAdmin =
@@ -62,6 +70,12 @@ export function ProPage() {
   const selectedShop = showShopSelector
     ? (myShops.find((acteur) => acteur.id === selectedId) ?? myShops[0] ?? null)
     : (myShops[0] ?? null);
+  const restaurantShop = selectedShop && isRestaurantCategory(selectedShop.categorie)
+    ? selectedShop
+    : (!showShopSelector ? (myShops.find((shop) => isRestaurantCategory(shop.categorie)) ?? null) : null);
+  const serviceShop = selectedShop && isServiceCategory(selectedShop.categorie)
+    ? selectedShop
+    : (!showShopSelector ? (myShops.find((shop) => isServiceCategory(shop.categorie)) ?? null) : null);
 
   const load = () => {
     setLoading(true);
@@ -95,6 +109,11 @@ export function ProPage() {
     if (!selectedId && myShops[0]) setSelectedId(myShops[0].id);
   }, [myShops, selectedId]);
 
+  useEffect(() => {
+    if (proTab === 'menu' && !restaurantShop) setProTab('fidelite');
+    if (proTab === 'rdv' && !serviceShop) setProTab('fidelite');
+  }, [proTab, restaurantShop, serviceShop]);
+
   const parsedValue = Number(ruleValue.replace(',', '.'));
   const liveRule = {
     mode: ruleMode,
@@ -119,6 +138,35 @@ export function ProPage() {
       setBoosting(false);
       showToast(t('toast.boostRequested'));
     }, 500);
+  };
+
+  const handleSaveMenu = async (menu: CommerceMenuSection[]) => {
+    if (!restaurantShop) return;
+    setSavingMenu(true);
+    try {
+      const updated = await api.updateActeurMenu(restaurantShop.id, menu);
+      setActeurs((list) => list.map((item) => (item.id === updated.id ? updated : item)));
+      showToast(t('toast.menuSaved'));
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : t('common.error'), 'error');
+    } finally {
+      setSavingMenu(false);
+    }
+  };
+
+  const handleSaveAppointment = async (url: string) => {
+    if (!serviceShop) return;
+    setSavingAppointment(true);
+    try {
+      const updated = await api.updateAppointmentLink(serviceShop.id, url);
+      setActeurs((list) => list.map((item) => (item.id === updated.id ? updated : item)));
+      showToast(t('toast.appointmentSaved'));
+    } catch (err) {
+      const message = err instanceof Error ? err.message : t('common.error');
+      showToast(message === 'INVALID_APPOINTMENT_URL' ? t('proSpace.appointment.invalid') : message, 'error');
+    } finally {
+      setSavingAppointment(false);
+    }
   };
 
   const handleSaveRule = async () => {
@@ -285,6 +333,70 @@ export function ProPage() {
         />
       )}
 
+      {(restaurantShop || serviceShop) && (
+        <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1" role="tablist">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={proTab === 'fidelite'}
+            onClick={() => setProTab('fidelite')}
+            className={`shrink-0 touch-target px-3.5 py-2.5 rounded-full text-xs font-semibold border ${
+              proTab === 'fidelite'
+                ? 'bg-chartrons-bordeaux text-white border-chartrons-bordeaux'
+                : 'bg-white text-chartrons-olive-dark border-chartrons-beige'
+            }`}
+          >
+            {t('proSpace.tabs.fidelite')}
+          </button>
+          {restaurantShop && (
+            <button
+              type="button"
+              role="tab"
+              aria-selected={proTab === 'menu'}
+              onClick={() => setProTab('menu')}
+              className={`shrink-0 touch-target px-3.5 py-2.5 rounded-full text-xs font-semibold border ${
+                proTab === 'menu'
+                  ? 'bg-chartrons-bordeaux text-white border-chartrons-bordeaux'
+                  : 'bg-white text-chartrons-olive-dark border-chartrons-beige'
+              }`}
+            >
+              {t('proSpace.tabs.menu')}
+            </button>
+          )}
+          {serviceShop && (
+            <button
+              type="button"
+              role="tab"
+              aria-selected={proTab === 'rdv'}
+              onClick={() => setProTab('rdv')}
+              className={`shrink-0 touch-target px-3.5 py-2.5 rounded-full text-xs font-semibold border ${
+                proTab === 'rdv'
+                  ? 'bg-chartrons-bordeaux text-white border-chartrons-bordeaux'
+                  : 'bg-white text-chartrons-olive-dark border-chartrons-beige'
+              }`}
+            >
+              {t('proSpace.tabs.rdv')}
+            </button>
+          )}
+        </div>
+      )}
+
+      {proTab === 'menu' && restaurantShop && (
+        <Card>
+          <p className="text-xs text-chartrons-warm-gray mb-3">{restaurantShop.nomCommerce}</p>
+          <RestaurantMenuEditor acteur={restaurantShop} saving={savingMenu} onSave={handleSaveMenu} />
+        </Card>
+      )}
+
+      {proTab === 'rdv' && serviceShop && (
+        <Card>
+          <p className="text-xs text-chartrons-warm-gray mb-3">{serviceShop.nomCommerce}</p>
+          <AppointmentLinkEditor acteur={serviceShop} saving={savingAppointment} onSave={handleSaveAppointment} />
+        </Card>
+      )}
+
+      {proTab === 'fidelite' && (
+      <>
       <Card>
         <h3 className="font-bold text-chartrons-green-dark">{t('proSpace.rule.title')}</h3>
         <p className="text-xs text-chartrons-warm-gray mt-1 leading-relaxed">{t('proSpace.rule.subtitle')}</p>
@@ -506,6 +618,8 @@ export function ProPage() {
           </div>
         )}
       </Card>
+      </>
+      )}
 
       <Modal open={offerOpen} onClose={() => setOfferOpen(false)} title={t('proSpace.offer.modalTitle')}>
         <div className="space-y-4">

@@ -1,10 +1,21 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ActeurLocalCategory, DIRECTORY_CATEGORIES, hasQrVitrine, type ActeurLocal, type User } from '@idea-chartrons/shared';
+import {
+  ActeurLocalCategory,
+  DIRECTORY_CATEGORIES,
+  hasQrVitrine,
+  isRestaurantCategory,
+  isServiceCategory,
+  type ActeurLocal,
+  type User,
+} from '@idea-chartrons/shared';
 import { Badge, Button, Card, EmptyState, Loading, Select } from '../components/ui';
 import { PageHelp } from '../components/PageHelp';
 import { PhoneLink } from '../components/PhoneLink';
+import { AppointmentButton } from '../components/AppointmentButton';
+import { RestaurantMenu } from '../components/RestaurantMenu';
+import { ContactForm } from '../components/ContactForm';
 import { ActeurCreateForm } from '../components/ActeurCreateForm';
 import { AdminDeleteButton } from '../components/AdminDeleteButton';
 import { FideliteScanner } from '../components/FideliteScanner';
@@ -32,6 +43,7 @@ export function ActeursPage() {
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('all');
   const [showCreate, setShowCreate] = useState(false);
   const [generatingQrId, setGeneratingQrId] = useState<string | null>(null);
+  const [contactContext, setContactContext] = useState<string | null>(null);
 
   const loadActeurs = () => {
     setLoading(true);
@@ -234,6 +246,25 @@ export function ActeursPage() {
                   <div className="mt-2">
                     <PhoneLink phone={acteur.telephone} />
                   </div>
+                  <div className="mt-2 space-y-2" onClick={(event) => event.stopPropagation()}>
+                    {isServiceCategory(acteur.categorie) && <AppointmentButton acteur={acteur} />}
+                    <Button
+                      variant="ghost"
+                      size="md"
+                      className="w-full border border-chartrons-beige"
+                      onClick={() =>
+                        setContactContext(t('contact.shopContext', { name: acteur.nomCommerce }))
+                      }
+                    >
+                      {t('contact.askQuestion')}
+                    </Button>
+                  </div>
+
+                  {isRestaurantCategory(acteur.categorie) && (
+                    <div className="mt-3" onClick={(event) => event.stopPropagation()}>
+                      <RestaurantMenu acteur={acteur} />
+                    </div>
+                  )}
 
                   <VipOfferCard acteur={acteur} userPoints={user?.pointsFidelite ?? 0} />
 
@@ -299,6 +330,12 @@ export function ActeursPage() {
         open={showCreate}
         onClose={() => setShowCreate(false)}
         onCreated={loadActeurs}
+      />
+
+      <ContactForm
+        open={!!contactContext}
+        onClose={() => setContactContext(null)}
+        context={contactContext ?? undefined}
       />
     </div>
   );

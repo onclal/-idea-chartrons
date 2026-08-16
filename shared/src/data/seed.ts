@@ -6,6 +6,7 @@ import {
   normalizeRelaisCreneauType,
   normalizeRelaisSettings,
 } from '../logic/relais.js';
+import { createCafeMarcheMenu } from '../logic/commerce.js';
 import {
   defaultRegleForCategory,
   generateQrClientCode,
@@ -482,6 +483,23 @@ export function createSeedData(): DatabaseSchema {
         createdAt: now,
         updatedAt: now,
       },
+      {
+        id: 'acteur-10',
+        userId: 'user-2',
+        nomCommerce: 'Atelier Coiffure des Chartrons',
+        categorie: ActeurLocalCategory.SanteSoinsServices,
+        description: 'Salon de coiffure et soins : coupes, couleur, barbe. Accueil sur rendez-vous en semaine.',
+        adresse: '7 Rue Notre-Dame, 33000 Bordeaux',
+        telephone: '05 56 48 12 10',
+        photos: ['https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400&h=300&fit=crop'],
+        offreVip: 'Shampoing offert',
+        pointsRequisVip: 50,
+        qrCodeVitrine: 'QR-VITRINE-COIFFURE-010',
+        latitude: 44.85125,
+        longitude: -0.57055,
+        createdAt: now,
+        updatedAt: now,
+      },
     ],
     agendaEvenements: [
       ...createUpcomingMarcheChartronsEvents('user-1', now),
@@ -590,6 +608,13 @@ export function createSeedData(): DatabaseSchema {
         ...acteur,
         regleFideliteMode: rule.mode,
         regleFideliteValeur: rule.valeur,
+        menu: acteur.id === 'acteur-2' ? createCafeMarcheMenu() : null,
+        appointmentUrl:
+          acteur.id === 'acteur-5'
+            ? 'https://www.doctolib.fr/'
+            : acteur.id === 'acteur-10'
+              ? 'https://www.planity.com/'
+              : null,
       };
     }),
     relaisCreneaux: syncRelaisCreneauxWindow(
