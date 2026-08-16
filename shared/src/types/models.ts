@@ -38,6 +38,19 @@ export interface PostAnnonce {
   updatedAt: string;
 }
 
+export interface RelaisHorairesPlage {
+  heureDebut: string;
+  heureFin: string;
+}
+
+export interface RelaisSettings {
+  id: string;
+  openingDays: number[];
+  plages: RelaisHorairesPlage[];
+  defaultCapacite: number;
+  updatedAt?: string;
+}
+
 export interface RelaisCreneau {
   id: string;
   date: string;
@@ -46,6 +59,7 @@ export interface RelaisCreneau {
   type: RelaisCreneauType;
   capacite: number;
   reserves: number;
+  blocked?: boolean;
 }
 
 export interface LocalRelais {
@@ -118,6 +132,7 @@ export interface DatabaseSchema {
   postsAnnonces: PostAnnonce[];
   localRelais: LocalRelais[];
   relaisCreneaux: RelaisCreneau[];
+  relaisSettings: RelaisSettings[];
   acteursLocaux: ActeurLocal[];
   agendaEvenements: AgendaEvenement[];
   cartesFideliteScans: CarteFideliteScan[];

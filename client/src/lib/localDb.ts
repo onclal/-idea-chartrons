@@ -14,8 +14,9 @@ import {
   getFideliteNiveau,
   getCreneauReserves,
   getNextStatus,
-  isCreneauAvailable,
+  isCreneauBookable,
   isVipUnlocked,
+  normalizeRelaisSettings,
   LocalRelaisRetraitStatus,
   normalizeRelaisCreneauType,
   PostStatus,
@@ -32,6 +33,7 @@ import {
   type PreferredLanguage,
   type LocalRelais,
   type RelaisCreneau,
+  type RelaisSettings,
   type User,
   type UserRole,
 } from '@idea-chartrons/shared';
@@ -85,6 +87,19 @@ function compactSchema(data: DatabaseSchema, aggressive = false): DatabaseSchema
         )
       : (data.localRelais ?? []),
   };
+}
+
+function resolveRelaisSettings(data: DatabaseSchema): RelaisSettings {
+  return normalizeRelaisSettings(data.relaisSettings?.[0]);
+}
+
+function syncSlots(data: DatabaseSchema, from = new Date()): RelaisCreneau[] {
+  return syncRelaisCreneauxWindow(
+    data.relaisCreneaux ?? [],
+    data.localRelais ?? [],
+    from,
+    resolveRelaisSettings(data),
+  );
 }
 
 function todayLocalYmd(): string {
@@ -228,7 +243,14 @@ class LocalDatabase {
     if (prunedEvents.length !== agendaEvenements.length) changed = true;
 
     const localRelais = data.localRelais ?? [];
-    const relaisCreneaux = syncRelaisCreneauxWindow(data.relaisCreneaux ?? [], localRelais);
+    const relaisSettings = [resolveRelaisSettings(data)];
+    if (!data.relaisSettings?.[0]) changed = true;
+    const relaisCreneaux = syncRelaisCreneauxWindow(
+      data.relaisCreneaux ?? [],
+      localRelais,
+      new Date(),
+      relaisSettings[0],
+    );
     if (JSON.stringify(relaisCreneaux) !== JSON.stringify(data.relaisCreneaux ?? [])) {
       changed = true;
     }
@@ -250,6 +272,7 @@ class LocalDatabase {
       agendaEvenements: prunedEvents,
       postsAnnonces,
       relaisCreneaux,
+      relaisSettings,
       localRelais,
       privilegeConsommations,
     };
@@ -274,7 +297,7 @@ class LocalDatabase {
       next = compactSchema(next, serialized.length > 2_400_000);
       next = {
         ...next,
-        relaisCreneaux: syncRelaisCreneauxWindow(next.relaisCreneaux, next.localRelais),
+        relaisCreneaux: syncSlots(next),
       };
     }
 
@@ -289,7 +312,7 @@ class LocalDatabase {
     let compacted = compactSchema(next, false);
     compacted = {
       ...compacted,
-      relaisCreneaux: syncRelaisCreneauxWindow(compacted.relaisCreneaux, compacted.localRelais),
+      relaisCreneaux: syncSlots(compacted),
     };
     try {
       localStorage.removeItem(DB_STORAGE_KEY);
@@ -303,7 +326,7 @@ class LocalDatabase {
     compacted = compactSchema(compacted, true);
     compacted = {
       ...compacted,
-      relaisCreneaux: syncRelaisCreneauxWindow(compacted.relaisCreneaux, compacted.localRelais),
+      relaisCreneaux: syncSlots(compacted),
     };
     try {
       localStorage.removeItem(DB_STORAGE_KEY);
@@ -337,8 +360,8 @@ class LocalDatabase {
   }
 
   private refreshCreneaux(): RelaisCreneau[] {
-    const next = syncRelaisCreneauxWindow(this.data.relaisCreneaux, this.data.localRelais);
-    this.data = { ...this.data, relaisCreneaux: next };
+    const next = syncSlots(this.data);
+    this.data = { ...this.data, relaisSettings: [resolveRelaisSettings(this.data)], relaisCreneaux: next };
     return next;
   }
 
@@ -644,14 +667,36 @@ class LocalDatabase {
     return this.getAll('localRelais').filter((r) => r.userId === userId);
   }
 
+  getRelaisSettings(): RelaisSettings {
+    return resolveRelaisSettings(this.data);
+  }
+
+  updateRelaisSettings(patch: Partial<Omit<RelaisSettings, 'id'>>): RelaisSettings {
+    const next = normalizeRelaisSettings({ ...this.getRelaisSettings(), ...patch });
+    this.data = { ...this.data, relaisSettings: [next] };
+    this.refreshCreneaux();
+    this.persist();
+    return this.getRelaisSettings();
+  }
+
+  setCreneauBlocked(creneauId: string, blocked: boolean): RelaisCreneau {
+    this.refreshCreneaux();
+    const creneau = this.getById('relaisCreneaux', creneauId);
+    if (!creneau) throw new Error('Slot not found');
+    const updated = this.update('relaisCreneaux', creneauId, { blocked });
+    if (!updated) throw new Error('Slot not found');
+    return updated;
+  }
+
   getCreneaux(type?: RelaisCreneauType): RelaisCreneau[] {
     this.refreshCreneaux();
     const today = todayLocalYmd();
+    const settings = this.getRelaisSettings();
     const expected = type ? normalizeRelaisCreneauType(type) : null;
     return this.getAll('relaisCreneaux').filter((creneau) => {
       const slotType = normalizeRelaisCreneauType(creneau.type);
       const matchesType = expected == null || slotType === expected;
-      return matchesType && creneau.date >= today && isCreneauAvailable(creneau);
+      return matchesType && creneau.date >= today && isCreneauBookable(creneau, settings);
     });
   }
 
@@ -695,7 +740,7 @@ class LocalDatabase {
 
     this.refreshCreneaux();
     const creneau = this.ensureSlot(data.creneauDepotId, RelaisCreneauType.Depot);
-    if (!creneau || !isCreneauAvailable(creneau)) {
+    if (!creneau || !isCreneauBookable(creneau, this.getRelaisSettings())) {
       throw new Error('Invalid or full depot slot');
     }
 
@@ -749,7 +794,7 @@ class LocalDatabase {
 
     this.refreshCreneaux();
     const creneau = this.ensureSlot(creneauRetraitId, RelaisCreneauType.Retrait);
-    if (!creneau || !isCreneauAvailable(creneau)) {
+    if (!creneau || !isCreneauBookable(creneau, this.getRelaisSettings())) {
       throw new Error('Invalid or full pickup slot');
     }
 

@@ -1,8 +1,10 @@
 import {
   countSlotBookings,
-  DEFAULT_CRENEAU_CAPACITE,
+  createDefaultRelaisSettings,
+  expandPlagesToHourSlots,
   getCreneauCapacite,
   normalizeRelaisCreneauType,
+  normalizeRelaisSettings,
 } from '../logic/relais.js';
 import {
   defaultRegleForCategory,
@@ -19,7 +21,14 @@ import {
   RelaisCreneauType,
   UserRole,
 } from '../types/enums.js';
-import type { ActeurLocal, AgendaEvenement, DatabaseSchema, LocalRelais, RelaisCreneau } from '../types/models.js';
+import type {
+  ActeurLocal,
+  AgendaEvenement,
+  DatabaseSchema,
+  LocalRelais,
+  RelaisCreneau,
+  RelaisSettings,
+} from '../types/models.js';
 
 function localYmd(date: Date): string {
   const year = date.getFullYear();
@@ -28,19 +37,19 @@ function localYmd(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
-export function generateRelaisCreneaux(from = new Date(), days = 7): RelaisCreneau[] {
+export function generateRelaisCreneaux(
+  from = new Date(),
+  days = 7,
+  settings?: RelaisSettings | null,
+): RelaisCreneau[] {
+  const config = normalizeRelaisSettings(settings);
   const creneaux: RelaisCreneau[] = [];
-  const slots = [
-    { heureDebut: '10:00', heureFin: '11:00' },
-    { heureDebut: '11:00', heureFin: '12:00' },
-    { heureDebut: '14:00', heureFin: '15:00' },
-    { heureDebut: '15:00', heureFin: '16:00' },
-    { heureDebut: '16:00', heureFin: '17:00' },
-  ];
+  const slots = expandPlagesToHourSlots(config.plages);
 
   for (let day = 0; day < days; day += 1) {
     const date = new Date(from);
     date.setDate(from.getDate() + day);
+    if (!config.openingDays.includes(date.getDay())) continue;
     const dateStr = localYmd(date);
 
     for (const slot of slots) {
@@ -51,8 +60,9 @@ export function generateRelaisCreneaux(from = new Date(), days = 7): RelaisCrene
           heureDebut: slot.heureDebut,
           heureFin: slot.heureFin,
           type,
-          capacite: DEFAULT_CRENEAU_CAPACITE,
+          capacite: config.defaultCapacite,
           reserves: 0,
+          blocked: false,
         });
       }
     }
@@ -65,8 +75,10 @@ export function syncRelaisCreneauxWindow(
   existing: RelaisCreneau[],
   relaisList: LocalRelais[],
   from = new Date(),
+  settings?: RelaisSettings | null,
 ): RelaisCreneau[] {
-  const generated = generateRelaisCreneaux(from);
+  const config = normalizeRelaisSettings(settings);
+  const generated = generateRelaisCreneaux(from, 7, config);
   const previous = new Map((existing ?? []).map((slot) => [slot.id, slot]));
   const referenced = new Set<string>();
   for (const relais of relaisList ?? []) {
@@ -80,7 +92,8 @@ export function syncRelaisCreneauxWindow(
     merged.set(slot.id, {
       ...slot,
       type: normalizeRelaisCreneauType(prev?.type ?? slot.type),
-      capacite: getCreneauCapacite(prev ?? slot),
+      capacite: config.defaultCapacite,
+      blocked: Boolean(prev?.blocked),
       reserves: 0,
     });
   }
@@ -93,6 +106,7 @@ export function syncRelaisCreneauxWindow(
       ...prev,
       type: normalizeRelaisCreneauType(prev.type),
       capacite: getCreneauCapacite(prev),
+      blocked: Boolean(prev.blocked),
       reserves: 0,
     });
   }
@@ -102,6 +116,7 @@ export function syncRelaisCreneauxWindow(
     return {
       ...slot,
       capacite,
+      blocked: Boolean(slot.blocked),
       reserves: Math.min(capacite, countSlotBookings(relaisList ?? [], slot.id)),
     };
   });
@@ -285,6 +300,7 @@ export function createSeedData(): DatabaseSchema {
         updatedAt: now,
       },
     ],
+    relaisSettings: [createDefaultRelaisSettings()],
     relaisCreneaux: generateRelaisCreneaux(),
     localRelais: [
       {
@@ -576,7 +592,12 @@ export function createSeedData(): DatabaseSchema {
         regleFideliteValeur: rule.valeur,
       };
     }),
-    relaisCreneaux: syncRelaisCreneauxWindow(seed.relaisCreneaux, seed.localRelais),
+    relaisCreneaux: syncRelaisCreneauxWindow(
+      seed.relaisCreneaux,
+      seed.localRelais,
+      new Date(),
+      seed.relaisSettings?.[0],
+    ),
   };
 }
 
