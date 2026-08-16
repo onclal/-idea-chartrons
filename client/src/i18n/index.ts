@@ -676,7 +676,7 @@ const resources = {
       faq: {
         kicker: 'Aide & questions',
         title: 'FAQ complète',
-        subtitle: 'Les réponses aux questions les plus fréquentes sur le Local Relais, les annonces, la vie associative et l’application.',
+        subtitle: 'Les réponses aux questions les plus fréquentes sur le Local Relais, les annonces, les points fidélité, la vie associative et l’application.',
         stillStuck: 'Vous ne trouvez pas votre réponse ?',
         stillStuckHint: 'Écrivez-nous : un bénévol de l’association vous répondra.',
         sections: {
@@ -723,6 +723,45 @@ const resources = {
               {
                 q: 'Comment modifier ou supprimer mon annonce ?',
                 a: 'Si vous êtes l’auteur, les boutons « Modifier » et « Supprimer mon annonce » remplacent « Poser une question ». Dans Profil, le bloc « Mes annonces publiées » recense toutes vos publications avec une suppression directe (confirmation demandée).',
+              },
+            ],
+          },
+          fidelite: {
+            label: 'Points & Fidélité',
+            groups: [
+              {
+                label: 'Pour les habitants',
+                items: [
+                  {
+                    q: 'Comment cumuler des points ?',
+                    a: 'En participant à la vie du quartier (annonces, local relais) ou en effectuant vos achats chez nos commerçants partenaires en présentant votre QR Code lors du passage en caisse.',
+                  },
+                  {
+                    q: 'Est-ce que je dois paramétrer quelque chose ?',
+                    a: 'Non, zéro configuration. Votre QR Code unique est disponible dans votre espace « Mon Profil ». Il suffit de le montrer au commerçant.',
+                  },
+                  {
+                    q: 'Comment transformer mes points en cadeaux ?',
+                    a: 'Dès que vous atteignez un palier (ex. 50 ou 100 points), débloquez votre Coupon Privilège dans l’application et présentez-le au commerçant pour obtenir votre réduction ou produit offert.',
+                  },
+                ],
+              },
+              {
+                label: 'Pour les commerçants',
+                items: [
+                  {
+                    q: 'Comment attribuer des points à mes clients ?',
+                    a: 'Rendez-vous dans votre Espace Pro, flashez le QR Code du client et validez le montant ou la visite. Le client ne peut jamais s’attribuer de points lui-même.',
+                  },
+                  {
+                    q: 'Mon activité n’est pas adaptée à « 1 € = 1 point », comment faire ?',
+                    a: 'Vous êtes 100 % libre ! Depuis votre Espace Pro, choisissez votre règle : au chiffre d’affaires (ex. 1 € = 1 pt), au passage en caisse (ex. 5 pts par visite pour un café) ou au forfait (ex. 50 pts pour une prestation/service).',
+                  },
+                  {
+                    q: 'Est-ce lié à un organisme de chèques cadeaux ?',
+                    a: 'Non, aucun organisme externe ni frais bancaires. C’est un programme de fidélité 100 % local et autonome, propre au quartier des Chartrons.',
+                  },
+                ],
               },
             ],
           },
@@ -1631,7 +1670,7 @@ const resources = {
       faq: {
         kicker: 'Help & questions',
         title: 'Full FAQ',
-        subtitle: 'Answers to the most common questions about the Local Hub, listings, association life and the app.',
+        subtitle: 'Answers to the most common questions about the Local Hub, listings, loyalty points, association life and the app.',
         stillStuck: 'Still looking for an answer?',
         stillStuckHint: 'Write to us — a volunteer from the association will get back to you.',
         sections: {
@@ -1678,6 +1717,45 @@ const resources = {
               {
                 q: 'How do I edit or delete my listing?',
                 a: 'On your own listing, “Edit” and “Delete my listing” replace “Ask a question”. In Profile, “My published listings” lists all your posts with a direct delete option (a confirmation is still asked).',
+              },
+            ],
+          },
+          fidelite: {
+            label: 'Points & Loyalty',
+            groups: [
+              {
+                label: 'For residents',
+                items: [
+                  {
+                    q: 'How do I earn points?',
+                    a: 'By taking part in neighborhood life (listings, Local Hub) or by shopping at partner businesses and showing your QR code at the till.',
+                  },
+                  {
+                    q: 'Do I need to set anything up?',
+                    a: 'No — zero setup. Your unique QR code is in “My Profile”. Just show it to the shopkeeper.',
+                  },
+                  {
+                    q: 'How do I turn points into rewards?',
+                    a: 'When you reach a threshold (e.g. 50 or 100 points), unlock your Privilege Coupon in the app and show it at the shop for a discount or a free item.',
+                  },
+                ],
+              },
+              {
+                label: 'For shopkeepers',
+                items: [
+                  {
+                    q: 'How do I award points to my customers?',
+                    a: 'Go to your Pro Space, scan the customer’s QR code and confirm the amount or the visit. Customers can never award points to themselves.',
+                  },
+                  {
+                    q: 'My activity does not fit “€1 = 1 point”. What can I do?',
+                    a: 'You are fully free to choose. In your Pro Space, pick your rule: turnover (e.g. €1 = 1 pt), per visit (e.g. 5 pts at a café) or a flat rate (e.g. 50 pts for a service).',
+                  },
+                  {
+                    q: 'Is this tied to a gift-voucher scheme?',
+                    a: 'No. No external scheme and no bank fees. It is a 100% local, autonomous loyalty programme for the Chartrons district.',
+                  },
+                ],
               },
             ],
           },

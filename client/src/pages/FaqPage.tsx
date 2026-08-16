@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { ContactForm } from '../components/ContactForm';
 import { Button } from '../components/ui';
 
-const FAQ_TABS = ['relais', 'posts', 'association', 'technique'] as const;
+const FAQ_TABS = ['relais', 'posts', 'fidelite', 'association', 'technique'] as const;
 type FaqTab = (typeof FAQ_TABS)[number];
 
 interface FaqItem {
@@ -11,20 +11,30 @@ interface FaqItem {
   a: string;
 }
 
+interface FaqGroup {
+  label: string;
+  items: FaqItem[];
+}
+
 export function FaqPage() {
   const { t } = useTranslation();
   const [tab, setTab] = useState<FaqTab>('relais');
-  const [openIndex, setOpenIndex] = useState(0);
+  const [openKey, setOpenKey] = useState('0-0');
   const [contactOpen, setContactOpen] = useState(false);
 
-  const items = useMemo(() => {
+  const groups = useMemo(() => {
+    const grouped = t(`faq.sections.${tab}.groups`, { returnObjects: true });
+    if (Array.isArray(grouped) && grouped.length > 0) {
+      return grouped as FaqGroup[];
+    }
     const raw = t(`faq.sections.${tab}.items`, { returnObjects: true });
-    return Array.isArray(raw) ? (raw as FaqItem[]) : [];
+    const items = Array.isArray(raw) ? (raw as FaqItem[]) : [];
+    return items.length > 0 ? [{ label: '', items }] : [];
   }, [t, tab]);
 
   const handleTab = (next: FaqTab) => {
     setTab(next);
-    setOpenIndex(0);
+    setOpenKey('0-0');
   };
 
   return (
@@ -65,38 +75,48 @@ export function FaqPage() {
         })}
       </div>
 
-      <div className="space-y-2" role="tabpanel">
-        {items.map((item, index) => {
-          const open = openIndex === index;
-          return (
-            <div
-              key={item.q}
-              className="rounded-2xl border border-chartrons-beige bg-white/90 shadow-card overflow-hidden"
-            >
-              <button
-                type="button"
-                onClick={() => setOpenIndex(open ? -1 : index)}
-                className="w-full flex items-center gap-3 px-4 py-3.5 min-h-[52px] text-left"
-                aria-expanded={open}
-              >
-                <span className="flex-1 text-sm font-semibold text-chartrons-olive-dark leading-snug">
-                  {item.q}
-                </span>
-                <span
-                  className="shrink-0 w-8 h-8 rounded-full bg-chartrons-beige text-chartrons-bordeaux flex items-center justify-center text-lg font-bold"
-                  aria-hidden
+      <div className="space-y-5" role="tabpanel">
+        {groups.map((group, groupIndex) => (
+          <div key={`${tab}-${group.label || groupIndex}`} className="space-y-2">
+            {group.label ? (
+              <h2 className="text-sm font-bold uppercase tracking-wide text-chartrons-olive px-1">
+                {group.label}
+              </h2>
+            ) : null}
+            {group.items.map((item, index) => {
+              const key = `${groupIndex}-${index}`;
+              const open = openKey === key;
+              return (
+                <div
+                  key={item.q}
+                  className="rounded-2xl border border-chartrons-beige bg-white/90 shadow-card overflow-hidden"
                 >
-                  {open ? '−' : '+'}
-                </span>
-              </button>
-              {open && (
-                <div className="px-4 pb-4 pt-0">
-                  <p className="text-sm text-chartrons-warm-gray leading-relaxed">{item.a}</p>
+                  <button
+                    type="button"
+                    onClick={() => setOpenKey(open ? '' : key)}
+                    className="w-full flex items-center gap-3 px-4 py-3.5 min-h-[52px] text-left"
+                    aria-expanded={open}
+                  >
+                    <span className="flex-1 text-sm font-semibold text-chartrons-olive-dark leading-snug">
+                      {item.q}
+                    </span>
+                    <span
+                      className="shrink-0 w-8 h-8 rounded-full bg-chartrons-beige text-chartrons-bordeaux flex items-center justify-center text-lg font-bold"
+                      aria-hidden
+                    >
+                      {open ? '−' : '+'}
+                    </span>
+                  </button>
+                  {open && (
+                    <div className="px-4 pb-4 pt-0">
+                      <p className="text-sm text-chartrons-warm-gray leading-relaxed">{item.a}</p>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          );
-        })}
+              );
+            })}
+          </div>
+        ))}
       </div>
 
       <div className="rounded-2xl bg-gradient-to-br from-chartrons-bordeaux to-chartrons-olive-dark p-4 sm:p-5 text-white">
