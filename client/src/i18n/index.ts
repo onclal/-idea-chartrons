@@ -78,6 +78,7 @@ const resources = {
         emptyHint: 'Proposez un don, un service ou un petit boulot à vos voisins des Chartrons.',
         badgeLocal: 'Disponible au local',
         free: 'Gratuit',
+        sponsored: 'À la une',
         depotLocal: 'Proposer au Dépôt Local',
         filters: {
           all: 'Tout',
@@ -150,6 +151,12 @@ const resources = {
         noSlots: 'Aucun créneau disponible.',
         slotsRemaining: '{{count}} place(s) restante(s)',
         advanceStatus: 'Avancer le statut (admin)',
+        fees: {
+          title: 'Détail de la transaction',
+          price: 'Prix du service / de la location',
+          management: 'Frais de gestion & assurance Local Relais',
+          total: 'Total à régler',
+        },
       },
       acteurs: {
         title: 'Commerces, Services & Santé',
@@ -673,6 +680,7 @@ const resources = {
         dataReset: 'Données de démo réinitialisées',
         ruleSaved: 'Règle de fidélité enregistrée',
         pointsCredited: '+{{points}} pts crédités à {{name}}',
+        boostRequested: 'Demande de mise en avant enregistrée — offerte pendant le lancement.',
       },
       footer: {
         copyright: '© IDÉA CHARTRONS — association de quartier',
@@ -850,6 +858,28 @@ const resources = {
         noShopHint: 'Publiez d’abord votre enseigne dans l’annuaire pour activer la fidélité.',
         createShop: 'Créer ma fiche',
         shop: 'Commerce',
+        offer: {
+          kicker: 'Lancement',
+          banner: 'Offre Commerçant Pionnier : Accès Pro 100% Offert pendant la phase de lancement',
+          learnMore: 'En savoir plus sur la formule Pro',
+          modalTitle: 'Formule Espace Pro',
+          modalIntro:
+            'L’Espace Pro prépare l’abonnement SaaS du quartier : fidélité, statistiques et visibilité, sans frais pendant le lancement.',
+          features: [
+            'Fidélité illimitée pour vos clients',
+            'Statistiques de passage et de crédits',
+            'Visibilité prioritaire dans l’annuaire et le fil du quartier',
+          ],
+          price: 'Tarif futur : 39 €/mois — Offert actuellement',
+          close: 'Compris',
+        },
+        boost: {
+          title: 'Booster mon annonce (Mettre à la une)',
+          subtitle: 'Illustrez la mise en avant payante : votre annonce partenaire apparaît en tête du fil, avec un badge « À la une ».',
+          target: 'Annonce concernée : {{title}}',
+          noPost: 'Publiez d’abord une annonce pour demander une mise en avant.',
+          cta: 'Demander la mise en avant',
+        },
         rule: {
           title: 'Ma règle de fidélité',
           subtitle: 'Choisissez comment vos clients gagnent des points. Vous restez 100 % libre.',
@@ -1177,6 +1207,7 @@ const resources = {
         emptyHint: 'Offer a giveaway, a service or a small job to your Chartrons neighbors.',
         badgeLocal: 'Available at hub',
         free: 'Free',
+        sponsored: 'Featured',
         depotLocal: 'Propose Local Drop-off',
         filters: {
           all: 'All',
@@ -1249,6 +1280,12 @@ const resources = {
         noSlots: 'No slots available.',
         slotsRemaining: '{{count}} slot(s) left',
         advanceStatus: 'Advance status (admin)',
+        fees: {
+          title: 'Transaction details',
+          price: 'Service / rental price',
+          management: 'Local Hub handling & insurance fee',
+          total: 'Amount due',
+        },
       },
       acteurs: {
         title: 'Shops, Services & Health',
@@ -1772,6 +1809,7 @@ const resources = {
         dataReset: 'Demo data reset',
         ruleSaved: 'Loyalty rule saved',
         pointsCredited: '+{{points}} pts credited to {{name}}',
+        boostRequested: 'Featured listing request saved — free during launch.',
       },
       footer: {
         copyright: '© IDÉA CHARTRONS — neighborhood association',
@@ -1949,6 +1987,28 @@ const resources = {
         noShopHint: 'Publish your business in the directory first to enable loyalty.',
         createShop: 'Create my listing',
         shop: 'Shop',
+        offer: {
+          kicker: 'Launch',
+          banner: 'Pioneer merchant offer: Pro access 100% free during the launch phase',
+          learnMore: 'Learn more about the Pro plan',
+          modalTitle: 'Pro space plan',
+          modalIntro:
+            'The Pro space prepares the neighborhood SaaS subscription: loyalty, stats and visibility, with no fee during launch.',
+          features: [
+            'Unlimited loyalty for your customers',
+            'Visit and credit statistics',
+            'Priority visibility in the directory and neighborhood feed',
+          ],
+          price: 'Future price: €39/month — Currently free',
+          close: 'Got it',
+        },
+        boost: {
+          title: 'Boost my listing (Feature it)',
+          subtitle: 'This is the paid placement preview: your partner listing appears at the top of the feed with a Featured badge.',
+          target: 'Listing: {{title}}',
+          noPost: 'Publish a listing first to request a featured placement.',
+          cta: 'Request featured placement',
+        },
         rule: {
           title: 'My loyalty rule',
           subtitle: 'Choose how customers earn points. You stay fully in control.',

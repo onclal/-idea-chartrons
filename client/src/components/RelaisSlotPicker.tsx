@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { RelaisCreneauType, getCreneauPlacesRestantes, type RelaisCreneau } from '@idea-chartrons/shared';
 import { Button } from './ui';
+import { RelaisFeeBreakdown } from './RelaisFeeBreakdown';
 import { api } from '../lib/api';
 
 interface RelaisSlotPickerProps {
@@ -87,9 +88,10 @@ interface DepotSlotModalProps {
   onClose: () => void;
   onConfirm: (creneauId: string) => void;
   loading?: boolean;
+  prix?: number | null;
 }
 
-export function DepotSlotModal({ open, onClose, onConfirm, loading }: DepotSlotModalProps) {
+export function DepotSlotModal({ open, onClose, onConfirm, loading, prix = null }: DepotSlotModalProps) {
   const { t } = useTranslation();
   const [selected, setSelected] = useState<string | null>(null);
 
@@ -101,6 +103,7 @@ export function DepotSlotModal({ open, onClose, onConfirm, loading }: DepotSlotM
       <div className="relative w-full max-w-lg bg-chartrons-cream rounded-t-3xl sm:rounded-3xl shadow-xl p-5 space-y-4">
         <h3 className="text-lg font-bold text-chartrons-green">{t('relais.bookDepot')}</h3>
         <p className="text-sm text-chartrons-warm-gray">{t('relais.bookDepotHint')}</p>
+        <RelaisFeeBreakdown prix={prix} />
         <RelaisSlotPicker
           type={RelaisCreneauType.Depot}
           selectedId={selected}

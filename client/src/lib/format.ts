@@ -1,3 +1,10 @@
+export function formatEuro(amount: number, locale: string) {
+  return new Intl.NumberFormat(locale.startsWith('fr') ? 'fr-FR' : 'en-GB', {
+    style: 'currency',
+    currency: 'EUR',
+  }).format(amount);
+}
+
 export function formatDateTime(iso: string, locale: string) {
   return new Date(iso).toLocaleString(locale.startsWith('fr') ? 'fr-FR' : 'en-GB', {
     day: 'numeric',

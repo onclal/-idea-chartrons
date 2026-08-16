@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { Badge, Button, Card } from './ui';
 import { QrCodeDisplay } from './QrCodeDisplay';
 import { RelaisSlotPicker } from './RelaisSlotPicker';
+import { RelaisFeeBreakdown } from './RelaisFeeBreakdown';
 
 export const LOCAL_RELAIS_ADDRESS = '26 place Jean Jaques Rabaud';
 
@@ -31,8 +32,7 @@ export function LocalRelaisCard({
   const [retraitCreneau, setRetraitCreneau] = useState<string | null>(null);
   const [expandedRetrait, setExpandedRetrait] = useState<string | null>(null);
 
-  const getPostTitle = (postId: string) =>
-    posts.find((p) => p.id === postId)?.titre ?? postId;
+  const getPost = (postId: string) => posts.find((p) => p.id === postId);
 
   const statusVariant = (statut: LocalRelaisRetraitStatus) => {
     if (statut === LocalRelaisRetraitStatus.DisponibleAuLocal) return 'green';
@@ -69,6 +69,7 @@ export function LocalRelaisCard({
             <div className="space-y-2">
               {relaisList.map((relais) => {
                 const ready = isReadyForPickup(relais);
+                const post = getPost(relais.postId);
                 return (
                   <div
                     key={relais.id}
@@ -91,7 +92,7 @@ export function LocalRelaisCard({
                       <div className="flex items-center justify-between gap-2">
                         <p className="text-sm font-medium text-chartrons-green-dark truncate">
                           {ready && <span className="mr-1">🔔</span>}
-                          {getPostTitle(relais.postId)}
+                          {post?.titre ?? relais.postId}
                         </p>
                         <Badge variant={statusVariant(relais.statutRetrait) === 'green' ? 'local' : statusVariant(relais.statutRetrait) === 'gold' ? 'brass' : 'stone'}>
                           {t(`relais.status.${relais.statutRetrait}`)}
@@ -107,6 +108,10 @@ export function LocalRelaisCard({
                         </p>
                       )}
                     </button>
+
+                    <div className="px-3 pb-3">
+                      <RelaisFeeBreakdown prix={post?.prix ?? null} compact />
+                    </div>
 
                     {ready && !relais.creneauRetraitId && (
                       <div className="px-3 pb-3 border-t border-chartrons-gold/20 pt-2">

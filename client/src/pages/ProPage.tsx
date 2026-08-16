@@ -9,9 +9,10 @@ import {
   getActeurFideliteRegle,
   UserRole,
   type ActeurLocal,
+  type PostAnnonce,
   type User,
 } from '@idea-chartrons/shared';
-import { Badge, Button, Card, EmptyState, Input, Loading, Select } from '../components/ui';
+import { Badge, Button, Card, EmptyState, Input, Loading, Modal, Select } from '../components/ui';
 import { PageHelp } from '../components/PageHelp';
 import { useAdmin } from '../context/AdminContext';
 import { useAuth } from '../context/AuthContext';
@@ -31,7 +32,10 @@ export function ProPage() {
   const { showToast } = useToast();
   const [acteurs, setActeurs] = useState<ActeurLocal[]>([]);
   const [users, setUsers] = useState<User[]>([]);
+  const [posts, setPosts] = useState<PostAnnonce[]>([]);
   const [loading, setLoading] = useState(true);
+  const [offerOpen, setOfferOpen] = useState(false);
+  const [boosting, setBoosting] = useState(false);
   const [selectedId, setSelectedId] = useState('');
   const [ruleMode, setRuleMode] = useState<FideliteRegleMode>(FideliteRegleMode.Visite);
   const [ruleValue, setRuleValue] = useState('5');
@@ -61,10 +65,11 @@ export function ProPage() {
 
   const load = () => {
     setLoading(true);
-    Promise.all([api.getActeurs(), api.getUsers()])
-      .then(([acteursData, usersData]) => {
+    Promise.all([api.getActeurs(), api.getUsers(), api.getPosts()])
+      .then(([acteursData, usersData, postsData]) => {
         setActeurs(acteursData);
         setUsers(usersData);
+        setPosts(postsData);
       })
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -98,6 +103,23 @@ export function ProPage() {
   const amountNumber = Number(montant.replace(',', '.'));
   const previewPoints = calculateAwardPoints(liveRule, amountNumber);
   const identifiedClient = findUserByClientToken(users, clientToken);
+  const myPosts = useMemo(
+    () =>
+      posts
+        .filter((post) => post.auteurId === currentUserId)
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
+    [posts, currentUserId],
+  );
+  const offerFeatures = t('proSpace.offer.features', { returnObjects: true });
+  const offerFeatureList = Array.isArray(offerFeatures) ? (offerFeatures as string[]) : [];
+
+  const handleBoost = () => {
+    setBoosting(true);
+    window.setTimeout(() => {
+      setBoosting(false);
+      showToast(t('toast.boostRequested'));
+    }, 500);
+  };
 
   const handleSaveRule = async () => {
     if (!selectedShop) return;
@@ -237,6 +259,23 @@ export function ProPage() {
         <PageHelp page="pro" />
       </div>
 
+      <div className="rounded-2xl border border-chartrons-brass/35 bg-gradient-to-br from-chartrons-beige/80 to-white p-4 shadow-card">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-chartrons-brass">
+          {t('proSpace.offer.kicker')}
+        </p>
+        <p className="text-sm font-semibold text-chartrons-olive-dark mt-1 leading-snug">
+          {t('proSpace.offer.banner')}
+        </p>
+        <Button
+          variant="secondary"
+          size="sm"
+          className="mt-3 w-full sm:w-auto"
+          onClick={() => setOfferOpen(true)}
+        >
+          {t('proSpace.offer.learnMore')}
+        </Button>
+      </div>
+
       {showShopSelector && (
         <Select
           label={t('proSpace.shop')}
@@ -292,6 +331,26 @@ export function ProPage() {
 
         <Button className="w-full mt-4" disabled={savingRule} onClick={handleSaveRule}>
           {savingRule ? t('common.loading') : t('proSpace.rule.save')}
+        </Button>
+      </Card>
+
+      <Card>
+        <h3 className="font-bold text-chartrons-green-dark">{t('proSpace.boost.title')}</h3>
+        <p className="text-xs text-chartrons-warm-gray mt-1 leading-relaxed">{t('proSpace.boost.subtitle')}</p>
+        {myPosts[0] ? (
+          <p className="text-sm font-medium text-chartrons-olive-dark mt-3">
+            {t('proSpace.boost.target', { title: myPosts[0].titre })}
+          </p>
+        ) : (
+          <p className="text-sm text-chartrons-warm-gray mt-3">{t('proSpace.boost.noPost')}</p>
+        )}
+        <Button
+          variant="gold"
+          className="w-full mt-4"
+          disabled={boosting || myPosts.length === 0}
+          onClick={handleBoost}
+        >
+          {boosting ? t('common.loading') : t('proSpace.boost.cta')}
         </Button>
       </Card>
 
@@ -447,6 +506,29 @@ export function ProPage() {
           </div>
         )}
       </Card>
+
+      <Modal open={offerOpen} onClose={() => setOfferOpen(false)} title={t('proSpace.offer.modalTitle')}>
+        <div className="space-y-4">
+          <p className="text-sm text-chartrons-olive-dark leading-relaxed">{t('proSpace.offer.modalIntro')}</p>
+          <ul className="space-y-2">
+            {offerFeatureList.map((feature) => (
+              <li
+                key={feature}
+                className="flex gap-2 text-sm text-chartrons-olive-dark rounded-xl bg-chartrons-beige/50 border border-chartrons-beige px-3 py-2"
+              >
+                <span aria-hidden>✦</span>
+                <span>{feature}</span>
+              </li>
+            ))}
+          </ul>
+          <p className="text-sm font-semibold text-chartrons-bordeaux bg-chartrons-beige/70 rounded-xl px-3 py-2">
+            {t('proSpace.offer.price')}
+          </p>
+          <Button variant="bordeaux" className="w-full" onClick={() => setOfferOpen(false)}>
+            {t('proSpace.offer.close')}
+          </Button>
+        </div>
+      </Modal>
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { LocalRelaisRetraitStatus, PostType, type LocalRelais, type PostAnnonce } from '@idea-chartrons/shared';
+import { LocalRelaisRetraitStatus, PostType, type LocalRelais, type PostAnnonce, type User } from '@idea-chartrons/shared';
 import { Badge, Button, Card, EmptyState, Loading } from '../components/ui';
 import { PageHelp } from '../components/PageHelp';
 import { PhoneLink } from '../components/PhoneLink';
@@ -14,6 +14,7 @@ import { useToast } from '../context/ToastContext';
 import { matchesSearch, useSearch } from '../context/SearchContext';
 import { api } from '../lib/api';
 import { bookingErrorMessage } from '../lib/bookingErrors';
+import { getSponsoredPostId, pinSponsoredPost } from '../lib/sponsoredFeed';
 
 const FILTER_TYPES = [
   'all',
@@ -31,6 +32,7 @@ export function PostsPage() {
   const { currentUserId } = useAuth();
   const { showToast } = useToast();
   const [posts, setPosts] = useState<PostAnnonce[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [relaisMap, setRelaisMap] = useState<Map<string, LocalRelais>>(new Map());
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<FilterType>('all');
@@ -42,10 +44,11 @@ export function PostsPage() {
 
   const loadPosts = (opts?: { silent?: boolean }) => {
     if (!opts?.silent) setLoading(true);
-    Promise.all([api.getPosts(), api.getRelais()])
-      .then(([postsData, relais]) => {
+    Promise.all([api.getPosts(), api.getRelais(), api.getUsers()])
+      .then(([postsData, relais, usersData]) => {
         setPosts(postsData);
         setRelaisMap(new Map(relais.map((r) => [r.postId, r])));
+        setUsers(usersData);
       })
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -54,7 +57,7 @@ export function PostsPage() {
   useEffect(loadPosts, [currentUserId]);
 
   const filteredPosts = useMemo(() => {
-    return posts
+    const filtered = posts
       .filter((post) => {
         const matchesFilter = filter === 'all' || post.type === filter;
         const matchesQuery =
@@ -62,7 +65,10 @@ export function PostsPage() {
         return matchesFilter && matchesQuery;
       })
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  }, [posts, filter, query]);
+    return pinSponsoredPost(filtered, getSponsoredPostId(posts, users));
+  }, [posts, filter, query, users]);
+
+  const sponsoredPostId = getSponsoredPostId(posts, users);
 
   const handleDepotConfirm = async (creneauId: string) => {
     if (!depotPostId) return;
@@ -159,15 +165,26 @@ export function PostsPage() {
             const isOwner = post.auteurId === currentUserId;
             const isReadyLocal =
               relais?.statutRetrait === LocalRelaisRetraitStatus.DisponibleAuLocal;
+            const isSponsored = post.id === sponsoredPostId;
 
             return (
-              <Card key={post.id} className="!p-0 overflow-hidden">
+              <Card
+                key={post.id}
+                className={`!p-0 overflow-hidden ${
+                  isSponsored ? 'ring-2 ring-chartrons-brass/45 border-chartrons-brass/30' : ''
+                }`}
+              >
                 {post.photos[0] && (
                   <div className="relative">
                     <img src={post.photos[0]} alt="" className="w-full h-40 object-cover" />
-                    {isReadyLocal && (
-                      <div className="absolute top-3 left-3">
-                        <Badge variant="local" icon="📦">{t('badges.local')}</Badge>
+                    {(isSponsored || isReadyLocal) && (
+                      <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
+                        {isSponsored && (
+                          <Badge variant="vip" icon="✨">{t('posts.sponsored')}</Badge>
+                        )}
+                        {isReadyLocal && (
+                          <Badge variant="local" icon="📦">{t('badges.local')}</Badge>
+                        )}
                       </div>
                     )}
                   </div>
@@ -181,10 +198,17 @@ export function PostsPage() {
                       {t(`posts.status.${post.statut}`)}
                     </Badge>
                   </div>
-                  {!post.photos[0] && isReadyLocal && (
-                    <Badge variant="local" icon="📦" className="mb-2">
-                      {t('badges.local')}
-                    </Badge>
+                  {!post.photos[0] && (isSponsored || isReadyLocal) && (
+                    <div className="flex flex-wrap gap-1.5 mb-2">
+                      {isSponsored && (
+                        <Badge variant="vip" icon="✨">{t('posts.sponsored')}</Badge>
+                      )}
+                      {isReadyLocal && (
+                        <Badge variant="local" icon="📦">
+                          {t('badges.local')}
+                        </Badge>
+                      )}
+                    </div>
                   )}
                   <p className="text-sm text-chartrons-warm-gray mb-3 line-clamp-2 leading-relaxed">
                     {post.description}
@@ -254,6 +278,7 @@ export function PostsPage() {
         onClose={() => setDepotPostId(null)}
         onConfirm={handleDepotConfirm}
         loading={depotLoading}
+        prix={posts.find((post) => post.id === depotPostId)?.prix ?? null}
       />
 
       <ContactForm
