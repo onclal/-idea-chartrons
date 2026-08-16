@@ -211,6 +211,15 @@ class LocalDatabase {
       return { ...post, telephone };
     });
 
+    const knownPostIds = new Set(postsAnnonces.map((post) => post.id));
+    for (const seedPost of seed.postsAnnonces) {
+      if (!knownPostIds.has(seedPost.id)) {
+        postsAnnonces.push(seedPost);
+        knownPostIds.add(seedPost.id);
+        changed = true;
+      }
+    }
+
     const marcheCutoff = Date.now() - 2 * 86400000;
     const prunedEvents = agendaEvenements.filter((event) => {
       if (!event.id.startsWith('event-marche-chartrons-')) return true;

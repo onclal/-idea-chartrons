@@ -78,7 +78,8 @@ const resources = {
         emptyHint: 'Proposez un don, un service ou un petit boulot à vos voisins des Chartrons.',
         badgeLocal: 'Disponible au local',
         free: 'Gratuit',
-        sponsored: 'À la une',
+        sponsored: 'À LA UNE',
+        fromPrice: 'Dès {{price}} €',
         depotLocal: 'Proposer au Dépôt Local',
         filters: {
           all: 'Tout',
@@ -1207,7 +1208,8 @@ const resources = {
         emptyHint: 'Offer a giveaway, a service or a small job to your Chartrons neighbors.',
         badgeLocal: 'Available at hub',
         free: 'Free',
-        sponsored: 'Featured',
+        sponsored: 'FEATURED',
+        fromPrice: 'From €{{price}}',
         depotLocal: 'Propose Local Drop-off',
         filters: {
           all: 'All',

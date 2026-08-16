@@ -176,11 +176,18 @@ export function PostsPage() {
               >
                 {post.photos[0] && (
                   <div className="relative">
-                    <img src={post.photos[0]} alt="" className="w-full h-40 object-cover" />
+                    <img
+                      src={post.photos[0]}
+                      alt=""
+                      className={`w-full object-cover ${isSponsored ? 'h-48' : 'h-40'}`}
+                    />
                     {(isSponsored || isReadyLocal) && (
                       <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
                         {isSponsored && (
-                          <Badge variant="vip" icon="✨">{t('posts.sponsored')}</Badge>
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-[0.08em] bg-chartrons-bordeaux text-white ring-2 ring-chartrons-brass shadow-md">
+                            <span aria-hidden>✨</span>
+                            {t('posts.sponsored')}
+                          </span>
                         )}
                         {isReadyLocal && (
                           <Badge variant="local" icon="📦">{t('badges.local')}</Badge>
@@ -201,7 +208,10 @@ export function PostsPage() {
                   {!post.photos[0] && (isSponsored || isReadyLocal) && (
                     <div className="flex flex-wrap gap-1.5 mb-2">
                       {isSponsored && (
-                        <Badge variant="vip" icon="✨">{t('posts.sponsored')}</Badge>
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-[0.08em] bg-chartrons-bordeaux text-white ring-2 ring-chartrons-brass shadow-md">
+                          <span aria-hidden>✨</span>
+                          {t('posts.sponsored')}
+                        </span>
                       )}
                       {isReadyLocal && (
                         <Badge variant="local" icon="📦">
@@ -219,7 +229,11 @@ export function PostsPage() {
                   <div className="flex items-center justify-between mb-3">
                     <Badge variant="brick">{t(`posts.types.${post.type}`)}</Badge>
                     <span className="text-base font-bold text-chartrons-bordeaux">
-                      {post.prix !== null ? `${post.prix} €` : t('posts.free')}
+                      {isSponsored && post.prix !== null
+                        ? t('posts.fromPrice', { price: post.prix })
+                        : post.prix !== null
+                          ? `${post.prix} €`
+                          : t('posts.free')}
                     </span>
                   </div>
                   {post.statut !== 'Dépôt_Local' && post.statut !== 'Clôturé' && (

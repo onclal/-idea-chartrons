@@ -270,6 +270,20 @@ export function createSeedData(): DatabaseSchema {
         createdAt: now,
         updatedAt: now,
       },
+      {
+        id: 'post-5',
+        auteurId: 'user-2',
+        titre: 'Grande Vente Vintage de Printemps - Brocante des Chartrons',
+        description:
+          'Venez découvrir nos nouveaux arrivages d’antiquités et de meubles vintage ce week-end. Réduction spéciale pour les voisins !',
+        type: PostType.Vente,
+        prix: 10,
+        statut: PostStatus.Disponible,
+        photos: ['https://images.unsplash.com/photo-1513519245088-0e12902e35a6?w=800&h=500&fit=crop'],
+        telephone: '05 56 48 12 01',
+        createdAt: new Date(Date.now() + 60_000).toISOString(),
+        updatedAt: now,
+      },
     ],
     relaisCreneaux: generateRelaisCreneaux(),
     localRelais: [
