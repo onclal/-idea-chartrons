@@ -109,7 +109,9 @@ export function FaqPage() {
                   </button>
                   {open && (
                     <div className="px-4 pb-4 pt-0">
-                      <p className="text-sm text-chartrons-warm-gray leading-relaxed">{item.a}</p>
+                      <p className="text-sm text-chartrons-warm-gray leading-relaxed whitespace-pre-line">
+                        {item.a}
+                      </p>
                     </div>
                   )}
                 </div>

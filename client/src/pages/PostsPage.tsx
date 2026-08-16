@@ -9,11 +9,13 @@ import { AdminDeleteButton } from '../components/AdminDeleteButton';
 import { OwnerPostActions } from '../components/OwnerPostActions';
 import { PostCreateForm } from '../components/PostCreateForm';
 import { DepotSlotModal } from '../components/RelaisSlotPicker';
+import { CheckoutModal } from '../components/CheckoutModal';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { matchesSearch, useSearch } from '../context/SearchContext';
 import { api } from '../lib/api';
 import { bookingErrorMessage } from '../lib/bookingErrors';
+import { formatEuro } from '../lib/format';
 import { getSponsoredPostId, pinSponsoredPost } from '../lib/sponsoredFeed';
 
 const FILTER_TYPES = [
@@ -27,7 +29,7 @@ const FILTER_TYPES = [
 type FilterType = (typeof FILTER_TYPES)[number];
 
 export function PostsPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { query } = useSearch();
   const { currentUserId } = useAuth();
   const { showToast } = useToast();
@@ -40,6 +42,7 @@ export function PostsPage() {
   const [editingPost, setEditingPost] = useState<PostAnnonce | null>(null);
   const [depotPostId, setDepotPostId] = useState<string | null>(null);
   const [depotLoading, setDepotLoading] = useState(false);
+  const [checkoutPost, setCheckoutPost] = useState<PostAnnonce | null>(null);
   const [contactContext, setContactContext] = useState<string | null>(null);
 
   const loadPosts = (opts?: { silent?: boolean }) => {
@@ -236,35 +239,50 @@ export function PostsPage() {
                           : t('posts.free')}
                     </span>
                   </div>
-                  {post.statut !== 'Dépôt_Local' && post.statut !== 'Clôturé' && (
-                    <Button
-                      variant="secondary"
-                      size="md"
-                      className="w-full"
-                      onClick={() => setDepotPostId(post.id)}
-                    >
-                      📦 {t('posts.depotLocal')}
-                    </Button>
-                  )}
-                  {isOwner ? (
-                    <div className="mt-2 space-y-2">
-                      <p className="text-xs font-medium text-chartrons-olive">{t('posts.mine')}</p>
-                      <OwnerPostActions
-                        post={post}
-                        onEdit={() => openEdit(post)}
-                        onDeleted={() => loadPosts({ silent: true })}
-                      />
-                    </div>
-                  ) : (
-                    <Button
-                      variant="ghost"
-                      size="md"
-                      className="w-full mt-2 border border-chartrons-beige"
-                      onClick={() => setContactContext(t('contact.postContext', { title: post.titre }))}
-                    >
-                      {t('contact.askQuestion')}
-                    </Button>
-                  )}
+                  <div className="space-y-2">
+                    {!isOwner &&
+                      post.type === PostType.Vente &&
+                      post.prix !== null &&
+                      post.statut !== 'Clôturé' && (
+                        <Button
+                          variant="bordeaux"
+                          size="md"
+                          className="w-full"
+                          onClick={() => setCheckoutPost(post)}
+                        >
+                          {t('posts.buyOnline')}
+                        </Button>
+                      )}
+                    {post.statut !== 'Dépôt_Local' && post.statut !== 'Clôturé' && (
+                      <Button
+                        variant="secondary"
+                        size="md"
+                        className="w-full"
+                        onClick={() => setDepotPostId(post.id)}
+                      >
+                        📦 {t('posts.depotLocal')}
+                      </Button>
+                    )}
+                    {isOwner ? (
+                      <div className="space-y-2">
+                        <p className="text-xs font-medium text-chartrons-olive">{t('posts.mine')}</p>
+                        <OwnerPostActions
+                          post={post}
+                          onEdit={() => openEdit(post)}
+                          onDeleted={() => loadPosts({ silent: true })}
+                        />
+                      </div>
+                    ) : (
+                      <Button
+                        variant="ghost"
+                        size="md"
+                        className="w-full border border-chartrons-beige"
+                        onClick={() => setContactContext(t('contact.postContext', { title: post.titre }))}
+                      >
+                        {t('contact.askQuestion')}
+                      </Button>
+                    )}
+                  </div>
                   {!isOwner && (
                     <AdminDeleteButton
                       label={t('admin.deletePost')}
@@ -293,6 +311,15 @@ export function PostsPage() {
         onConfirm={handleDepotConfirm}
         loading={depotLoading}
         prix={posts.find((post) => post.id === depotPostId)?.prix ?? null}
+      />
+
+      <CheckoutModal
+        open={!!checkoutPost}
+        post={checkoutPost}
+        onClose={() => setCheckoutPost(null)}
+        onConfirm={(_post, total) => {
+          showToast(t('toast.purchaseConfirmed', { total: formatEuro(total, i18n.language) }));
+        }}
       />
 
       <ContactForm

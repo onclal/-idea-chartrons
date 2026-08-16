@@ -3,6 +3,7 @@ import type { LocalRelais, RelaisCreneau } from '../types/models.js';
 
 export const DEFAULT_CRENEAU_CAPACITE = 3;
 export const RELAIS_FRAIS_GESTION_EUR = 1;
+export const ONLINE_PAYMENT_FEE_EUR = 1;
 
 export function getRelaisDisplayStatus(statut: LocalRelaisRetraitStatus): LocalRelaisRetraitStatus {
   return statut;

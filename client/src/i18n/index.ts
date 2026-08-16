@@ -80,6 +80,7 @@ const resources = {
         free: 'Gratuit',
         sponsored: 'À LA UNE',
         fromPrice: 'Dès {{price}} €',
+        buyOnline: 'Acheter en ligne',
         depotLocal: 'Proposer au Dépôt Local',
         filters: {
           all: 'Tout',
@@ -119,6 +120,21 @@ const resources = {
         mine: 'Votre annonce',
         deleteMine: 'Supprimer mon annonce',
         deleteMineConfirm: 'Supprimer définitivement « {{title}} » ? Cette action est irréversible.',
+      },
+      checkout: {
+        title: 'Paiement sécurisé',
+        secureHint: 'Simulation de paiement par carte bancaire. Aucun débit réel n’est effectué.',
+        itemPrice: 'Prix de l’article',
+        protection: 'Protection acheteur & frais de transaction',
+        total: 'Montant total',
+        cardTitle: 'Carte bancaire',
+        cardName: 'Titulaire',
+        cardNumber: 'Numéro de carte',
+        cardExpiry: 'Expiration',
+        cardCvc: 'CVC',
+        demoHint: 'Carte de démonstration — cette transaction n’est pas transmise à une banque.',
+        processing: 'Paiement en cours…',
+        pay: 'Payer {{total}}',
       },
       relais: {
         title: 'Local Relais IDÉA',
@@ -682,6 +698,7 @@ const resources = {
         ruleSaved: 'Règle de fidélité enregistrée',
         pointsCredited: '+{{points}} pts crédités à {{name}}',
         boostRequested: 'Demande de mise en avant enregistrée — offerte pendant le lancement.',
+        purchaseConfirmed: 'Commande confirmée ! Paiement simulé de {{total}}.',
       },
       footer: {
         copyright: '© IDÉA CHARTRONS — association de quartier',
@@ -739,6 +756,14 @@ const resources = {
           posts: {
             label: 'Comment poster une annonce',
             items: [
+              {
+                q: 'Quels sont les différents modes d\'achat sur IDÉA Chartrons ?',
+                a: 'Sur les annonces de vente, vous avez trois choix :\n\n1. Remise en mains propres directe — 100 % gratuit, vous organisez l’échange avec le voisin.\n2. Dépôt au Local Relais — +1,00 € pour les frais de garde et de conciergerie.\n3. Paiement en ligne sécurisé — +1,00 € pour la garantie acheteur et les frais de transaction.',
+              },
+              {
+                q: 'Quels sont les tarifs pour les commerçants et la mise en avant ?',
+                a: 'L’Espace Pro est actuellement offert pendant la phase de lancement (Offre Commerçant Pionnier). Aucun abonnement n’est dû pour le moment. La visibilité se fait via les annonces « À la une » / sponsorisées, affichées en tête du fil avec le badge ✨ À LA UNE.',
+              },
               {
                 q: 'Qui peut publier une annonce ?',
                 a: 'Tous les habitants, commerçants et bénévoles du quartier peuvent publier un don, une vente, un service ou un petit boulot. L’esprit est l’entraide locale, pas la revente professionnelle.',
@@ -956,6 +981,7 @@ const resources = {
           steps: [
             'Filtrez les annonces par type (don, vente, service, petit boulot).',
             'Appuyez sur « Publier » pour créer une annonce avec titre, description et photo.',
+            'Sur une vente, « Acheter en ligne » ouvre un paiement sécurisé simulé (+1,00 € de protection acheteur).',
             'Pour un échange sans rendez-vous à domicile, choisissez « Proposer au Dépôt Local ».',
             'Réservez un créneau, puis déposez l’objet au Local Relais (26 place Jean Jaques Rabaud).',
           ],
@@ -1210,6 +1236,7 @@ const resources = {
         free: 'Free',
         sponsored: 'FEATURED',
         fromPrice: 'From €{{price}}',
+        buyOnline: 'Buy online',
         depotLocal: 'Propose Local Drop-off',
         filters: {
           all: 'All',
@@ -1249,6 +1276,21 @@ const resources = {
         mine: 'Your listing',
         deleteMine: 'Delete my listing',
         deleteMineConfirm: 'Permanently delete "{{title}}"? This cannot be undone.',
+      },
+      checkout: {
+        title: 'Secure payment',
+        secureHint: 'Simulated card payment. No real charge is made.',
+        itemPrice: 'Item price',
+        protection: 'Buyer protection & transaction fees',
+        total: 'Total amount',
+        cardTitle: 'Bank card',
+        cardName: 'Cardholder',
+        cardNumber: 'Card number',
+        cardExpiry: 'Expiry',
+        cardCvc: 'CVC',
+        demoHint: 'Demo card — this transaction is not sent to a bank.',
+        processing: 'Processing payment…',
+        pay: 'Pay {{total}}',
       },
       relais: {
         title: 'IDÉA Local Hub',
@@ -1812,6 +1854,7 @@ const resources = {
         ruleSaved: 'Loyalty rule saved',
         pointsCredited: '+{{points}} pts credited to {{name}}',
         boostRequested: 'Featured listing request saved — free during launch.',
+        purchaseConfirmed: 'Order confirmed! Simulated payment of {{total}}.',
       },
       footer: {
         copyright: '© IDÉA CHARTRONS — neighborhood association',
@@ -1869,6 +1912,14 @@ const resources = {
           posts: {
             label: 'How to post a listing',
             items: [
+              {
+                q: 'What are the different ways to buy on IDÉA Chartrons?',
+                a: 'On sale listings, you have three options:\n\n1. Direct hand-to-hand pickup — 100% free, you arrange the exchange with the neighbor.\n2. Drop-off at the Local Hub — +€1.00 for storage and concierge fees.\n3. Secure online payment — +€1.00 for buyer protection and transaction fees.',
+              },
+              {
+                q: 'What are the fees for shopkeepers and featured listings?',
+                a: 'Pro Space is currently free during the launch phase (Pioneer Shopkeeper Offer). No subscription is due for now. Visibility comes from featured / sponsored listings, shown at the top of the feed with the ✨ FEATURED badge.',
+              },
               {
                 q: 'Who can post a listing?',
                 a: 'Residents, shopkeepers and volunteers in the neighborhood can post a giveaway, a sale, a service or a small job. The spirit is local mutual aid, not professional resale.',
@@ -2086,6 +2137,7 @@ const resources = {
           steps: [
             'Filter listings by type (giveaway, sale, service, small job).',
             'Tap “Post” to create a listing with a title, description and photo.',
+            'On a sale listing, “Buy online” opens a simulated secure payment (+€1.00 buyer protection).',
             'To avoid a home meetup, choose “Propose Local Drop-off”.',
             'Book a slot, then drop the item at the Local Hub (26 place Jean Jaques Rabaud).',
           ],
