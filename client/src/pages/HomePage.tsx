@@ -50,12 +50,13 @@ export function HomePage() {
 
   const ctaLinks = [
     { to: '/posts', label: t('home.cta.posts'), icon: '📋', gradient: 'from-chartrons-bordeaux to-chartrons-brick' },
-    { to: '/relais', label: t('home.cta.relais'), icon: '📦', gradient: 'from-chartrons-olive to-chartrons-olive-light' },
+    { to: '/decouvrir', label: t('home.cta.decouvrir'), icon: '🚶', gradient: 'from-chartrons-olive to-chartrons-olive-light' },
+    { to: '/pratique', label: t('home.cta.pratique'), icon: 'ℹ️', gradient: 'from-chartrons-brass to-chartrons-olive' },
+    { to: '/conciergerie', label: t('home.cta.conciergerie'), icon: '🔑', gradient: 'from-chartrons-brass to-chartrons-olive' },
     { to: '/carte', label: t('home.cta.carte'), icon: '🗺️', gradient: 'from-chartrons-olive to-chartrons-olive-light' },
     { to: '/acteurs', label: t('home.cta.acteurs'), icon: '🏪', gradient: 'from-chartrons-brass to-chartrons-brick-light' },
-    { to: '/tourisme', label: t('home.cta.tourisme'), icon: '🧳', gradient: 'from-chartrons-brass to-chartrons-olive' },
     { to: '/favoris', label: t('home.cta.favoris'), icon: '♥', gradient: 'from-chartrons-bordeaux to-chartrons-olive-dark' },
-    { to: '/favoris#parcours', label: t('home.cta.parcours'), icon: '🚶', gradient: 'from-chartrons-brass to-chartrons-bordeaux' },
+    { to: '/favoris#parcours', label: t('home.cta.parcours'), icon: '🗺️', gradient: 'from-chartrons-brass to-chartrons-bordeaux' },
     { to: '/events', label: t('home.cta.events'), icon: '📅', gradient: 'from-chartrons-bordeaux-light to-chartrons-bordeaux' },
     { to: '/faq', label: t('home.cta.faq'), icon: '❓', gradient: 'from-chartrons-olive-dark to-chartrons-olive' },
   ];
@@ -132,7 +133,7 @@ export function HomePage() {
 
       <section className="rounded-2xl bg-gradient-to-br from-chartrons-bordeaux to-chartrons-olive-dark p-5 text-white shadow-card">
         <p className="text-sm font-medium opacity-95">{t('app.tagline')}</p>
-        <p className="text-xs opacity-60 mt-1.5">Rue Notre-Dame · Cours Portal · Marché des Chartrons</p>
+        <p className="text-xs opacity-60 mt-1.5">{t('home.areaHint')}</p>
       </section>
     </div>
   );

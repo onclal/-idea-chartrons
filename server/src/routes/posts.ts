@@ -18,13 +18,14 @@ router.get('/:id', (req, res) => {
 });
 
 router.post('/', (req, res) => {
-  const { titre, description, type, prix, photos, auteurId } = req.body as {
+  const { titre, description, type, prix, photos, auteurId, telephone } = req.body as {
     titre?: string;
     description?: string;
     type?: PostType;
     prix?: number | null;
     photos?: string[];
     auteurId?: string;
+    telephone?: string | null;
   };
 
   if (!titre || !description || !type || !auteurId) {
@@ -42,6 +43,7 @@ router.post('/', (req, res) => {
     prix: prix ?? null,
     statut: PostStatus.Disponible,
     photos: photos ?? [],
+    telephone: telephone?.trim() || null,
     createdAt: now,
     updatedAt: now,
   });

@@ -3,10 +3,11 @@ import { useTranslation } from 'react-i18next';
 
 const categories = [
   { path: '/posts', key: 'posts' },
-  { path: '/relais', key: 'relais' },
   { path: '/acteurs', key: 'acteurs' },
   { path: '/carte', key: 'carte' },
-  { path: '/tourisme', key: 'tourisme' },
+  { path: '/decouvrir', key: 'decouvrir' },
+  { path: '/pratique', key: 'pratique' },
+  { path: '/conciergerie', key: 'conciergerie' },
   { path: '/favoris', key: 'favoris' },
   { path: '/events', key: 'events' },
   { path: '/faq', key: 'faq' },

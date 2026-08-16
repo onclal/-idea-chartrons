@@ -3,14 +3,17 @@ import { useTranslation } from 'react-i18next';
 import { LocalRelaisRetraitStatus, PostType, type LocalRelais, type PostAnnonce } from '@idea-chartrons/shared';
 import { Badge, Button, Card, EmptyState, Loading } from '../components/ui';
 import { PageHelp } from '../components/PageHelp';
+import { PhoneLink } from '../components/PhoneLink';
 import { ContactForm } from '../components/ContactForm';
 import { AdminDeleteButton } from '../components/AdminDeleteButton';
+import { OwnerPostActions } from '../components/OwnerPostActions';
 import { PostCreateForm } from '../components/PostCreateForm';
 import { DepotSlotModal } from '../components/RelaisSlotPicker';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { matchesSearch, useSearch } from '../context/SearchContext';
 import { api } from '../lib/api';
+import { bookingErrorMessage } from '../lib/bookingErrors';
 
 const FILTER_TYPES = [
   'all',
@@ -32,12 +35,13 @@ export function PostsPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<FilterType>('all');
   const [showCreate, setShowCreate] = useState(false);
+  const [editingPost, setEditingPost] = useState<PostAnnonce | null>(null);
   const [depotPostId, setDepotPostId] = useState<string | null>(null);
   const [depotLoading, setDepotLoading] = useState(false);
   const [contactContext, setContactContext] = useState<string | null>(null);
 
-  const loadPosts = () => {
-    setLoading(true);
+  const loadPosts = (opts?: { silent?: boolean }) => {
+    if (!opts?.silent) setLoading(true);
     Promise.all([api.getPosts(), api.getRelais()])
       .then(([postsData, relais]) => {
         setPosts(postsData);
@@ -70,18 +74,33 @@ export function PostsPage() {
         creneauDepotId: creneauId,
       });
       setDepotPostId(null);
-      loadPosts();
+      loadPosts({ silent: true });
       showToast(t('toast.depotReserved'));
     } catch (err) {
-      showToast(err instanceof Error ? err.message : t('common.error'), 'error');
+      showToast(bookingErrorMessage(err, t), 'error');
     } finally {
       setDepotLoading(false);
     }
   };
 
+  const openCreate = () => {
+    setEditingPost(null);
+    setShowCreate(true);
+  };
+
+  const openEdit = (post: PostAnnonce) => {
+    setEditingPost(post);
+    setShowCreate(true);
+  };
+
+  const closeForm = () => {
+    setShowCreate(false);
+    setEditingPost(null);
+  };
+
   const handleDeletePost = async (postId: string) => {
     await api.deletePost(postId);
-    loadPosts();
+    loadPosts({ silent: true });
     showToast(t('admin.deleteSuccess'));
   };
 
@@ -101,7 +120,7 @@ export function PostsPage() {
           </div>
           <PageHelp page="posts" />
         </div>
-        <Button size="sm" variant="bordeaux" onClick={() => setShowCreate(true)}>
+        <Button size="sm" variant="bordeaux" onClick={openCreate}>
           + {t('posts.create.button')}
         </Button>
       </div>
@@ -129,7 +148,7 @@ export function PostsPage() {
           message={query ? t('search.noResultsHint') : t('posts.emptyHint')}
           action={
             !query
-              ? { label: `+ ${t('posts.create.button')}`, onClick: () => setShowCreate(true) }
+              ? { label: `+ ${t('posts.create.button')}`, onClick: openCreate }
               : undefined
           }
         />
@@ -137,6 +156,7 @@ export function PostsPage() {
         <div className="space-y-3">
           {filteredPosts.map((post) => {
             const relais = relaisMap.get(post.id);
+            const isOwner = post.auteurId === currentUserId;
             const isReadyLocal =
               relais?.statutRetrait === LocalRelaisRetraitStatus.DisponibleAuLocal;
 
@@ -169,6 +189,9 @@ export function PostsPage() {
                   <p className="text-sm text-chartrons-warm-gray mb-3 line-clamp-2 leading-relaxed">
                     {post.description}
                   </p>
+                  <div className="mb-3">
+                    <PhoneLink phone={post.telephone} />
+                  </div>
                   <div className="flex items-center justify-between mb-3">
                     <Badge variant="brick">{t(`posts.types.${post.type}`)}</Badge>
                     <span className="text-base font-bold text-chartrons-bordeaux">
@@ -185,20 +208,33 @@ export function PostsPage() {
                       📦 {t('posts.depotLocal')}
                     </Button>
                   )}
-                  <Button
-                    variant="ghost"
-                    size="md"
-                    className="w-full mt-2 border border-chartrons-beige"
-                    onClick={() => setContactContext(t('contact.postContext', { title: post.titre }))}
-                  >
-                    {t('contact.askQuestion')}
-                  </Button>
-                  <AdminDeleteButton
-                    label={t('admin.deletePost')}
-                    confirmMessage={t('admin.deletePostConfirm', { title: post.titre })}
-                    onDelete={() => handleDeletePost(post.id)}
-                    className="mt-2"
-                  />
+                  {isOwner ? (
+                    <div className="mt-2 space-y-2">
+                      <p className="text-xs font-medium text-chartrons-olive">{t('posts.mine')}</p>
+                      <OwnerPostActions
+                        post={post}
+                        onEdit={() => openEdit(post)}
+                        onDeleted={() => loadPosts({ silent: true })}
+                      />
+                    </div>
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      size="md"
+                      className="w-full mt-2 border border-chartrons-beige"
+                      onClick={() => setContactContext(t('contact.postContext', { title: post.titre }))}
+                    >
+                      {t('contact.askQuestion')}
+                    </Button>
+                  )}
+                  {!isOwner && (
+                    <AdminDeleteButton
+                      label={t('admin.deletePost')}
+                      confirmMessage={t('admin.deletePostConfirm', { title: post.titre })}
+                      onDelete={() => handleDeletePost(post.id)}
+                      className="mt-2"
+                    />
+                  )}
                 </div>
               </Card>
             );
@@ -208,8 +244,9 @@ export function PostsPage() {
 
       <PostCreateForm
         open={showCreate}
-        onClose={() => setShowCreate(false)}
-        onCreated={loadPosts}
+        onClose={closeForm}
+        onCreated={() => loadPosts({ silent: true })}
+        post={editingPost}
       />
 
       <DepotSlotModal

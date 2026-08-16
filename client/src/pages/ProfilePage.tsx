@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getFideliteNiveau, UserRole } from '@idea-chartrons/shared';
+import { getFideliteNiveau, UserRole, type PostAnnonce } from '@idea-chartrons/shared';
 import { Badge, Button, Card, Loading } from '../components/ui';
 import { AdminPanel } from '../components/AdminPanel';
 import { FideliteHistory } from '../components/FideliteHistory';
 import { CarnetSyncCard } from '../components/CarnetSyncCard';
+import { OwnerPostActions } from '../components/OwnerPostActions';
 import { PageHelp } from '../components/PageHelp';
+import { PostCreateForm } from '../components/PostCreateForm';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { api, type VipStatusEntry } from '../lib/api';
@@ -15,13 +17,23 @@ export function ProfilePage() {
   const { currentUser, currentUserId, demoUsers, switchUser, refreshUser } = useAuth();
   const { showToast } = useToast();
   const [vipStatus, setVipStatus] = useState<VipStatusEntry[]>([]);
+  const [myPosts, setMyPosts] = useState<PostAnnonce[]>([]);
   const [loading, setLoading] = useState(true);
   const [resetting, setResetting] = useState(false);
+  const [editingPost, setEditingPost] = useState<PostAnnonce | null>(null);
+  const [formOpen, setFormOpen] = useState(false);
 
-  const loadProfile = () => {
-    setLoading(true);
-    api.getVipStatus(currentUserId)
-      .then((vip) => setVipStatus(vip.vipStatus))
+  const loadProfile = (opts?: { silent?: boolean }) => {
+    if (!opts?.silent) setLoading(true);
+    Promise.all([api.getVipStatus(currentUserId), api.getPosts()])
+      .then(([vip, posts]) => {
+        setVipStatus(vip.vipStatus);
+        setMyPosts(
+          posts
+            .filter((post) => post.auteurId === currentUserId)
+            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
+        );
+      })
       .catch(console.error)
       .finally(() => setLoading(false));
   };
@@ -125,6 +137,49 @@ export function ProfilePage() {
       </Card>
 
       <Card>
+        <h4 className="text-sm font-semibold text-chartrons-green-dark mb-1">
+          {t('profile.myPosts')}
+        </h4>
+        <p className="text-xs text-chartrons-warm-gray mb-3">{t('profile.myPostsHint')}</p>
+        {myPosts.length === 0 ? (
+          <p className="text-sm text-chartrons-warm-gray">{t('profile.myPostsEmpty')}</p>
+        ) : (
+          <div className="space-y-3">
+            {myPosts.map((post) => (
+              <div
+                key={post.id}
+                className="p-3 rounded-xl border border-chartrons-beige bg-white"
+              >
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  <p className="text-sm font-semibold text-chartrons-olive-dark leading-snug">
+                    {post.titre}
+                  </p>
+                  <Badge variant={post.statut === 'Disponible' ? 'olive' : 'stone'}>
+                    {t(`posts.status.${post.statut}`)}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between mb-3">
+                  <Badge variant="brick">{t(`posts.types.${post.type}`)}</Badge>
+                  <span className="text-sm font-bold text-chartrons-bordeaux">
+                    {post.prix !== null ? `${post.prix} €` : t('posts.free')}
+                  </span>
+                </div>
+                <OwnerPostActions
+                  post={post}
+                  layout="row"
+                  onEdit={() => {
+                    setEditingPost(post);
+                    setFormOpen(true);
+                  }}
+                  onDeleted={() => loadProfile({ silent: true })}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
+
+      <Card>
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm text-chartrons-warm-gray">{t('profile.points')}</p>
@@ -134,6 +189,16 @@ export function ProfilePage() {
             ⭐
           </div>
         </div>
+      </Card>
+
+      <Card className="bg-chartrons-beige/40 border border-chartrons-beige">
+        <h4 className="text-sm font-semibold text-chartrons-olive-dark mb-2">
+          {t('profile.howTitle')}
+        </h4>
+        <p className="text-xs font-semibold text-chartrons-bordeaux mt-2">{t('profile.howScanTitle')}</p>
+        <p className="text-sm text-chartrons-warm-gray mt-1 leading-relaxed">{t('profile.howScan')}</p>
+        <p className="text-xs font-semibold text-chartrons-bordeaux mt-3">{t('profile.howVipTitle')}</p>
+        <p className="text-sm text-chartrons-warm-gray mt-1 leading-relaxed">{t('profile.howVip')}</p>
       </Card>
 
       <FideliteHistory userId={currentUserId} userPoints={currentUser.pointsFidelite} />
@@ -198,6 +263,16 @@ export function ProfilePage() {
           {resetting ? t('common.loading') : t('profile.resetDemo')}
         </Button>
       </Card>
+
+      <PostCreateForm
+        open={formOpen}
+        post={editingPost}
+        onClose={() => {
+          setFormOpen(false);
+          setEditingPost(null);
+        }}
+        onCreated={() => loadProfile({ silent: true })}
+      />
     </div>
   );
 }

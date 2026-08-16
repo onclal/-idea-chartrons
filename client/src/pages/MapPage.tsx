@@ -5,12 +5,14 @@ import {
   ActeurLocalCategory,
   CHARTRONS_MAP_CENTER,
   hasCoordinates,
+  LOCAL_RELAIS_PHONE,
   STATIC_MAP_POIS,
   type ActeurLocal,
   type AgendaEvenement,
 } from '@idea-chartrons/shared';
 import { Badge, Button, Card, Loading } from '../components/ui';
 import { PageHelp } from '../components/PageHelp';
+import { PhoneLink } from '../components/PhoneLink';
 import { FavoriteButton } from '../components/FavoriteButton';
 import { FavoritesDrawer } from '../components/FavoritesDrawer';
 import { DirectionsButton } from '../components/DirectionsButton';
@@ -36,12 +38,12 @@ const LAYERS: MapLayer[] = ['commerce', 'sante', 'tourisme', 'relais', 'marche',
 
 function acteurKind(acteur: ActeurLocal): MapPinKind {
   if (acteur.categorie === ActeurLocalCategory.TourismeConciergerie) return 'tourisme';
-  if (acteur.categorie === ActeurLocalCategory.SanteServices) return 'sante';
+  if (acteur.categorie === ActeurLocalCategory.SanteSoinsServices) return 'sante';
   return 'commerce';
 }
 
-function acteurHref(acteur: ActeurLocal): string {
-  return acteur.categorie === ActeurLocalCategory.TourismeConciergerie ? '/tourisme' : '/acteurs';
+function acteurHref(): string {
+  return '/acteurs';
 }
 
 function pinToFavorite(pin: MapPin): FavoriteInput {
@@ -160,7 +162,8 @@ export function MapPage() {
       adresse: acteur.adresse,
       latitude: acteur.latitude,
       longitude: acteur.longitude,
-      href: acteurHref(acteur),
+      href: acteurHref(),
+      telephone: acteur.telephone,
     }));
 
     const fromEvents: MapPin[] = events.filter(hasCoordinates).map((event) => ({
@@ -183,6 +186,7 @@ export function MapPage() {
       latitude: poi.latitude,
       longitude: poi.longitude,
       href: poi.href,
+      telephone: poi.telephone ?? (poi.kind === 'relais' ? LOCAL_RELAIS_PHONE : null),
     }));
 
     return [...fromActeurs, ...fromEvents, ...fromPois];
@@ -554,6 +558,9 @@ export function MapPage() {
                 <Badge variant="olive">{selectedPin.subtitle}</Badge>
               </div>
               <p className="text-xs text-chartrons-warm-gray mt-2">📍 {selectedPin.adresse}</p>
+              <div className="mt-1">
+                <PhoneLink phone={selectedPin.telephone} />
+              </div>
             </div>
             <FavoriteButton place={pinToFavorite(selectedPin)} />
           </div>

@@ -17,14 +17,16 @@ interface ActeurForm {
   offreVip: string;
   pointsRequisVip: string;
   userId: string;
+  telephone: string;
   activerFidelite: boolean;
 }
 
 const emptyForm = (userId: string): ActeurForm => ({
   nomCommerce: '',
-  categorie: ActeurLocalCategory.Commercant,
+  categorie: ActeurLocalCategory.CommercesArtisanat,
   description: '',
   adresse: '',
+  telephone: '',
   photo: '',
   offreVip: '',
   pointsRequisVip: '50',
@@ -83,6 +85,7 @@ export function AdminActeursPage() {
       categorie: acteur.categorie,
       description: acteur.description,
       adresse: acteur.adresse,
+      telephone: acteur.telephone ?? '',
       photo: acteur.photos[0] ?? '',
       offreVip: acteur.offreVip ?? '',
       pointsRequisVip: String(acteur.pointsRequisVip),
@@ -106,6 +109,7 @@ export function AdminActeursPage() {
         categorie: form.categorie,
         description: form.description,
         adresse: form.adresse,
+        telephone: form.telephone.trim() || null,
         photos: form.photo ? [form.photo] : [],
         offreVip: form.offreVip.trim() || null,
         pointsRequisVip: Number(form.pointsRequisVip) || 0,
@@ -275,6 +279,13 @@ export function AdminActeursPage() {
             value={form.adresse}
             onChange={(e) => setForm((f) => ({ ...f, adresse: e.target.value }))}
             required
+          />
+          <Input
+            label={t('common.phone')}
+            type="tel"
+            value={form.telephone}
+            onChange={(e) => setForm((f) => ({ ...f, telephone: e.target.value }))}
+            placeholder={t('common.phonePlaceholder')}
           />
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Select

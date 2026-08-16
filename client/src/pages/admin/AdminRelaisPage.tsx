@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getNextStatus, type LocalRelais, type PostAnnonce, type RelaisCreneau, type User } from '@idea-chartrons/shared';
+import { getCreneauPlacesRestantes, getNextStatus, type LocalRelais, type PostAnnonce, type RelaisCreneau, type User } from '@idea-chartrons/shared';
 import { AdminDataTable } from '../../components/admin/AdminDataTable';
 import { AdminPageHeader } from '../../components/admin/AdminPageHeader';
 import { Badge, Button, Card, EmptyState, Loading } from '../../components/ui';
@@ -140,7 +140,7 @@ export function AdminRelaisPage() {
         <h2 className="text-lg font-bold text-chartrons-bordeaux mb-3">{t('adminSpace.pages.slots')}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
           {upcomingSlots.map((slot) => {
-            const remaining = slot.capacite - slot.reserves;
+            const remaining = getCreneauPlacesRestantes(slot);
             return (
               <Card key={slot.id} className="!p-4 flex items-center justify-between gap-3">
                 <div>

@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { PostType } from '@idea-chartrons/shared';
+import { PostType, type PostAnnonce } from '@idea-chartrons/shared';
 import { Button, Input, Modal, Textarea } from './ui';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -10,6 +10,7 @@ interface PostCreateFormProps {
   open: boolean;
   onClose: () => void;
   onCreated: () => void;
+  post?: PostAnnonce | null;
 }
 
 const POST_TYPES = [
@@ -19,26 +20,40 @@ const POST_TYPES = [
   PostType.PetitBoulot,
 ] as const;
 
-export function PostCreateForm({ open, onClose, onCreated }: PostCreateFormProps) {
+export function PostCreateForm({ open, onClose, onCreated, post = null }: PostCreateFormProps) {
   const { t } = useTranslation();
   const { currentUserId } = useAuth();
   const { showToast } = useToast();
+  const editing = Boolean(post);
   const [titre, setTitre] = useState('');
   const [description, setDescription] = useState('');
   const [type, setType] = useState<PostType>(PostType.Don);
   const [prix, setPrix] = useState('');
+  const [telephone, setTelephone] = useState('');
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const reset = () => {
+  useEffect(() => {
+    if (!open) return;
+    if (post) {
+      setTitre(post.titre);
+      setDescription(post.description);
+      setType(post.type);
+      setPrix(post.prix != null ? String(post.prix) : '');
+      setTelephone(post.telephone ?? '');
+      setPhotoPreview(post.photos[0] ?? null);
+      setError(null);
+      return;
+    }
     setTitre('');
     setDescription('');
     setType(PostType.Don);
     setPrix('');
+    setTelephone('');
     setPhotoPreview(null);
     setError(null);
-  };
+  }, [open, post]);
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -53,18 +68,26 @@ export function PostCreateForm({ open, onClose, onCreated }: PostCreateFormProps
     setSubmitting(true);
     setError(null);
     try {
-      await api.createPost({
-        titre,
-        description,
+      const payload = {
+        titre: titre.trim(),
+        description: description.trim(),
         type,
         prix: type === PostType.Vente || type === PostType.PetitBoulot ? Number(prix) || 0 : null,
         photos: photoPreview ? [photoPreview] : [],
-        auteurId: currentUserId,
-      });
-      reset();
+        telephone: telephone.trim() || null,
+      };
+      if (post) {
+        await api.updatePost(post.id, payload);
+        showToast(t('toast.postUpdated'));
+      } else {
+        await api.createPost({
+          ...payload,
+          auteurId: currentUserId,
+        });
+        showToast(t('toast.postPublished'));
+      }
       onCreated();
       onClose();
-      showToast(t('toast.postPublished'));
     } catch (err) {
       setError(err instanceof Error ? err.message : t('common.error'));
     } finally {
@@ -73,7 +96,7 @@ export function PostCreateForm({ open, onClose, onCreated }: PostCreateFormProps
   };
 
   return (
-    <Modal open={open} onClose={onClose} title={t('posts.create.title')}>
+    <Modal open={open} onClose={onClose} title={editing ? t('posts.edit.title') : t('posts.create.title')}>
       <form onSubmit={handleSubmit} className="space-y-4">
         <Input
           label={t('posts.create.titre')}
@@ -126,6 +149,14 @@ export function PostCreateForm({ open, onClose, onCreated }: PostCreateFormProps
           />
         )}
 
+        <Input
+          label={t('common.phone')}
+          type="tel"
+          value={telephone}
+          onChange={(e) => setTelephone(e.target.value)}
+          placeholder={t('common.phonePlaceholder')}
+        />
+
         <div className="space-y-2">
           <label className="block text-xs font-medium text-chartrons-warm-gray">
             {t('posts.create.photo')}
@@ -150,7 +181,7 @@ export function PostCreateForm({ open, onClose, onCreated }: PostCreateFormProps
             {t('common.cancel')}
           </Button>
           <Button type="submit" className="flex-1" disabled={submitting}>
-            {submitting ? t('common.loading') : t('posts.create.submit')}
+            {submitting ? t('common.loading') : editing ? t('posts.edit.submit') : t('posts.create.submit')}
           </Button>
         </div>
       </form>

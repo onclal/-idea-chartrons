@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { RelaisCreneauType, type RelaisCreneau } from '@idea-chartrons/shared';
+import { RelaisCreneauType, getCreneauPlacesRestantes, type RelaisCreneau } from '@idea-chartrons/shared';
 import { Button } from './ui';
 import { api } from '../lib/api';
 
@@ -50,14 +50,18 @@ export function RelaisSlotPicker({ type, selectedId, onSelect }: RelaisSlotPicke
           </p>
           <div className="grid grid-cols-2 gap-2">
             {slots.map((slot) => {
-              const places = slot.capacite - slot.reserves;
+              const places = getCreneauPlacesRestantes(slot);
               const isSelected = selectedId === slot.id;
               return (
                 <button
                   key={slot.id}
+                  type="button"
+                  disabled={places <= 0}
                   onClick={() => onSelect(slot.id)}
                   className={`p-2.5 rounded-xl border text-left transition-colors ${
-                    isSelected
+                    places <= 0
+                      ? 'border-chartrons-beige bg-chartrons-beige/40 opacity-50 cursor-not-allowed'
+                      : isSelected
                       ? 'border-chartrons-green bg-chartrons-green/5'
                       : 'border-chartrons-gold/20 hover:border-chartrons-green/30'
                   }`}

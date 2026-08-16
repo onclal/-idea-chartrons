@@ -3,15 +3,20 @@ import {
   calculateScanPoints,
   CHARTRONS_MAP_CENTER,
   createSeedData,
+  createUpcomingMarcheChartronsEvents,
   generateQrVitrineCode,
   getFideliteNiveau,
+  getCreneauReserves,
   getNextStatus,
   isCreneauAvailable,
   isVipUnlocked,
   LocalRelaisRetraitStatus,
+  normalizeRelaisCreneauType,
   PostStatus,
   PostType,
   RelaisCreneauType,
+  syncRelaisCreneauxWindow,
+  slotFromId,
   type ActeurLocal,
   type AgendaEvenement,
   type DatabaseSchema,
@@ -24,15 +29,67 @@ import {
   type User,
   type UserRole,
 } from '@idea-chartrons/shared';
+import { DB_STORAGE_KEY, isQuotaError, purgeObsoleteLocalStorage, writeLocalStorage } from './storage';
+
+const VALID_ACTEUR_CATEGORIES = new Set<string>(Object.values(ActeurLocalCategory));
 
 const LEGACY_ACTEUR_CATEGORIES: Record<string, ActeurLocalCategory> = {
-  Brocanteur_Rue_Notre_Dame: ActeurLocalCategory.Brocanteur,
+  Brocanteur_Rue_Notre_Dame: ActeurLocalCategory.CommercesArtisanat,
+  Brocanteur: ActeurLocalCategory.CommercesArtisanat,
+  Commerçant: ActeurLocalCategory.CommercesArtisanat,
+  Artisan: ActeurLocalCategory.CommercesArtisanat,
+  Santé_Services_Proximité: ActeurLocalCategory.SanteSoinsServices,
+  Libéral: ActeurLocalCategory.StartupsB2B,
+  Association: ActeurLocalCategory.StartupsB2B,
 };
 
-const DB_STORAGE_KEY = 'idea-chartrons-db';
+function isHeavyPhoto(url: string): boolean {
+  return url.startsWith('data:');
+}
+
+function stripHeavyPhotos(photos: string[] | undefined, aggressive: boolean): string[] {
+  const list = photos ?? [];
+  if (aggressive) return [];
+  return list.filter((photo) => photo && !isHeavyPhoto(photo)).slice(0, 2);
+}
+
+function compactSchema(data: DatabaseSchema, aggressive = false): DatabaseSchema {
+  const marcheCutoff = Date.now() - 2 * 86400000;
+  return {
+    ...data,
+    postsAnnonces: (data.postsAnnonces ?? []).map((post) => ({
+      ...post,
+      photos: stripHeavyPhotos(post.photos, aggressive),
+    })),
+    acteursLocaux: (data.acteursLocaux ?? []).map((acteur) => ({
+      ...acteur,
+      photos: stripHeavyPhotos(acteur.photos, aggressive),
+    })),
+    agendaEvenements: (data.agendaEvenements ?? [])
+      .filter((event) => {
+        if (!event.id.startsWith('event-marche-chartrons-')) return true;
+        return new Date(event.dateFin).getTime() >= marcheCutoff;
+      })
+      .map((event) => (aggressive ? { ...event, image: null } : event)),
+    cartesFideliteScans: (data.cartesFideliteScans ?? []).slice(-80),
+    localRelais: aggressive
+      ? (data.localRelais ?? []).filter(
+          (relais) => relais.statutRetrait !== LocalRelaisRetraitStatus.Recupere,
+        )
+      : (data.localRelais ?? []),
+  };
+}
+
+function todayLocalYmd(): string {
+  const now = new Date();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${now.getFullYear()}-${month}-${day}`;
+}
 
 class LocalDatabase {
   private data: DatabaseSchema;
+  private skipPersist = 0;
 
   constructor() {
     this.data = this.loadFromStorage();
@@ -48,7 +105,11 @@ class LocalDatabase {
       // corrupted storage — fall back to seed
     }
     const seed = createSeedData();
-    this.persist(seed);
+    try {
+      this.persist(seed);
+    } catch {
+      this.data = seed;
+    }
     return seed;
   }
 
@@ -57,25 +118,31 @@ class LocalDatabase {
     const seed = createSeedData();
 
     const acteursLocaux = (data.acteursLocaux ?? []).map((acteur) => {
-      const nextCategory = LEGACY_ACTEUR_CATEGORIES[acteur.categorie] ?? acteur.categorie;
-      const nextQr = acteur.qrCodeVitrine || null;
       const seedMatch = seed.acteursLocaux.find((item) => item.id === acteur.id);
+      const mappedLegacy = LEGACY_ACTEUR_CATEGORIES[acteur.categorie];
+      const nextCategory = VALID_ACTEUR_CATEGORIES.has(acteur.categorie)
+        ? acteur.categorie
+        : (seedMatch?.categorie ?? mappedLegacy ?? ActeurLocalCategory.CommercesArtisanat);
+      const nextQr = acteur.qrCodeVitrine || null;
       const nextLat = acteur.latitude ?? seedMatch?.latitude ?? null;
       const nextLng = acteur.longitude ?? seedMatch?.longitude ?? null;
+      const nextTel = acteur.telephone ?? seedMatch?.telephone ?? null;
       if (
         nextCategory !== acteur.categorie ||
         nextQr !== acteur.qrCodeVitrine ||
         nextLat !== acteur.latitude ||
-        nextLng !== acteur.longitude
+        nextLng !== acteur.longitude ||
+        nextTel !== acteur.telephone
       ) {
         changed = true;
       }
       return {
         ...acteur,
-        categorie: nextCategory,
+        categorie: nextCategory as ActeurLocalCategory,
         qrCodeVitrine: nextQr,
         latitude: nextLat,
         longitude: nextLng,
+        telephone: nextTel,
       };
     });
 
@@ -102,18 +169,152 @@ class LocalDatabase {
     for (const seedEvent of seed.agendaEvenements) {
       if (!knownEventIds.has(seedEvent.id)) {
         agendaEvenements.push(seedEvent);
+        knownEventIds.add(seedEvent.id);
         changed = true;
       }
     }
 
-    const migrated = { ...data, acteursLocaux, agendaEvenements };
+    for (const marche of createUpcomingMarcheChartronsEvents('user-1', new Date().toISOString())) {
+      if (!knownEventIds.has(marche.id)) {
+        agendaEvenements.push(marche);
+        knownEventIds.add(marche.id);
+        changed = true;
+      }
+    }
+
+    const postsAnnonces = (data.postsAnnonces ?? []).map((post) => {
+      const seedMatch = seed.postsAnnonces.find((item) => item.id === post.id);
+      const telephone = post.telephone ?? seedMatch?.telephone ?? null;
+      if (telephone !== post.telephone) changed = true;
+      return { ...post, telephone };
+    });
+
+    const marcheCutoff = Date.now() - 2 * 86400000;
+    const prunedEvents = agendaEvenements.filter((event) => {
+      if (!event.id.startsWith('event-marche-chartrons-')) return true;
+      return new Date(event.dateFin).getTime() >= marcheCutoff;
+    });
+    if (prunedEvents.length !== agendaEvenements.length) changed = true;
+
+    const localRelais = data.localRelais ?? [];
+    const relaisCreneaux = syncRelaisCreneauxWindow(data.relaisCreneaux ?? [], localRelais);
+    if (JSON.stringify(relaisCreneaux) !== JSON.stringify(data.relaisCreneaux ?? [])) {
+      changed = true;
+    }
+
+    const migrated = {
+      ...data,
+      acteursLocaux,
+      agendaEvenements: prunedEvents,
+      postsAnnonces,
+      relaisCreneaux,
+      localRelais,
+    };
     if (changed) this.persist(migrated);
-    return changed ? migrated : data;
+    return changed ? migrated : { ...data, relaisCreneaux };
   }
 
   private persist(data: DatabaseSchema = this.data): void {
-    this.data = data;
-    localStorage.setItem(DB_STORAGE_KEY, JSON.stringify(data));
+    if (this.skipPersist > 0) {
+      this.data = data;
+      return;
+    }
+
+    const write = (payload: DatabaseSchema) => {
+      writeLocalStorage(DB_STORAGE_KEY, JSON.stringify(payload));
+      this.data = payload;
+    };
+
+    let next = data;
+    const serialized = JSON.stringify(next);
+    if (serialized.length > 1_400_000) {
+      next = compactSchema(next, serialized.length > 2_400_000);
+      next = {
+        ...next,
+        relaisCreneaux: syncRelaisCreneauxWindow(next.relaisCreneaux, next.localRelais),
+      };
+    }
+
+    try {
+      write(next);
+      return;
+    } catch (error) {
+      if (!isQuotaError(error) && (error as Error).message !== 'STORAGE_QUOTA') throw error;
+    }
+
+    purgeObsoleteLocalStorage();
+    let compacted = compactSchema(next, false);
+    compacted = {
+      ...compacted,
+      relaisCreneaux: syncRelaisCreneauxWindow(compacted.relaisCreneaux, compacted.localRelais),
+    };
+    try {
+      localStorage.removeItem(DB_STORAGE_KEY);
+      write(compacted);
+      return;
+    } catch (error) {
+      if (!isQuotaError(error)) throw error;
+    }
+
+    purgeObsoleteLocalStorage({ aggressive: true });
+    compacted = compactSchema(compacted, true);
+    compacted = {
+      ...compacted,
+      relaisCreneaux: syncRelaisCreneauxWindow(compacted.relaisCreneaux, compacted.localRelais),
+    };
+    try {
+      localStorage.removeItem(DB_STORAGE_KEY);
+      write(compacted);
+    } catch (error) {
+      const raw = localStorage.getItem(DB_STORAGE_KEY);
+      if (raw) {
+        try {
+          this.data = JSON.parse(raw) as DatabaseSchema;
+        } catch {
+          this.data = data;
+        }
+      } else {
+        this.data = compacted;
+      }
+      throw new Error('STORAGE_QUOTA');
+    }
+  }
+
+  private withSinglePersist<T>(fn: () => T): T {
+    this.skipPersist += 1;
+    try {
+      const result = fn();
+      this.skipPersist = Math.max(0, this.skipPersist - 1);
+      this.persist();
+      return result;
+    } catch (error) {
+      this.skipPersist = Math.max(0, this.skipPersist - 1);
+      throw error;
+    }
+  }
+
+  private refreshCreneaux(): RelaisCreneau[] {
+    const next = syncRelaisCreneauxWindow(this.data.relaisCreneaux, this.data.localRelais);
+    this.data = { ...this.data, relaisCreneaux: next };
+    return next;
+  }
+
+  private ensureSlot(creneauId: string, expectedType: RelaisCreneauType): RelaisCreneau | undefined {
+    this.refreshCreneaux();
+    let creneau = this.getById('relaisCreneaux', creneauId);
+    if (!creneau) {
+      const created = slotFromId(creneauId);
+      if (created) {
+        this.data = {
+          ...this.data,
+          relaisCreneaux: [...this.data.relaisCreneaux, created],
+        };
+        creneau = created;
+      }
+    }
+    if (!creneau) return undefined;
+    if (normalizeRelaisCreneauType(creneau.type) !== expectedType) return undefined;
+    return creneau;
   }
 
   reset(): void {
@@ -230,6 +431,7 @@ class LocalDatabase {
     photos: string[];
     auteurId: string;
     statut?: PostStatus;
+    telephone?: string | null;
   }): PostAnnonce {
     const now = new Date().toISOString();
     return this.create('postsAnnonces', {
@@ -241,6 +443,7 @@ class LocalDatabase {
       prix: data.prix,
       statut: data.statut ?? PostStatus.Disponible,
       photos: data.photos,
+      telephone: data.telephone?.trim() || null,
       createdAt: now,
       updatedAt: now,
     });
@@ -280,6 +483,7 @@ class LocalDatabase {
     activerFidelite?: boolean;
     latitude?: number | null;
     longitude?: number | null;
+    telephone?: string | null;
   }): ActeurLocal {
     const now = new Date().toISOString();
     return this.create('acteursLocaux', {
@@ -289,6 +493,7 @@ class LocalDatabase {
       categorie: data.categorie,
       description: data.description,
       adresse: data.adresse,
+      telephone: data.telephone?.trim() || null,
       photos: data.photos,
       offreVip: data.offreVip,
       pointsRequisVip: data.pointsRequisVip,
@@ -389,13 +594,18 @@ class LocalDatabase {
   }
 
   getCreneaux(type?: RelaisCreneauType): RelaisCreneau[] {
-    let creneaux = this.getAll('relaisCreneaux');
-    if (type) creneaux = creneaux.filter((c) => c.type === type);
-    return creneaux.filter(isCreneauAvailable);
+    this.refreshCreneaux();
+    const today = todayLocalYmd();
+    const expected = type ? normalizeRelaisCreneauType(type) : null;
+    return this.getAll('relaisCreneaux').filter((creneau) => {
+      const slotType = normalizeRelaisCreneauType(creneau.type);
+      const matchesType = expected == null || slotType === expected;
+      return matchesType && creneau.date >= today && isCreneauAvailable(creneau);
+    });
   }
 
   getAllCreneaux(): RelaisCreneau[] {
-    return this.getAll('relaisCreneaux');
+    return this.refreshCreneaux();
   }
 
   proposeDepotLocal(data: {
@@ -403,21 +613,45 @@ class LocalDatabase {
     userId: string;
     creneauDepotId: string;
   }): LocalRelais {
+    try {
+      return this.withSinglePersist(() => this.commitDepotLocal(data));
+    } catch (error) {
+      if (error instanceof Error && error.message === 'STORAGE_QUOTA') {
+        purgeObsoleteLocalStorage({ aggressive: true });
+        this.data = compactSchema(this.data, true);
+        this.refreshCreneaux();
+        const already = this.getAll('localRelais').find((r) => r.postId === data.postId);
+        if (already) {
+          this.persist();
+          return already;
+        }
+        return this.withSinglePersist(() => this.commitDepotLocal(data));
+      }
+      throw error;
+    }
+  }
+
+  private commitDepotLocal(data: {
+    postId: string;
+    userId: string;
+    creneauDepotId: string;
+  }): LocalRelais {
     const post = this.getById('postsAnnonces', data.postId);
     if (!post) throw new Error('Post not found');
-
-    const creneau = this.getById('relaisCreneaux', data.creneauDepotId);
-    if (!creneau || creneau.type !== RelaisCreneauType.Depot || !isCreneauAvailable(creneau)) {
-      throw new Error('Invalid or full depot slot');
-    }
 
     const existing = this.getAll('localRelais').find((r) => r.postId === data.postId);
     if (existing) throw new Error('Depot already exists');
 
+    this.refreshCreneaux();
+    const creneau = this.ensureSlot(data.creneauDepotId, RelaisCreneauType.Depot);
+    if (!creneau || !isCreneauAvailable(creneau)) {
+      throw new Error('Invalid or full depot slot');
+    }
+
     const now = new Date().toISOString();
     const code = `QR-CHARTRONS-${String(Date.now()).slice(-6)}`;
 
-    this.update('relaisCreneaux', data.creneauDepotId, { reserves: creneau.reserves + 1 });
+    this.update('relaisCreneaux', data.creneauDepotId, { reserves: getCreneauReserves(creneau) + 1 });
 
     const relais = this.create('localRelais', {
       id: `relais-${Date.now()}`,
@@ -437,18 +671,38 @@ class LocalDatabase {
   }
 
   reserverRetrait(relaisId: string, creneauRetraitId: string): LocalRelais {
+    try {
+      return this.withSinglePersist(() => this.commitRetrait(relaisId, creneauRetraitId));
+    } catch (error) {
+      if (error instanceof Error && error.message === 'STORAGE_QUOTA') {
+        purgeObsoleteLocalStorage({ aggressive: true });
+        this.data = compactSchema(this.data, true);
+        this.refreshCreneaux();
+        const current = this.getById('localRelais', relaisId);
+        if (current?.creneauRetraitId === creneauRetraitId) {
+          this.persist();
+          return current;
+        }
+        return this.withSinglePersist(() => this.commitRetrait(relaisId, creneauRetraitId));
+      }
+      throw error;
+    }
+  }
+
+  private commitRetrait(relaisId: string, creneauRetraitId: string): LocalRelais {
     const relais = this.getById('localRelais', relaisId);
     if (!relais) throw new Error('Relais not found');
     if (relais.statutRetrait !== LocalRelaisRetraitStatus.DisponibleAuLocal) {
       throw new Error('Item not ready for pickup');
     }
 
-    const creneau = this.getById('relaisCreneaux', creneauRetraitId);
-    if (!creneau || creneau.type !== RelaisCreneauType.Retrait || !isCreneauAvailable(creneau)) {
+    this.refreshCreneaux();
+    const creneau = this.ensureSlot(creneauRetraitId, RelaisCreneauType.Retrait);
+    if (!creneau || !isCreneauAvailable(creneau)) {
       throw new Error('Invalid or full pickup slot');
     }
 
-    this.update('relaisCreneaux', creneauRetraitId, { reserves: creneau.reserves + 1 });
+    this.update('relaisCreneaux', creneauRetraitId, { reserves: getCreneauReserves(creneau) + 1 });
     const updated = this.update('localRelais', relaisId, { creneauRetraitId });
     if (!updated) throw new Error('Relais not found');
     return updated;

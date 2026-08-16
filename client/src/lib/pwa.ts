@@ -19,10 +19,16 @@ export function registerPwa(): void {
   if (typeof window === 'undefined') return;
   void import('virtual:pwa-register')
     .then(({ registerSW }) => {
-      registerSW({
+      const updateSW = registerSW({
         immediate: true,
+        onNeedRefresh() {
+          void updateSW(true);
+        },
         onOfflineReady() {
           listeners.onOfflineReady?.();
+        },
+        onRegistered(registration) {
+          void registration?.update();
         },
       });
     })

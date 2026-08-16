@@ -1,3 +1,5 @@
+import { writeLocalStorage } from './storage';
+
 export const ADMIN_CONTACT_EMAIL = 'asso@idea-chartrons.fr';
 
 export const CONTACT_STORAGE_KEY = 'idea-chartrons-contact-messages';
@@ -31,6 +33,6 @@ export function saveContactMessage(
     createdAt: new Date().toISOString(),
   };
   const next = [message, ...loadContactMessages()].slice(0, 50);
-  localStorage.setItem(CONTACT_STORAGE_KEY, JSON.stringify(next));
+  writeLocalStorage(CONTACT_STORAGE_KEY, JSON.stringify(next));
   return message;
 }

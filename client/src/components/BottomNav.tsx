@@ -5,7 +5,7 @@ const navItems = [
   { path: '/', icon: '🏠', key: 'home' },
   { path: '/posts', icon: '📋', key: 'posts' },
   { path: '/carte', icon: '🗺️', key: 'carte' },
-  { path: '/relais', icon: '📦', key: 'relais' },
+  { path: '/decouvrir', icon: '🚶', key: 'decouvrir' },
   { path: '/acteurs', icon: '🏪', key: 'acteurs' },
   { path: '/profile', icon: '👤', key: 'profile' },
 ] as const;

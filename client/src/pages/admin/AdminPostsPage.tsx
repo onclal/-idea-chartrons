@@ -17,6 +17,7 @@ interface PostForm {
   statut: PostStatus;
   photo: string;
   auteurId: string;
+  telephone: string;
 }
 
 const emptyForm = (auteurId: string): PostForm => ({
@@ -27,6 +28,7 @@ const emptyForm = (auteurId: string): PostForm => ({
   statut: PostStatus.Disponible,
   photo: '',
   auteurId,
+  telephone: '',
 });
 
 export function AdminPostsPage() {
@@ -81,6 +83,7 @@ export function AdminPostsPage() {
       statut: post.statut,
       photo: post.photos[0] ?? '',
       auteurId: post.auteurId,
+      telephone: post.telephone ?? '',
     });
   };
 
@@ -104,6 +107,7 @@ export function AdminPostsPage() {
         photos: form.photo ? [form.photo] : [],
         auteurId: form.auteurId,
         statut: form.statut,
+        telephone: form.telephone.trim() || null,
       };
       if (editing) {
         await api.updatePost(editing.id, payload);
@@ -300,6 +304,13 @@ export function AdminPostsPage() {
             value={form.auteurId}
             onChange={(e) => setForm((f) => ({ ...f, auteurId: e.target.value }))}
             options={users.map((u) => ({ value: u.id, label: u.nom }))}
+          />
+          <Input
+            label={t('common.phone')}
+            type="tel"
+            value={form.telephone}
+            onChange={(e) => setForm((f) => ({ ...f, telephone: e.target.value }))}
+            placeholder={t('common.phonePlaceholder')}
           />
           <AdminPhotoField
             label={t('posts.create.photo')}

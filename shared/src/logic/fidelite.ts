@@ -2,13 +2,12 @@ import { ActeurLocalCategory, FideliteNiveau } from '../types/enums.js';
 import type { ActeurLocal, CarteFideliteScan, User } from '../types/models.js';
 
 const BASE_POINTS: Record<ActeurLocalCategory, number> = {
-  [ActeurLocalCategory.Commercant]: 5,
-  [ActeurLocalCategory.Artisan]: 8,
-  [ActeurLocalCategory.Brocanteur]: 10,
-  [ActeurLocalCategory.SanteServices]: 6,
+  [ActeurLocalCategory.RestaurationMenus]: 8,
+  [ActeurLocalCategory.BarsNightlife]: 8,
+  [ActeurLocalCategory.SanteSoinsServices]: 6,
+  [ActeurLocalCategory.StartupsB2B]: 6,
+  [ActeurLocalCategory.CommercesArtisanat]: 8,
   [ActeurLocalCategory.TourismeConciergerie]: 5,
-  [ActeurLocalCategory.Liberal]: 6,
-  [ActeurLocalCategory.Association]: 5,
 };
 
 const FIRST_SCAN_BONUS = 5;

@@ -57,6 +57,7 @@ export const api = {
     photos: string[];
     auteurId: string;
     statut?: PostStatus;
+    telephone?: string | null;
   }) => withDelay(() => localDb.createPost(data)),
   updatePost: (postId: string, patch: Partial<Omit<PostAnnonce, 'id' | 'createdAt'>>) =>
     withDelay(() => localDb.updatePost(postId, patch)),
@@ -75,6 +76,7 @@ export const api = {
     offreVip: string | null;
     pointsRequisVip: number;
     activerFidelite?: boolean;
+    telephone?: string | null;
   }) => withDelay(() => localDb.createActeur(data)),
   generateQrVitrine: (acteurId: string) => withDelay(() => localDb.generateQrVitrine(acteurId)),
   updateActeur: (

@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Navigate, Routes, Route } from 'react-router-dom';
 import { SearchProvider } from './context/SearchContext';
 import { FavoritesProvider } from './context/FavoritesContext';
 import { RoutesProvider } from './context/RoutesContext';
@@ -13,8 +13,11 @@ import { PostsPage } from './pages/PostsPage';
 import { RelaisPage } from './pages/RelaisPage';
 import { ActeursPage } from './pages/ActeursPage';
 import { MapPage } from './pages/MapPage';
-import { TourismePage } from './pages/TourismePage';
+import { DecouvrirPage } from './pages/DecouvrirPage';
+import { PratiquePage } from './pages/PratiquePage';
+import { ConciergeriePage } from './pages/ConciergeriePage';
 import { FavoritesPage } from './pages/FavoritesPage';
+import { SearchPage } from './pages/SearchPage';
 import { EventsPage } from './pages/EventsPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { CgvPage } from './pages/CgvPage';
@@ -51,8 +54,12 @@ export function App() {
                   <Route path="/relais" element={<RelaisPage />} />
                   <Route path="/acteurs" element={<ActeursPage />} />
                   <Route path="/carte" element={<MapPage />} />
-                  <Route path="/tourisme" element={<TourismePage />} />
+                  <Route path="/decouvrir" element={<DecouvrirPage />} />
+                  <Route path="/pratique" element={<PratiquePage />} />
+                  <Route path="/conciergerie" element={<ConciergeriePage />} />
+                  <Route path="/tourisme" element={<Navigate to="/decouvrir" replace />} />
                   <Route path="/favoris" element={<FavoritesPage />} />
+                  <Route path="/recherche" element={<SearchPage />} />
                   <Route path="/events" element={<EventsPage />} />
                   <Route path="/profile" element={<ProfilePage />} />
                   <Route path="/cgv" element={<CgvPage />} />

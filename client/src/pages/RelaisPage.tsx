@@ -1,14 +1,16 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { LocalRelais, PostAnnonce } from '@idea-chartrons/shared';
+import { LOCAL_RELAIS_PHONE, type LocalRelais, type PostAnnonce } from '@idea-chartrons/shared';
 import { Button, Loading } from '../components/ui';
 import { PageHelp } from '../components/PageHelp';
+import { PhoneLink } from '../components/PhoneLink';
 import { ContactForm } from '../components/ContactForm';
 import { LocalRelaisCard } from '../components/LocalRelaisCard';
 import { PickupAlert } from '../components/PickupAlert';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { api } from '../lib/api';
+import { bookingErrorMessage } from '../lib/bookingErrors';
 
 export function RelaisPage() {
   const { t } = useTranslation();
@@ -41,7 +43,7 @@ export function RelaisPage() {
       loadData();
       showToast(t('toast.pickupReserved'));
     } catch (err) {
-      showToast(err instanceof Error ? err.message : t('common.error'), 'error');
+      showToast(bookingErrorMessage(err, t), 'error');
     }
   };
 
@@ -92,6 +94,9 @@ export function RelaisPage() {
       <div className="rounded-2xl border border-chartrons-beige bg-white/90 p-4 shadow-card">
         <p className="text-sm font-semibold text-chartrons-olive-dark">{t('contact.relaisTitle')}</p>
         <p className="text-sm text-chartrons-warm-gray mt-1 leading-relaxed">{t('contact.relaisHint')}</p>
+        <div className="mt-3">
+          <PhoneLink phone={LOCAL_RELAIS_PHONE} />
+        </div>
         <Button
           variant="bordeaux"
           className="w-full mt-3"

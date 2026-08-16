@@ -31,6 +31,7 @@ export interface PostAnnonce {
   prix: number | null;
   statut: PostStatus;
   photos: string[];
+  telephone: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -65,6 +66,7 @@ export interface ActeurLocal {
   categorie: ActeurLocalCategory;
   description: string;
   adresse: string;
+  telephone: string | null;
   latitude: number | null;
   longitude: number | null;
   photos: string[];

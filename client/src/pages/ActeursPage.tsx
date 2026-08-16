@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActeurLocalCategory, hasQrVitrine, type ActeurLocal, type User } from '@idea-chartrons/shared';
+import { ActeurLocalCategory, DIRECTORY_CATEGORIES, hasQrVitrine, type ActeurLocal, type User } from '@idea-chartrons/shared';
 import { Badge, Button, Card, EmptyState, Loading, Select } from '../components/ui';
 import { PageHelp } from '../components/PageHelp';
+import { PhoneLink } from '../components/PhoneLink';
 import { ActeurCreateForm } from '../components/ActeurCreateForm';
 import { AdminDeleteButton } from '../components/AdminDeleteButton';
 import { FideliteScanner } from '../components/FideliteScanner';
@@ -15,7 +16,7 @@ import { useToast } from '../context/ToastContext';
 import { matchesSearch, useSearch } from '../context/SearchContext';
 import { api, type FideliteScanResult } from '../lib/api';
 
-type CategoryFilter = 'all' | ActeurLocalCategory;
+type CategoryFilter = 'all' | (typeof DIRECTORY_CATEGORIES)[number];
 
 export function ActeursPage() {
   const { t } = useTranslation();
@@ -47,23 +48,29 @@ export function ActeursPage() {
     loadActeurs();
   }, [currentUserId]);
 
+  const directoryActeurs = useMemo(
+    () => acteurs.filter((acteur) => acteur.categorie !== ActeurLocalCategory.TourismeConciergerie),
+    [acteurs],
+  );
+
   const filteredActeurs = useMemo(
     () =>
-      acteurs.filter((a) => {
+      directoryActeurs.filter((a) => {
         const matchesCategory = categoryFilter === 'all' || a.categorie === categoryFilter;
         const matchesQuery =
           matchesSearch(a.nomCommerce, query) ||
           matchesSearch(a.description, query) ||
-          matchesSearch(a.adresse, query);
+          matchesSearch(a.adresse, query) ||
+          matchesSearch(a.telephone ?? '', query);
         return matchesCategory && matchesQuery;
       }),
-    [acteurs, query, categoryFilter],
+    [directoryActeurs, query, categoryFilter],
   );
 
   const categoryOptions = useMemo(
     () => [
       { value: 'all', label: t('acteurs.filters.all') },
-      ...Object.values(ActeurLocalCategory).map((cat) => ({
+      ...DIRECTORY_CATEGORIES.map((cat) => ({
         value: cat,
         label: t(`acteurs.categories.${cat}`),
       })),
@@ -135,6 +142,34 @@ export function ActeursPage() {
 
       <FideliteHistory userId={currentUserId} userPoints={user?.pointsFidelite ?? 0} />
 
+      <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+        <button
+          type="button"
+          onClick={() => setCategoryFilter('all')}
+          className={`shrink-0 touch-target px-4 py-2 rounded-full text-xs font-semibold border transition-all ${
+            categoryFilter === 'all'
+              ? 'bg-chartrons-bordeaux text-white border-chartrons-bordeaux shadow-sm'
+              : 'bg-white text-chartrons-olive-dark border-chartrons-beige hover:border-chartrons-bordeaux/30'
+          }`}
+        >
+          {t('acteurs.filters.all')}
+        </button>
+        {DIRECTORY_CATEGORIES.map((cat) => (
+          <button
+            key={cat}
+            type="button"
+            onClick={() => setCategoryFilter(cat)}
+            className={`shrink-0 touch-target px-4 py-2 rounded-full text-xs font-semibold border transition-all ${
+              categoryFilter === cat
+                ? 'bg-chartrons-bordeaux text-white border-chartrons-bordeaux shadow-sm'
+                : 'bg-white text-chartrons-olive-dark border-chartrons-beige hover:border-chartrons-bordeaux/30'
+            }`}
+          >
+            {t(`acteurs.categories.${cat}`)}
+          </button>
+        ))}
+      </div>
+
       <Select
         label={t('acteurs.filters.label')}
         value={categoryFilter}
@@ -185,6 +220,9 @@ export function ActeursPage() {
 
                   <p className="text-sm text-chartrons-warm-gray mt-2">{acteur.description}</p>
                   <p className="text-xs text-chartrons-warm-gray/70 mt-2">📍 {acteur.adresse}</p>
+                  <div className="mt-2">
+                    <PhoneLink phone={acteur.telephone} />
+                  </div>
 
                   <VipOfferCard acteur={acteur} userPoints={user?.pointsFidelite ?? 0} />
 

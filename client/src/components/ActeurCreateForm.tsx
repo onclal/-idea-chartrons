@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActeurLocalCategory } from '@idea-chartrons/shared';
+import { ActeurLocalCategory, DIRECTORY_CATEGORIES } from '@idea-chartrons/shared';
 import { Button, Input, Modal, Select, Textarea } from './ui';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -19,7 +19,8 @@ export function ActeurCreateForm({ open, onClose, onCreated }: ActeurCreateFormP
   const [nomCommerce, setNomCommerce] = useState('');
   const [description, setDescription] = useState('');
   const [adresse, setAdresse] = useState('');
-  const [categorie, setCategorie] = useState<ActeurLocalCategory>(ActeurLocalCategory.Commercant);
+  const [telephone, setTelephone] = useState('');
+  const [categorie, setCategorie] = useState<ActeurLocalCategory>(ActeurLocalCategory.CommercesArtisanat);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [activerFidelite, setActiverFidelite] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -29,7 +30,8 @@ export function ActeurCreateForm({ open, onClose, onCreated }: ActeurCreateFormP
     setNomCommerce('');
     setDescription('');
     setAdresse('');
-    setCategorie(ActeurLocalCategory.Commercant);
+    setTelephone('');
+    setCategorie(ActeurLocalCategory.CommercesArtisanat);
     setPhotoPreview(null);
     setActiverFidelite(false);
     setError(null);
@@ -54,6 +56,7 @@ export function ActeurCreateForm({ open, onClose, onCreated }: ActeurCreateFormP
         categorie,
         description: description.trim(),
         adresse: adresse.trim(),
+        telephone: telephone.trim() || null,
         photos: photoPreview ? [photoPreview] : [],
         offreVip: null,
         pointsRequisVip: 0,
@@ -87,7 +90,7 @@ export function ActeurCreateForm({ open, onClose, onCreated }: ActeurCreateFormP
           label={t('acteurs.create.categorie')}
           value={categorie}
           onChange={(e) => setCategorie(e.target.value as ActeurLocalCategory)}
-          options={Object.values(ActeurLocalCategory).map((cat) => ({
+          options={DIRECTORY_CATEGORIES.map((cat) => ({
             value: cat,
             label: t(`acteurs.categories.${cat}`),
           }))}
@@ -108,6 +111,14 @@ export function ActeurCreateForm({ open, onClose, onCreated }: ActeurCreateFormP
           onChange={(e) => setAdresse(e.target.value)}
           required
           placeholder={t('acteurs.create.adressePlaceholder')}
+        />
+
+        <Input
+          label={t('common.phone')}
+          type="tel"
+          value={telephone}
+          onChange={(e) => setTelephone(e.target.value)}
+          placeholder={t('common.phonePlaceholder')}
         />
 
         <div className="space-y-2">

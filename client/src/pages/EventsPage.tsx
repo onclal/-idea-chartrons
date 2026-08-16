@@ -32,9 +32,10 @@ function generateIcs(event: AgendaEvenement): string {
     `DTEND:${formatIcsDate(event.dateFin)}`,
     `SUMMARY:${event.titre}`,
     `DESCRIPTION:${event.description.replace(/\n/g, '\\n')}`,
+    event.lieu ? `LOCATION:${event.lieu}` : '',
     'END:VEVENT',
     'END:VCALENDAR',
-  ].join('\r\n');
+  ].filter(Boolean).join('\r\n');
 }
 
 function addToCalendar(event: AgendaEvenement) {
@@ -163,7 +164,7 @@ export function EventsPage() {
                   <div className="flex items-start justify-between gap-2 mb-1">
                     <h3 className="font-semibold text-chartrons-olive-dark text-base">{event.titre}</h3>
                     <div className="flex flex-col items-end gap-1 shrink-0">
-                      <Badge variant={event.type === EventType.Brocante ? 'brocante' : 'brick'}>
+                      <Badge variant={event.type === EventType.Brocante ? 'brocante' : event.type === EventType.Marche ? 'olive' : 'brick'}>
                         {t(`events.types.${event.type}`)}
                       </Badge>
                       {!upcoming && <Badge variant="stone">{t('events.past')}</Badge>}

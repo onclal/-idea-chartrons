@@ -36,19 +36,27 @@ export enum RelaisCreneauType {
 }
 
 export enum ActeurLocalCategory {
-  Commercant = 'Commerçant',
-  Artisan = 'Artisan',
-  Brocanteur = 'Brocanteur',
-  SanteServices = 'Santé_Services_Proximité',
+  RestaurationMenus = 'Restauration_Menus',
+  BarsNightlife = 'Bars_Nightlife',
+  SanteSoinsServices = 'Santé_Soins_Services',
+  StartupsB2B = 'Startups_Tertiaire_B2B',
+  CommercesArtisanat = 'Commerces_Proximité_Artisanat',
   TourismeConciergerie = 'Tourisme_Conciergeries',
-  Liberal = 'Libéral',
-  Association = 'Association',
 }
+
+export const DIRECTORY_CATEGORIES = [
+  ActeurLocalCategory.RestaurationMenus,
+  ActeurLocalCategory.BarsNightlife,
+  ActeurLocalCategory.SanteSoinsServices,
+  ActeurLocalCategory.StartupsB2B,
+  ActeurLocalCategory.CommercesArtisanat,
+] as const;
 
 export enum EventType {
   Brocante = 'Brocante',
   AnimationAsso = 'Animation_Asso',
   PromoFlash = 'Promo_Flash',
+  Marche = 'Marché',
 }
 
 export enum FideliteNiveau {

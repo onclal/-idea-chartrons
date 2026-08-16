@@ -1,4 +1,10 @@
 import {
+  countSlotBookings,
+  DEFAULT_CRENEAU_CAPACITE,
+  getCreneauCapacite,
+  normalizeRelaisCreneauType,
+} from '../logic/relais.js';
+import {
   ActeurLocalCategory,
   EventType,
   LocalRelaisRetraitStatus,
@@ -8,9 +14,16 @@ import {
   RelaisCreneauType,
   UserRole,
 } from '../types/enums.js';
-import type { DatabaseSchema, RelaisCreneau } from '../types/models.js';
+import type { AgendaEvenement, DatabaseSchema, LocalRelais, RelaisCreneau } from '../types/models.js';
 
-function generateCreneaux(): RelaisCreneau[] {
+function localYmd(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+export function generateRelaisCreneaux(from = new Date(), days = 7): RelaisCreneau[] {
   const creneaux: RelaisCreneau[] = [];
   const slots = [
     { heureDebut: '10:00', heureFin: '11:00' },
@@ -20,10 +33,10 @@ function generateCreneaux(): RelaisCreneau[] {
     { heureDebut: '16:00', heureFin: '17:00' },
   ];
 
-  for (let day = 0; day < 7; day++) {
-    const date = new Date();
-    date.setDate(date.getDate() + day);
-    const dateStr = date.toISOString().split('T')[0];
+  for (let day = 0; day < days; day += 1) {
+    const date = new Date(from);
+    date.setDate(from.getDate() + day);
+    const dateStr = localYmd(date);
 
     for (const slot of slots) {
       for (const type of [RelaisCreneauType.Depot, RelaisCreneauType.Retrait]) {
@@ -33,8 +46,8 @@ function generateCreneaux(): RelaisCreneau[] {
           heureDebut: slot.heureDebut,
           heureFin: slot.heureFin,
           type,
-          capacite: 3,
-          reserves: day === 0 && slot.heureDebut === '10:00' ? 1 : 0,
+          capacite: DEFAULT_CRENEAU_CAPACITE,
+          reserves: 0,
         });
       }
     }
@@ -43,12 +56,121 @@ function generateCreneaux(): RelaisCreneau[] {
   return creneaux;
 }
 
+export function syncRelaisCreneauxWindow(
+  existing: RelaisCreneau[],
+  relaisList: LocalRelais[],
+  from = new Date(),
+): RelaisCreneau[] {
+  const generated = generateRelaisCreneaux(from);
+  const previous = new Map((existing ?? []).map((slot) => [slot.id, slot]));
+  const referenced = new Set<string>();
+  for (const relais of relaisList ?? []) {
+    if (relais.creneauDepotId) referenced.add(relais.creneauDepotId);
+    if (relais.creneauRetraitId) referenced.add(relais.creneauRetraitId);
+  }
+
+  const merged = new Map<string, RelaisCreneau>();
+  for (const slot of generated) {
+    const prev = previous.get(slot.id);
+    merged.set(slot.id, {
+      ...slot,
+      type: normalizeRelaisCreneauType(prev?.type ?? slot.type),
+      capacite: getCreneauCapacite(prev ?? slot),
+      reserves: 0,
+    });
+  }
+
+  for (const id of referenced) {
+    if (merged.has(id)) continue;
+    const prev = previous.get(id);
+    if (!prev) continue;
+    merged.set(id, {
+      ...prev,
+      type: normalizeRelaisCreneauType(prev.type),
+      capacite: getCreneauCapacite(prev),
+      reserves: 0,
+    });
+  }
+
+  return [...merged.values()].map((slot) => {
+    const capacite = getCreneauCapacite(slot);
+    return {
+      ...slot,
+      capacite,
+      reserves: Math.min(capacite, countSlotBookings(relaisList ?? [], slot.id)),
+    };
+  });
+}
+
+export const MARCHE_CHARTRONS = {
+  titre: 'Marché des Chartrons',
+  description:
+    'Marché hebdomadaire hyper-local : producteurs, fromages, fleurs et spécialités du quartier. Tous les dimanches, 8h–13h, Place du Marché des Chartrons sur les quais.',
+  lieu: 'Place du Marché des Chartrons, quais des Chartrons, 33000 Bordeaux',
+  latitude: 44.85235,
+  longitude: -0.56985,
+  image: 'https://images.unsplash.com/photo-1488459716781-31db52582fe9?w=400&h=300&fit=crop',
+} as const;
+
+function nextMarcheStart(from: Date): Date {
+  const candidate = new Date(from);
+  const day = candidate.getDay();
+  const add = day === 0 ? 0 : 7 - day;
+  candidate.setDate(candidate.getDate() + add);
+  candidate.setHours(8, 0, 0, 0);
+  const end = new Date(candidate);
+  end.setHours(13, 0, 0, 0);
+  if (end.getTime() <= from.getTime()) {
+    candidate.setDate(candidate.getDate() + 7);
+  }
+  return candidate;
+}
+
+export function createUpcomingMarcheChartronsEvents(
+  organisateurId: string,
+  nowIso: string,
+  weeks = 8,
+): AgendaEvenement[] {
+  const now = new Date(nowIso);
+  const events: AgendaEvenement[] = [];
+  const start = nextMarcheStart(now);
+
+  for (let index = 0; index < weeks; index += 1) {
+    const dateDebut = new Date(start);
+    dateDebut.setDate(start.getDate() + index * 7);
+    dateDebut.setHours(8, 0, 0, 0);
+    const dateFin = new Date(dateDebut);
+    dateFin.setHours(13, 0, 0, 0);
+    const ymd = localYmd(dateDebut);
+
+    events.push({
+      id: `event-marche-chartrons-${ymd}`,
+      organisateurId,
+      titre: MARCHE_CHARTRONS.titre,
+      description: MARCHE_CHARTRONS.description,
+      dateDebut: dateDebut.toISOString(),
+      dateFin: dateFin.toISOString(),
+      image: MARCHE_CHARTRONS.image,
+      type: EventType.Marche,
+      lieu: MARCHE_CHARTRONS.lieu,
+      latitude: MARCHE_CHARTRONS.latitude,
+      longitude: MARCHE_CHARTRONS.longitude,
+      createdAt: nowIso,
+      updatedAt: nowIso,
+    });
+  }
+
+  return events;
+}
+
 export function createSeedData(): DatabaseSchema {
   const now = new Date().toISOString();
-  const today = new Date().toISOString().split('T')[0];
-  const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+  const today = localYmd(new Date());
+  const tomorrowDate = new Date();
+  tomorrowDate.setDate(tomorrowDate.getDate() + 1);
+  const tomorrow = localYmd(tomorrowDate);
 
-  return {
+  const seed: DatabaseSchema = {
     users: [
       {
         id: 'user-1',
@@ -97,6 +219,7 @@ export function createSeedData(): DatabaseSchema {
         prix: 25,
         statut: PostStatus.DepotLocal,
         photos: ['https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop'],
+        telephone: '06 12 34 56 01',
         createdAt: now,
         updatedAt: now,
       },
@@ -109,6 +232,7 @@ export function createSeedData(): DatabaseSchema {
         prix: null,
         statut: PostStatus.Disponible,
         photos: ['https://images.unsplash.com/photo-1497633768975-a6630d299a24?w=400&h=300&fit=crop'],
+        telephone: '06 12 34 56 02',
         createdAt: now,
         updatedAt: now,
       },
@@ -121,6 +245,7 @@ export function createSeedData(): DatabaseSchema {
         prix: null,
         statut: PostStatus.Disponible,
         photos: ['https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=400&h=300&fit=crop'],
+        telephone: '06 12 34 56 03',
         createdAt: now,
         updatedAt: now,
       },
@@ -133,11 +258,12 @@ export function createSeedData(): DatabaseSchema {
         prix: 30,
         statut: PostStatus.DepotLocal,
         photos: ['https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=400&h=300&fit=crop'],
+        telephone: '06 12 34 56 04',
         createdAt: now,
         updatedAt: now,
       },
     ],
-    relaisCreneaux: generateCreneaux(),
+    relaisCreneaux: generateRelaisCreneaux(),
     localRelais: [
       {
         id: 'relais-1',
@@ -169,9 +295,10 @@ export function createSeedData(): DatabaseSchema {
         id: 'acteur-1',
         userId: 'user-2',
         nomCommerce: 'Brocante des Chartrons',
-        categorie: ActeurLocalCategory.Brocanteur,
+        categorie: ActeurLocalCategory.CommercesArtisanat,
         description: 'Brocante authentique au cœur du quartier. Meubles vintage, vaisselle et objets de charme.',
         adresse: '45 Cours Portal, 33000 Bordeaux',
+        telephone: '05 56 48 12 01',
         photos: ['https://images.unsplash.com/photo-1555041469-a586c12ebb9a?w=400&h=300&fit=crop'],
         offreVip: '-10% sur votre prochain achat',
         pointsRequisVip: 100,
@@ -185,9 +312,10 @@ export function createSeedData(): DatabaseSchema {
         id: 'acteur-2',
         userId: 'user-2',
         nomCommerce: 'Café du Marché',
-        categorie: ActeurLocalCategory.Commercant,
-        description: 'Café de quartier avec terrasse ombragée. Pâtisseries maison et produits locaux.',
+        categorie: ActeurLocalCategory.RestaurationMenus,
+        description: 'Bistrot de quartier avec terrasse ombragée. Menu du jour, pâtisseries maison et produits locaux.',
         adresse: '22 Rue Notre-Dame, 33000 Bordeaux',
+        telephone: '05 56 48 12 02',
         photos: ['https://images.unsplash.com/photo-1501339847302-ac826a8a8145?w=400&h=300&fit=crop'],
         offreVip: 'Café offert',
         pointsRequisVip: 50,
@@ -201,9 +329,10 @@ export function createSeedData(): DatabaseSchema {
         id: 'acteur-3',
         userId: 'user-1',
         nomCommerce: 'Atelier Céramique Chartrons',
-        categorie: ActeurLocalCategory.Artisan,
+        categorie: ActeurLocalCategory.CommercesArtisanat,
         description: 'Céramique artisanale faite main. Ateliers découverte le samedi matin.',
         adresse: '5 Rue Josephine, 33000 Bordeaux',
+        telephone: '05 56 48 12 03',
         photos: ['https://images.unsplash.com/photo-1578749556568-bc2c40a68b24?w=400&h=300&fit=crop'],
         offreVip: 'Atelier découverte -15%',
         pointsRequisVip: 80,
@@ -217,9 +346,10 @@ export function createSeedData(): DatabaseSchema {
         id: 'acteur-4',
         userId: 'user-1',
         nomCommerce: 'Cabinet Infirmier des Chartrons',
-        categorie: ActeurLocalCategory.SanteServices,
+        categorie: ActeurLocalCategory.SanteSoinsServices,
         description: 'Soins infirmiers de proximité : pansements, suivi à domicile, vaccinations et petits soins du quotidien.',
         adresse: '18 Cours Portal, 33000 Bordeaux',
+        telephone: '05 56 48 12 04',
         photos: ['https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=400&h=300&fit=crop'],
         offreVip: null,
         pointsRequisVip: 0,
@@ -233,9 +363,10 @@ export function createSeedData(): DatabaseSchema {
         id: 'acteur-5',
         userId: 'user-2',
         nomCommerce: 'Clinique Vétérinaire Portal',
-        categorie: ActeurLocalCategory.SanteServices,
+        categorie: ActeurLocalCategory.SanteSoinsServices,
         description: 'Consultations, urgences et suivi des animaux de compagnie. Accueil sans rendez-vous le matin.',
         adresse: '31 Cours Portal, 33000 Bordeaux',
+        telephone: '05 56 48 12 05',
         photos: ['https://images.unsplash.com/photo-1450778869180-41d0601e016d?w=400&h=300&fit=crop'],
         offreVip: 'Consultation de suivi -10%',
         pointsRequisVip: 60,
@@ -252,6 +383,7 @@ export function createSeedData(): DatabaseSchema {
         categorie: ActeurLocalCategory.TourismeConciergerie,
         description: 'Accueil des voyageurs, remise des clés, linge et conseils de quartier pour les locations saisonnières.',
         adresse: '8 Rue Notre-Dame, 33000 Bordeaux',
+        telephone: '05 56 48 12 06',
         photos: ['https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400&h=300&fit=crop'],
         offreVip: 'Guide des bonnes adresses offert',
         pointsRequisVip: 40,
@@ -268,6 +400,7 @@ export function createSeedData(): DatabaseSchema {
         categorie: ActeurLocalCategory.TourismeConciergerie,
         description: 'Consigne bagages pour visiteurs de passage. Idéal avant un train, un marché ou une visite des quais.',
         adresse: '12 Cours Portal, 33000 Bordeaux',
+        telephone: '05 56 48 12 07',
         photos: ['https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=300&fit=crop'],
         offreVip: null,
         pointsRequisVip: 0,
@@ -277,8 +410,43 @@ export function createSeedData(): DatabaseSchema {
         createdAt: now,
         updatedAt: now,
       },
+      {
+        id: 'acteur-8',
+        userId: 'user-2',
+        nomCommerce: 'Le Comptoir Portal',
+        categorie: ActeurLocalCategory.BarsNightlife,
+        description: 'Bar de quartier : happy hours, planches et soirées live. Terrasse jusqu’à tard le week-end.',
+        adresse: '14 Cours Portal, 33000 Bordeaux',
+        telephone: '05 56 48 12 08',
+        photos: ['https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=400&h=300&fit=crop'],
+        offreVip: 'Happy hour prolongée',
+        pointsRequisVip: 70,
+        qrCodeVitrine: 'QR-VITRINE-COMPTOIR-008',
+        latitude: 44.85315,
+        longitude: -0.57195,
+        createdAt: now,
+        updatedAt: now,
+      },
+      {
+        id: 'acteur-9',
+        userId: 'user-1',
+        nomCommerce: 'Atelier Numérique Chartrons',
+        categorie: ActeurLocalCategory.StartupsB2B,
+        description: 'Coworking et services tertiaires pour indépendants et startups du quartier. Salles de réunion et factotum.',
+        adresse: '9 Quai des Chartrons, 33000 Bordeaux',
+        telephone: '05 56 48 12 09',
+        photos: ['https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop'],
+        offreVip: 'Demi-journée coworking offerte',
+        pointsRequisVip: 90,
+        qrCodeVitrine: 'QR-VITRINE-ATELIER-NUM-009',
+        latitude: 44.85085,
+        longitude: -0.56895,
+        createdAt: now,
+        updatedAt: now,
+      },
     ],
     agendaEvenements: [
+      ...createUpcomingMarcheChartronsEvents('user-1', now),
       {
         id: 'event-1',
         organisateurId: 'user-2',
@@ -348,6 +516,11 @@ export function createSeedData(): DatabaseSchema {
         date: new Date(Date.now() - 86400000).toISOString(),
       },
     ],
+  };
+
+  return {
+    ...seed,
+    relaisCreneaux: syncRelaisCreneauxWindow(seed.relaisCreneaux, seed.localRelais),
   };
 }
 

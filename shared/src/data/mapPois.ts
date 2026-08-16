@@ -1,4 +1,5 @@
 export const LOCAL_RELAIS_ADDRESS = '26 place Jean Jaques Rabaud, 33000 Bordeaux';
+export const LOCAL_RELAIS_PHONE = '05 56 52 00 26';
 
 export const CHARTRONS_MAP_CENTER = {
   latitude: 44.85175,
@@ -13,6 +14,7 @@ export interface StaticMapPoi {
   titleKey: string;
   descriptionKey: string;
   adresse: string;
+  telephone?: string | null;
   latitude: number;
   longitude: number;
   href: string;
@@ -25,6 +27,7 @@ export const STATIC_MAP_POIS: StaticMapPoi[] = [
     titleKey: 'map.pois.relaisTitle',
     descriptionKey: 'map.pois.relaisHint',
     adresse: LOCAL_RELAIS_ADDRESS,
+    telephone: LOCAL_RELAIS_PHONE,
     latitude: 44.85265,
     longitude: -0.57385,
     href: '/relais',
@@ -34,10 +37,10 @@ export const STATIC_MAP_POIS: StaticMapPoi[] = [
     kind: 'marche',
     titleKey: 'map.pois.marcheTitle',
     descriptionKey: 'map.pois.marcheHint',
-    adresse: 'Place du Marché des Chartrons, 33000 Bordeaux',
+    adresse: 'Place du Marché des Chartrons, quais des Chartrons, 33000 Bordeaux',
     latitude: 44.85235,
     longitude: -0.56985,
-    href: '/carte',
+    href: '/events',
   },
   {
     id: 'poi-halles',

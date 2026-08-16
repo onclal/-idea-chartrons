@@ -3,6 +3,7 @@ import { MapContainer, Marker, Polyline, Popup, TileLayer, useMap } from 'react-
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { CHARTRONS_MAP_CENTER } from '@idea-chartrons/shared';
+import { toTelHref } from '../lib/phone';
 
 export type MapPinKind = 'commerce' | 'sante' | 'tourisme' | 'relais' | 'marche' | 'event';
 
@@ -15,6 +16,7 @@ export interface MapPin {
   latitude: number;
   longitude: number;
   href?: string;
+  telephone?: string | null;
 }
 
 const PIN_STYLE: Record<MapPinKind, { color: string; emoji: string }> = {
@@ -177,6 +179,11 @@ export function NeighborhoodMap({
           <Popup>
             <p className="font-semibold text-sm m-0">{pin.title}</p>
             <p className="text-xs text-chartrons-warm-gray m-0 mt-1">{pin.adresse}</p>
+            {pin.telephone && (
+              <p className="m-0 mt-1">
+                <a href={toTelHref(pin.telephone)}>{pin.telephone}</a>
+              </p>
+            )}
           </Popup>
         </Marker>
       ))}
