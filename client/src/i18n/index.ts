@@ -837,6 +837,7 @@ const resources = {
       },
       proSpace: {
         title: 'Espace Pro',
+        titleWithShop: 'Espace Pro — {{shop}}',
         subtitle: 'Paramétrez votre fidélité et créditez les points en caisse',
         badge: 'Commerçants',
         open: 'Espace Pro',
@@ -1935,6 +1936,7 @@ const resources = {
       },
       proSpace: {
         title: 'Pro space',
+        titleWithShop: 'Pro space — {{shop}}',
         subtitle: 'Set your loyalty rule and credit points at checkout',
         badge: 'Merchants',
         open: 'Pro space',

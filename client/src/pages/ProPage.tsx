@@ -7,6 +7,7 @@ import {
   findUserByClientToken,
   generateQrClientCode,
   getActeurFideliteRegle,
+  UserRole,
   type ActeurLocal,
   type User,
 } from '@idea-chartrons/shared';
@@ -44,14 +45,19 @@ export function ProPage() {
   const [history, setHistory] = useState<FideliteCommerceHistoryEntry[]>([]);
 
   const canAccess = isMerchant || isAdminMode;
+  const isDemoOrAdmin =
+    isAdminMode || currentUser?.role === UserRole.Admin;
   const locale = i18n.language === 'fr' ? 'fr-FR' : 'en-GB';
 
   const myShops = useMemo(() => {
-    if (isAdminMode) return acteurs;
+    if (isDemoOrAdmin) return acteurs;
     return acteurs.filter((acteur) => acteur.userId === currentUserId);
-  }, [acteurs, currentUserId, isAdminMode]);
+  }, [acteurs, currentUserId, isDemoOrAdmin]);
 
-  const selectedShop = myShops.find((acteur) => acteur.id === selectedId) ?? myShops[0] ?? null;
+  const showShopSelector = isDemoOrAdmin && myShops.length > 1;
+  const selectedShop = showShopSelector
+    ? (myShops.find((acteur) => acteur.id === selectedId) ?? myShops[0] ?? null)
+    : (myShops[0] ?? null);
 
   const load = () => {
     setLoading(true);
@@ -221,26 +227,23 @@ export function ProPage() {
           <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-chartrons-brass">
             {t('proSpace.badge')}
           </p>
-          <h2 className="text-xl font-bold text-chartrons-bordeaux">{t('proSpace.title')}</h2>
+          <h2 className="text-xl font-bold text-chartrons-bordeaux">
+            {selectedShop
+              ? t('proSpace.titleWithShop', { shop: selectedShop.nomCommerce })
+              : t('proSpace.title')}
+          </h2>
           <p className="text-xs text-chartrons-warm-gray mt-1">{t('proSpace.subtitle')}</p>
         </div>
         <PageHelp page="pro" />
       </div>
 
-      {myShops.length > 1 && (
+      {showShopSelector && (
         <Select
           label={t('proSpace.shop')}
           value={selectedShop?.id ?? ''}
           onChange={(event) => setSelectedId(event.target.value)}
           options={myShops.map((shop) => ({ value: shop.id, label: shop.nomCommerce }))}
         />
-      )}
-
-      {selectedShop && myShops.length === 1 && (
-        <Card className="!py-3">
-          <p className="text-xs text-chartrons-warm-gray">{t('proSpace.shop')}</p>
-          <p className="text-sm font-semibold text-chartrons-olive-dark">{selectedShop.nomCommerce}</p>
-        </Card>
       )}
 
       <Card>
