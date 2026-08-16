@@ -13,6 +13,7 @@ interface AuthContextValue {
   switchUser: (userId: string) => void;
   refreshUser: () => Promise<void>;
   isRelaisStaff: boolean;
+  isMerchant: boolean;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -50,6 +51,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const isRelaisStaff =
     currentUser?.role === UserRole.BenevolRelais || currentUser?.role === UserRole.Admin;
+  const isMerchant = currentUser?.role === UserRole.Commercant;
 
   return (
     <AuthContext.Provider
@@ -61,6 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         switchUser,
         refreshUser,
         isRelaisStaff,
+        isMerchant,
       }}
     >
       {children}

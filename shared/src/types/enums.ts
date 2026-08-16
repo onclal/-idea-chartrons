@@ -64,3 +64,9 @@ export enum FideliteNiveau {
   Argent = 'Argent',
   Or = 'Or',
 }
+
+export enum FideliteRegleMode {
+  ChiffreAffaires = 'ca',
+  Visite = 'visite',
+  Forfait = 'forfait',
+}

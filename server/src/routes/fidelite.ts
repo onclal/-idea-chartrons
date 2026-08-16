@@ -1,4 +1,11 @@
-import { calculateScanPoints, getFideliteNiveau, isVipUnlocked } from '@idea-chartrons/shared';
+import {
+  calculateAwardPoints,
+  calculateScanPoints,
+  findUserByClientToken,
+  getActeurFideliteRegle,
+  getFideliteNiveau,
+  isVipUnlocked,
+} from '@idea-chartrons/shared';
 import { Router } from 'express';
 import { store } from '../data/store.js';
 
@@ -97,6 +104,78 @@ router.post('/scan', (req, res) => {
     pointsGagnes: calculation.total,
     breakdown: calculation,
     totalPoints,
+    commerce: acteur.nomCommerce,
+    niveau: getFideliteNiveau(totalPoints),
+    vipUnlocked: newlyUnlocked ? acteur.offreVip : null,
+  });
+});
+
+router.get('/commerce/:commerceId', (req, res) => {
+  const users = store.getAll('users');
+  const scans = store
+    .getAll('cartesFideliteScans')
+    .filter((s) => s.commerceId === req.params.commerceId)
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 20)
+    .map((scan) => ({
+      ...scan,
+      clientNom: users.find((user) => user.id === scan.userId)?.nom ?? 'Client',
+    }));
+
+  res.json(scans);
+});
+
+router.post('/award', (req, res) => {
+  const { commerceId, clientToken, montant } = req.body as {
+    commerceId?: string;
+    clientToken?: string;
+    montant?: number;
+  };
+
+  if (!commerceId || !clientToken) {
+    res.status(400).json({ error: 'commerceId and clientToken are required' });
+    return;
+  }
+
+  const acteur = store.getById('acteursLocaux', commerceId);
+  if (!acteur) {
+    res.status(404).json({ error: 'Acteur not found' });
+    return;
+  }
+
+  const client = findUserByClientToken(store.getAll('users'), clientToken);
+  if (!client) {
+    res.status(404).json({ error: 'CLIENT_NOT_FOUND' });
+    return;
+  }
+
+  const pointsGagnes = calculateAwardPoints(getActeurFideliteRegle(acteur), montant);
+  if (pointsGagnes <= 0) {
+    res.status(400).json({ error: 'INVALID_POINTS' });
+    return;
+  }
+
+  const now = new Date().toISOString();
+  const scan = store.create('cartesFideliteScans', {
+    id: `scan-${Date.now()}`,
+    userId: client.id,
+    commerceId,
+    pointsGagnes,
+    date: now,
+  });
+
+  const totalPoints = client.pointsFidelite + pointsGagnes;
+  store.update('users', client.id, { pointsFidelite: totalPoints });
+
+  const newlyUnlocked =
+    acteur.offreVip && isVipUnlocked(totalPoints, acteur) && !isVipUnlocked(client.pointsFidelite, acteur);
+
+  res.status(201).json({
+    scan,
+    pointsGagnes,
+    totalPoints,
+    clientNom: client.nom,
+    clientId: client.id,
     commerce: acteur.nomCommerce,
     niveau: getFideliteNiveau(totalPoints),
     vipUnlocked: newlyUnlocked ? acteur.offreVip : null,

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getFideliteNiveau, UserRole, type PostAnnonce } from '@idea-chartrons/shared';
 import { Badge, Button, Card, Loading } from '../components/ui';
@@ -8,13 +9,14 @@ import { CarnetSyncCard } from '../components/CarnetSyncCard';
 import { OwnerPostActions } from '../components/OwnerPostActions';
 import { PageHelp } from '../components/PageHelp';
 import { PostCreateForm } from '../components/PostCreateForm';
+import { UserQrCard } from '../components/UserQrCard';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { api, type VipStatusEntry } from '../lib/api';
 
 export function ProfilePage() {
   const { t } = useTranslation();
-  const { currentUser, currentUserId, demoUsers, switchUser, refreshUser } = useAuth();
+  const { currentUser, currentUserId, demoUsers, switchUser, refreshUser, isMerchant } = useAuth();
   const { showToast } = useToast();
   const [vipStatus, setVipStatus] = useState<VipStatusEntry[]>([]);
   const [myPosts, setMyPosts] = useState<PostAnnonce[]>([]);
@@ -135,6 +137,18 @@ export function ProfilePage() {
           )}
         </div>
       </Card>
+
+      {isMerchant && (
+        <Link
+          to="/pro"
+          className="block p-4 rounded-2xl bg-chartrons-green text-white shadow-card hover:bg-chartrons-green-light transition-colors"
+        >
+          <p className="text-sm font-bold">{t('proSpace.open')}</p>
+          <p className="text-xs text-white/80 mt-0.5">{t('proSpace.subtitle')}</p>
+        </Link>
+      )}
+
+      <UserQrCard user={currentUser} />
 
       <Card>
         <h4 className="text-sm font-semibold text-chartrons-green-dark mb-1">

@@ -36,6 +36,21 @@ export interface FideliteHistoryEntry extends CarteFideliteScan {
   commerceNom: string;
 }
 
+export interface FideliteCommerceHistoryEntry extends CarteFideliteScan {
+  clientNom: string;
+}
+
+export interface FideliteAwardResult {
+  scan: CarteFideliteScan;
+  pointsGagnes: number;
+  totalPoints: number;
+  clientNom: string;
+  clientId: string;
+  commerce: string;
+  niveau: FideliteNiveau;
+  vipUnlocked: string | null;
+}
+
 export interface VipStatusEntry {
   commerceId: string;
   commerceNom: string;
@@ -129,7 +144,11 @@ export const api = {
     withDelay(() => localDb.avancerStatutRelais(relaisId)),
   scanFidelite: (data: { userId: string; commerceId: string; qrCode: string }) =>
     withDelay(() => localDb.scanFidelite(data)),
+  awardFidelite: (data: { commerceId: string; clientToken: string; montant?: number }) =>
+    withDelay(() => localDb.awardFidelite(data)),
   getFideliteHistory: (userId: string) => withDelay(() => localDb.getFideliteHistory(userId)),
+  getCommerceFideliteHistory: (commerceId: string) =>
+    withDelay(() => localDb.getCommerceFideliteHistory(commerceId)),
   getVipStatus: (userId: string) => withDelay(() => localDb.getVipStatus(userId)),
   getFidelite: () => withDelay(() => localDb.getAll('cartesFideliteScans')),
   sendContact: (data: { name: string; email: string; message: string; context: string }) =>

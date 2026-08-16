@@ -5,8 +5,13 @@ import {
   normalizeRelaisCreneauType,
 } from '../logic/relais.js';
 import {
+  defaultRegleForCategory,
+  generateQrClientCode,
+} from '../logic/fidelite.js';
+import {
   ActeurLocalCategory,
   EventType,
+  FideliteRegleMode,
   LocalRelaisRetraitStatus,
   PostStatus,
   PostType,
@@ -14,7 +19,7 @@ import {
   RelaisCreneauType,
   UserRole,
 } from '../types/enums.js';
-import type { AgendaEvenement, DatabaseSchema, LocalRelais, RelaisCreneau } from '../types/models.js';
+import type { ActeurLocal, AgendaEvenement, DatabaseSchema, LocalRelais, RelaisCreneau } from '../types/models.js';
 
 function localYmd(date: Date): string {
   const year = date.getFullYear();
@@ -170,7 +175,7 @@ export function createSeedData(): DatabaseSchema {
   tomorrowDate.setDate(tomorrowDate.getDate() + 1);
   const tomorrow = localYmd(tomorrowDate);
 
-  const seed: DatabaseSchema = {
+  const seed = {
     users: [
       {
         id: 'user-1',
@@ -181,6 +186,7 @@ export function createSeedData(): DatabaseSchema {
         adresse: '12 Rue Notre-Dame, 33000 Bordeaux',
         languePreferee: PreferredLanguage.FR,
         pointsFidelite: 120,
+        qrCodeClient: generateQrClientCode('user-1'),
         createdAt: now,
         updatedAt: now,
       },
@@ -193,6 +199,7 @@ export function createSeedData(): DatabaseSchema {
         adresse: '45 Cours Portal, 33000 Bordeaux',
         languePreferee: PreferredLanguage.FR,
         pointsFidelite: 340,
+        qrCodeClient: generateQrClientCode('user-2'),
         createdAt: now,
         updatedAt: now,
       },
@@ -205,6 +212,7 @@ export function createSeedData(): DatabaseSchema {
         adresse: '26 place Jean Jaques Rabaud',
         languePreferee: PreferredLanguage.FR,
         pointsFidelite: 0,
+        qrCodeClient: generateQrClientCode('user-3'),
         createdAt: now,
         updatedAt: now,
       },
@@ -520,6 +528,17 @@ export function createSeedData(): DatabaseSchema {
 
   return {
     ...seed,
+    acteursLocaux: seed.acteursLocaux.map((acteur): ActeurLocal => {
+      const rule =
+        acteur.id === 'acteur-2'
+          ? { mode: FideliteRegleMode.Visite, valeur: 5 }
+          : defaultRegleForCategory(acteur.categorie);
+      return {
+        ...acteur,
+        regleFideliteMode: rule.mode,
+        regleFideliteValeur: rule.valeur,
+      };
+    }),
     relaisCreneaux: syncRelaisCreneauxWindow(seed.relaisCreneaux, seed.localRelais),
   };
 }

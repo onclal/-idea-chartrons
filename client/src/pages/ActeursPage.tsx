@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ActeurLocalCategory, DIRECTORY_CATEGORIES, hasQrVitrine, type ActeurLocal, type User } from '@idea-chartrons/shared';
 import { Badge, Button, Card, EmptyState, Loading, Select } from '../components/ui';
@@ -21,7 +22,7 @@ type CategoryFilter = 'all' | (typeof DIRECTORY_CATEGORIES)[number];
 export function ActeursPage() {
   const { t } = useTranslation();
   const { query } = useSearch();
-  const { currentUser, currentUserId, refreshUser } = useAuth();
+  const { currentUser, currentUserId, refreshUser, isMerchant } = useAuth();
   const { isAdminMode } = useAdmin();
   const { showToast } = useToast();
   const [acteurs, setActeurs] = useState<ActeurLocal[]>([]);
@@ -132,6 +133,16 @@ export function ActeursPage() {
           + {t('acteurs.create.button')}
         </Button>
       </div>
+
+      {isMerchant && (
+        <Link
+          to="/pro"
+          className="block p-3 rounded-2xl bg-chartrons-green/10 border border-chartrons-green/20 hover:bg-chartrons-green/15 transition-colors"
+        >
+          <p className="text-sm font-semibold text-chartrons-green-dark">{t('proSpace.open')}</p>
+          <p className="text-xs text-chartrons-warm-gray mt-0.5">{t('proSpace.subtitle')}</p>
+        </Link>
+      )}
 
       <FideliteScanner
         acteurs={acteurs}

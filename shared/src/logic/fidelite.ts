@@ -1,4 +1,4 @@
-import { ActeurLocalCategory, FideliteNiveau } from '../types/enums.js';
+import { ActeurLocalCategory, FideliteNiveau, FideliteRegleMode } from '../types/enums.js';
 import type { ActeurLocal, CarteFideliteScan, User } from '../types/models.js';
 
 const BASE_POINTS: Record<ActeurLocalCategory, number> = {
@@ -79,6 +79,75 @@ export function generateQrVitrineCode(nomCommerce: string): string {
     .replace(/^-|-$/g, '')
     .slice(0, 16);
   return `QR-VITRINE-${slug || 'COMMERCE'}-${String(Date.now()).slice(-4)}`;
+}
+
+export function generateQrClientCode(userId: string): string {
+  const slug = userId
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+  return `QR-CLIENT-${slug || 'HABITANT'}`;
+}
+
+export interface FideliteRegle {
+  mode: FideliteRegleMode;
+  valeur: number;
+}
+
+export const DEFAULT_FIDELITE_REGLE: FideliteRegle = {
+  mode: FideliteRegleMode.Visite,
+  valeur: 5,
+};
+
+export function defaultRegleForCategory(categorie: ActeurLocalCategory): FideliteRegle {
+  switch (categorie) {
+    case ActeurLocalCategory.RestaurationMenus:
+    case ActeurLocalCategory.BarsNightlife:
+    case ActeurLocalCategory.CommercesArtisanat:
+      return { mode: FideliteRegleMode.ChiffreAffaires, valeur: 1 };
+    case ActeurLocalCategory.SanteSoinsServices:
+      return { mode: FideliteRegleMode.Forfait, valeur: 20 };
+    case ActeurLocalCategory.TourismeConciergerie:
+      return { mode: FideliteRegleMode.Forfait, valeur: 50 };
+    default:
+      return { ...DEFAULT_FIDELITE_REGLE };
+  }
+}
+
+export function getActeurFideliteRegle(acteur: ActeurLocal): FideliteRegle {
+  const mode = Object.values(FideliteRegleMode).includes(acteur.regleFideliteMode)
+    ? acteur.regleFideliteMode
+    : DEFAULT_FIDELITE_REGLE.mode;
+  const valeur = Number(acteur.regleFideliteValeur);
+  return {
+    mode,
+    valeur: Number.isFinite(valeur) && valeur > 0 ? valeur : DEFAULT_FIDELITE_REGLE.valeur,
+  };
+}
+
+export function calculateAwardPoints(regle: FideliteRegle, montant?: number): number {
+  if (regle.mode === FideliteRegleMode.ChiffreAffaires) {
+    const amount = Number(montant);
+    if (!Number.isFinite(amount) || amount <= 0) return 0;
+    return Math.max(1, Math.round(amount * regle.valeur));
+  }
+  const points = Math.round(regle.valeur);
+  return points > 0 ? points : 0;
+}
+
+export function findUserByClientToken(users: User[], token: string): User | undefined {
+  const compact = token.trim().replace(/\s+/g, '');
+  if (!compact) return undefined;
+  const upper = compact.toUpperCase();
+  return users.find((user) => {
+    const qr = (user.qrCodeClient || generateQrClientCode(user.id)).toUpperCase();
+    return (
+      user.id === compact ||
+      user.id.toUpperCase() === upper ||
+      qr === upper ||
+      generateQrClientCode(user.id).toUpperCase() === upper
+    );
+  });
 }
 
 export function isVipUnlocked(userPoints: number, acteur: ActeurLocal): boolean {

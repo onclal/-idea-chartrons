@@ -1,10 +1,15 @@
 import {
   ActeurLocalCategory,
+  calculateAwardPoints,
   calculateScanPoints,
   CHARTRONS_MAP_CENTER,
   createSeedData,
   createUpcomingMarcheChartronsEvents,
+  defaultRegleForCategory,
+  findUserByClientToken,
+  generateQrClientCode,
   generateQrVitrineCode,
+  getActeurFideliteRegle,
   getFideliteNiveau,
   getCreneauReserves,
   getNextStatus,
@@ -117,6 +122,12 @@ class LocalDatabase {
     let changed = false;
     const seed = createSeedData();
 
+    const users = (data.users ?? []).map((user) => {
+      const nextQr = user.qrCodeClient || generateQrClientCode(user.id);
+      if (nextQr !== user.qrCodeClient) changed = true;
+      return { ...user, qrCodeClient: nextQr };
+    });
+
     const acteursLocaux = (data.acteursLocaux ?? []).map((acteur) => {
       const seedMatch = seed.acteursLocaux.find((item) => item.id === acteur.id);
       const mappedLegacy = LEGACY_ACTEUR_CATEGORIES[acteur.categorie];
@@ -127,12 +138,19 @@ class LocalDatabase {
       const nextLat = acteur.latitude ?? seedMatch?.latitude ?? null;
       const nextLng = acteur.longitude ?? seedMatch?.longitude ?? null;
       const nextTel = acteur.telephone ?? seedMatch?.telephone ?? null;
+      const fallbackRule = seedMatch
+        ? { mode: seedMatch.regleFideliteMode, valeur: seedMatch.regleFideliteValeur }
+        : defaultRegleForCategory(nextCategory as ActeurLocalCategory);
+      const nextMode = acteur.regleFideliteMode ?? fallbackRule.mode;
+      const nextValeur = acteur.regleFideliteValeur ?? fallbackRule.valeur;
       if (
         nextCategory !== acteur.categorie ||
         nextQr !== acteur.qrCodeVitrine ||
         nextLat !== acteur.latitude ||
         nextLng !== acteur.longitude ||
-        nextTel !== acteur.telephone
+        nextTel !== acteur.telephone ||
+        nextMode !== acteur.regleFideliteMode ||
+        nextValeur !== acteur.regleFideliteValeur
       ) {
         changed = true;
       }
@@ -143,6 +161,8 @@ class LocalDatabase {
         latitude: nextLat,
         longitude: nextLng,
         telephone: nextTel,
+        regleFideliteMode: nextMode,
+        regleFideliteValeur: nextValeur,
       };
     });
 
@@ -204,6 +224,7 @@ class LocalDatabase {
 
     const migrated = {
       ...data,
+      users,
       acteursLocaux,
       agendaEvenements: prunedEvents,
       postsAnnonces,
@@ -397,8 +418,9 @@ class LocalDatabase {
     pointsFidelite: number;
   }): User {
     const now = new Date().toISOString();
+    const id = `user-${Date.now()}`;
     return this.create('users', {
-      id: `user-${Date.now()}`,
+      id,
       nom: data.nom,
       email: data.email,
       role: data.role,
@@ -406,6 +428,7 @@ class LocalDatabase {
       adresse: data.adresse,
       languePreferee: data.languePreferee,
       pointsFidelite: data.pointsFidelite,
+      qrCodeClient: generateQrClientCode(id),
       createdAt: now,
       updatedAt: now,
     });
@@ -486,6 +509,7 @@ class LocalDatabase {
     telephone?: string | null;
   }): ActeurLocal {
     const now = new Date().toISOString();
+    const rule = defaultRegleForCategory(data.categorie);
     return this.create('acteursLocaux', {
       id: `acteur-${Date.now()}`,
       userId: data.userId,
@@ -500,6 +524,8 @@ class LocalDatabase {
       qrCodeVitrine: data.activerFidelite ? generateQrVitrineCode(data.nomCommerce) : null,
       latitude: data.latitude ?? CHARTRONS_MAP_CENTER.latitude,
       longitude: data.longitude ?? CHARTRONS_MAP_CENTER.longitude,
+      regleFideliteMode: rule.mode,
+      regleFideliteValeur: rule.valeur,
       createdAt: now,
       updatedAt: now,
     });
@@ -807,6 +833,58 @@ class LocalDatabase {
       }));
 
     return { points: user.pointsFidelite, niveau: getFideliteNiveau(user.pointsFidelite), vipStatus };
+  }
+
+  awardFidelite(data: { commerceId: string; clientToken: string; montant?: number }) {
+    const acteur = this.getById('acteursLocaux', data.commerceId);
+    if (!acteur) throw new Error('Acteur not found');
+
+    const client = findUserByClientToken(this.getAll('users'), data.clientToken);
+    if (!client) throw new Error('CLIENT_NOT_FOUND');
+
+    const rule = getActeurFideliteRegle(acteur);
+    const pointsGagnes = calculateAwardPoints(rule, data.montant);
+    if (pointsGagnes <= 0) throw new Error('INVALID_POINTS');
+
+    const now = new Date().toISOString();
+    const scan = this.create('cartesFideliteScans', {
+      id: `scan-${Date.now()}`,
+      userId: client.id,
+      commerceId: data.commerceId,
+      pointsGagnes,
+      date: now,
+    });
+
+    const totalPoints = client.pointsFidelite + pointsGagnes;
+    this.update('users', client.id, { pointsFidelite: totalPoints });
+
+    const newlyUnlocked =
+      acteur.offreVip &&
+      isVipUnlocked(totalPoints, acteur) &&
+      !isVipUnlocked(client.pointsFidelite, acteur);
+
+    return {
+      scan,
+      pointsGagnes,
+      totalPoints,
+      clientNom: client.nom,
+      clientId: client.id,
+      commerce: acteur.nomCommerce,
+      niveau: getFideliteNiveau(totalPoints),
+      vipUnlocked: newlyUnlocked ? acteur.offreVip : null,
+    };
+  }
+
+  getCommerceFideliteHistory(commerceId: string) {
+    const users = this.getAll('users');
+    return this.getAll('cartesFideliteScans')
+      .filter((scan) => scan.commerceId === commerceId)
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .slice(0, 20)
+      .map((scan) => ({
+        ...scan,
+        clientNom: users.find((user) => user.id === scan.userId)?.nom ?? 'Client',
+      }));
   }
 }
 

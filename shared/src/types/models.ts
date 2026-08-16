@@ -1,6 +1,7 @@
 import {
   ActeurLocalCategory,
   EventType,
+  FideliteRegleMode,
   LocalRelaisRetraitStatus,
   PostStatus,
   PostType,
@@ -18,6 +19,7 @@ export interface User {
   adresse: string;
   languePreferee: PreferredLanguage;
   pointsFidelite: number;
+  qrCodeClient: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -73,6 +75,8 @@ export interface ActeurLocal {
   offreVip: string | null;
   pointsRequisVip: number;
   qrCodeVitrine: string | null;
+  regleFideliteMode: FideliteRegleMode;
+  regleFideliteValeur: number;
   createdAt: string;
   updatedAt: string;
 }

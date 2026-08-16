@@ -20,6 +20,7 @@ import { FavoritesPage } from './pages/FavoritesPage';
 import { SearchPage } from './pages/SearchPage';
 import { EventsPage } from './pages/EventsPage';
 import { ProfilePage } from './pages/ProfilePage';
+import { ProPage } from './pages/ProPage';
 import { CgvPage } from './pages/CgvPage';
 import { FaqPage } from './pages/FaqPage';
 import { AdminDashboardPage } from './pages/admin/AdminDashboardPage';
@@ -62,6 +63,7 @@ export function App() {
                   <Route path="/recherche" element={<SearchPage />} />
                   <Route path="/events" element={<EventsPage />} />
                   <Route path="/profile" element={<ProfilePage />} />
+                  <Route path="/pro" element={<ProPage />} />
                   <Route path="/cgv" element={<CgvPage />} />
                   <Route path="/faq" element={<FaqPage />} />
                 </Route>
