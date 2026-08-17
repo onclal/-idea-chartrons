@@ -10,12 +10,14 @@ import {
   STATIC_MAP_POIS,
   type ActeurLocal,
   type AgendaEvenement,
+  type ReviewSummary,
 } from '@idea-chartrons/shared';
 import { Badge, Button, Card, Loading } from '../components/ui';
 import { PageHelp } from '../components/PageHelp';
 import { AppointmentButton } from '../components/AppointmentButton';
 import { PlaceMeta } from '../components/PlaceMeta';
 import { MerchantSocialSection } from '../components/MerchantSocialSection';
+import { MerchantReviews } from '../components/MerchantReviews';
 import { PhoneLink } from '../components/PhoneLink';
 import { FavoriteButton } from '../components/FavoriteButton';
 import { FavoritesDrawer } from '../components/FavoritesDrawer';
@@ -117,6 +119,7 @@ export function MapPage() {
   const { getRoute, saveRoute, updateRoute } = useSavedRoutes();
   const [searchParams, setSearchParams] = useSearchParams();
   const [acteurs, setActeurs] = useState<ActeurLocal[]>([]);
+  const [reviewSummary, setReviewSummary] = useState<ReviewSummary>({ rating: 0, count: 0 });
   const [events, setEvents] = useState<AgendaEvenement[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeLayers, setActiveLayers] = useState<Set<MapLayer>>(new Set(LAYERS));
@@ -579,6 +582,14 @@ export function MapPage() {
                   {selectedActeur && isVipMerchant(selectedActeur) && (
                     <Badge variant="vip" icon="⭐">{t('badges.vip')}</Badge>
                   )}
+                  {selectedActeur && reviewSummary.count > 0 && (
+                    <Badge variant="gold">
+                      {t('acteurs.reviews.badge', {
+                        rating: reviewSummary.rating.toFixed(1),
+                        count: reviewSummary.count,
+                      })}
+                    </Badge>
+                  )}
                 </div>
                 <PlaceMeta
                   rating={selectedPin.rating}
@@ -604,6 +615,9 @@ export function MapPage() {
                   setActeurs((list) => list.map((item) => (item.id === updated.id ? updated : item)))
                 }
               />
+            )}
+            {selectedActeur && (
+              <MerchantReviews merchantId={selectedActeur.id} onSummaryChange={setReviewSummary} />
             )}
             {selectedActeur && (
               <div className="mt-3">

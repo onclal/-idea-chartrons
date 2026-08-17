@@ -10,6 +10,7 @@ const AUX_STORAGE_KEYS = [
 const AGGRESSIVE_STORAGE_KEYS = [
   ...AUX_STORAGE_KEYS,
   'idea-chartrons-parcours',
+  'idea-chartrons-reviews',
 ] as const;
 
 export function isQuotaError(error: unknown): boolean {

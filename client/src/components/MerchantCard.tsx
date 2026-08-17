@@ -1,19 +1,23 @@
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   hasQrVitrine,
   isRestaurantCategory,
   isVipMerchant,
   type ActeurLocal,
+  type ReviewSummary,
 } from '@idea-chartrons/shared';
 import { Badge, Button, Card } from './ui';
 import { PhoneLink } from './PhoneLink';
 import { AppointmentButton } from './AppointmentButton';
 import { PlaceMeta } from './PlaceMeta';
 import { MerchantSocialSection } from './MerchantSocialSection';
+import { MerchantReviews } from './MerchantReviews';
 import { RestaurantMenu } from './RestaurantMenu';
 import { AdminDeleteButton } from './AdminDeleteButton';
 import { QrCodeDisplay } from './QrCodeDisplay';
 import { VipOfferCard } from './VipOfferCard';
+import { getAverageRating } from '../services/reviewService';
 
 interface MerchantCardProps {
   acteur: ActeurLocal;
@@ -42,6 +46,11 @@ export function MerchantCard({
 }: MerchantCardProps) {
   const { t } = useTranslation();
   const vip = isVipMerchant(acteur);
+  const [reviewSummary, setReviewSummary] = useState<ReviewSummary>(() => getAverageRating(acteur.id));
+
+  useEffect(() => {
+    setReviewSummary(getAverageRating(acteur.id));
+  }, [acteur.id]);
 
   return (
     <Card
@@ -59,6 +68,14 @@ export function MerchantCard({
               <Badge variant="olive">{t(`acteurs.categories.${acteur.categorie}`)}</Badge>
               {vip && (
                 <Badge variant="vip" icon="⭐">{t('badges.vip')}</Badge>
+              )}
+              {reviewSummary.count > 0 && (
+                <Badge variant="gold">
+                  {t('acteurs.reviews.badge', {
+                    rating: reviewSummary.rating.toFixed(1),
+                    count: reviewSummary.count,
+                  })}
+                </Badge>
               )}
               {!hasQrVitrine(acteur) && (
                 <Badge variant="stone">{t('acteurs.qrOptional')}</Badge>
@@ -80,6 +97,7 @@ export function MerchantCard({
           <PhoneLink phone={acteur.telephone} />
         </div>
         <MerchantSocialSection acteur={acteur} onUpdated={onUpdated} />
+        <MerchantReviews merchantId={acteur.id} onSummaryChange={setReviewSummary} />
         <div className="mt-2 space-y-2" onClick={(event) => event.stopPropagation()}>
           <AppointmentButton acteur={acteur} />
           <Button
