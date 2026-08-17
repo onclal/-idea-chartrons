@@ -247,13 +247,13 @@ function ownerForPoi(poi: ChartronsPoi): string {
   return 'user-2';
 }
 
-export function chartronsPoiToActeur(poi: ChartronsPoi, now: string): ActeurLocal | null {
-  if (!poi.isMerchant) return null;
+export function chartronsPoiToActeur(poi: ChartronsPoi, now: string): ActeurLocal {
   const categorie = categoryToActeur(poi.category, poi.subcategory);
   const rule = defaultRegleForCategory(categorie);
+  const ownerId = ownerForPoi(poi);
   return {
     id: `acteur-${poi.id}`,
-    userId: ownerForPoi(poi),
+    userId: ownerId,
     nomCommerce: poi.name,
     categorie,
     description: poi.description,
@@ -264,7 +264,7 @@ export function chartronsPoiToActeur(poi: ChartronsPoi, now: string): ActeurLoca
     photos: poi.imageUrl ? [poi.imageUrl] : [],
     offreVip: null,
     pointsRequisVip: 0,
-    qrCodeVitrine: generateQrVitrineCode(poi.name),
+    qrCodeVitrine: poi.isMerchant ? generateQrVitrineCode(poi.name) : null,
     regleFideliteMode: rule.mode,
     regleFideliteValeur: rule.valeur,
     menu: poi.hasMenu ? createCafeMarcheMenu() : null,
@@ -273,18 +273,17 @@ export function chartronsPoiToActeur(poi: ChartronsPoi, now: string): ActeurLoca
     reviewsCount: poi.reviewsCount ?? null,
     openingHours: poi.openingHours ?? null,
     specialite: poi.subcategory,
-    pinCode: DEFAULT_MERCHANT_PIN,
-    merchantEmail: defaultMerchantEmail(ownerForPoi(poi)),
+    pinCode: poi.isMerchant ? DEFAULT_MERCHANT_PIN : null,
+    merchantEmail: poi.isMerchant ? defaultMerchantEmail(ownerId) : null,
     socialLinks: emptySocialLinks(),
+    isMerchant: poi.isMerchant,
     createdAt: now,
     updatedAt: now,
   };
 }
 
 export function createChartronsPoiActeurs(now: string): ActeurLocal[] {
-  return CHARTRONS_POIS.map((poi) => chartronsPoiToActeur(poi, now)).filter(
-    (acteur): acteur is ActeurLocal => acteur != null,
-  );
+  return CHARTRONS_POIS.map((poi) => chartronsPoiToActeur(poi, now));
 }
 
 export function culturePlacePois(): Array<{

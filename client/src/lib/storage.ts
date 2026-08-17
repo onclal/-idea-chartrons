@@ -1,4 +1,5 @@
 export const DB_STORAGE_KEY = 'idea-chartrons-db';
+export const SEED_CATALOG_KEY = 'idea-chartrons-seed-catalog';
 
 const AUX_STORAGE_KEYS = [
   'idea-chartrons-contact-messages',

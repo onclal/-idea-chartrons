@@ -23,6 +23,7 @@ import {
   normalizePlatformSettings,
   normalizePinCode,
   normalizeSocialLinks,
+  SEED_CATALOG_VERSION,
   socialLinksEqual,
   LocalRelaisRetraitStatus,
   normalizeRelaisCreneauType,
@@ -45,7 +46,7 @@ import {
   type User,
   type UserRole,
 } from '@idea-chartrons/shared';
-import { DB_STORAGE_KEY, isQuotaError, purgeObsoleteLocalStorage, writeLocalStorage } from './storage';
+import { DB_STORAGE_KEY, SEED_CATALOG_KEY, isQuotaError, purgeObsoleteLocalStorage, writeLocalStorage } from './storage';
 
 const VALID_ACTEUR_CATEGORIES = new Set<string>(Object.values(ActeurLocalCategory));
 
@@ -105,6 +106,41 @@ function resolvePlatformSettings(data: DatabaseSchema): PlatformSettings {
   return normalizePlatformSettings(data.platformSettings?.[0]);
 }
 
+function mergeCatalogActeur(current: ActeurLocal | undefined, seedActeur: ActeurLocal): ActeurLocal {
+  if (!current) return seedActeur;
+  return {
+    ...seedActeur,
+    ...current,
+    nomCommerce: seedActeur.nomCommerce,
+    description: seedActeur.description,
+    adresse: seedActeur.adresse,
+    categorie: seedActeur.categorie,
+    latitude: seedActeur.latitude,
+    longitude: seedActeur.longitude,
+    photos: current.photos?.length ? current.photos : seedActeur.photos,
+    specialite: current.specialite ?? seedActeur.specialite,
+    rating: current.rating ?? seedActeur.rating,
+    reviewsCount: current.reviewsCount ?? seedActeur.reviewsCount,
+    openingHours: current.openingHours ?? seedActeur.openingHours,
+    telephone: current.telephone ?? seedActeur.telephone,
+    isMerchant: seedActeur.isMerchant,
+    pinCode: current.pinCode ?? seedActeur.pinCode,
+    merchantEmail: current.merchantEmail ?? seedActeur.merchantEmail,
+    socialLinks: current.socialLinks ?? seedActeur.socialLinks,
+    menu: current.menu ?? seedActeur.menu,
+    appointmentUrl: current.appointmentUrl ?? seedActeur.appointmentUrl,
+    qrCodeVitrine: current.qrCodeVitrine ?? seedActeur.qrCodeVitrine,
+  };
+}
+
+function syncCatalogActeurs(existing: ActeurLocal[], seedActeurs: ActeurLocal[]): ActeurLocal[] {
+  const existingById = new Map(existing.map((acteur) => [acteur.id, acteur]));
+  const seedIds = new Set(seedActeurs.map((acteur) => acteur.id));
+  const synced = seedActeurs.map((seedActeur) => mergeCatalogActeur(existingById.get(seedActeur.id), seedActeur));
+  const custom = existing.filter((acteur) => !seedIds.has(acteur.id));
+  return [...synced, ...custom];
+}
+
 function syncSlots(data: DatabaseSchema, from = new Date()): RelaisCreneau[] {
   return syncRelaisCreneauxWindow(
     data.relaisCreneaux ?? [],
@@ -112,6 +148,24 @@ function syncSlots(data: DatabaseSchema, from = new Date()): RelaisCreneau[] {
     from,
     resolveRelaisSettings(data),
   );
+}
+
+function readSeedCatalogVersion(): number {
+  try {
+    const raw = localStorage.getItem(SEED_CATALOG_KEY);
+    const parsed = Number(raw);
+    return Number.isFinite(parsed) ? parsed : 0;
+  } catch {
+    return 0;
+  }
+}
+
+function writeSeedCatalogVersion(version: number): void {
+  try {
+    localStorage.setItem(SEED_CATALOG_KEY, String(version));
+  } catch {
+    // quota — the next launch will retry the catalog upsert
+  }
 }
 
 function todayLocalYmd(): string {
@@ -141,6 +195,7 @@ class LocalDatabase {
     const seed = createSeedData();
     try {
       this.persist(seed);
+      writeSeedCatalogVersion(SEED_CATALOG_VERSION);
     } catch {
       this.data = seed;
     }
@@ -157,12 +212,14 @@ class LocalDatabase {
       return { ...user, qrCodeClient: nextQr };
     });
 
-    const acteursLocaux: ActeurLocal[] = (data.acteursLocaux ?? []).map((acteur) => {
+    const catalogStale = readSeedCatalogVersion() < SEED_CATALOG_VERSION;
+    let acteursLocaux: ActeurLocal[] = (data.acteursLocaux ?? []).map((acteur) => {
       const seedMatch = seed.acteursLocaux.find((item) => item.id === acteur.id);
       const mappedLegacy = LEGACY_ACTEUR_CATEGORIES[acteur.categorie];
       const nextCategory = VALID_ACTEUR_CATEGORIES.has(acteur.categorie)
         ? acteur.categorie
         : (seedMatch?.categorie ?? mappedLegacy ?? ActeurLocalCategory.CommercesArtisanat);
+      const nextMerchant = seedMatch?.isMerchant ?? acteur.isMerchant ?? true;
       const nextQr = acteur.qrCodeVitrine || null;
       const nextLat = acteur.latitude ?? seedMatch?.latitude ?? null;
       const nextLng = acteur.longitude ?? seedMatch?.longitude ?? null;
@@ -173,14 +230,15 @@ class LocalDatabase {
       const nextReviews = acteur.reviewsCount ?? seedMatch?.reviewsCount ?? null;
       const nextHours = acteur.openingHours ?? seedMatch?.openingHours ?? null;
       const nextSpecialite = acteur.specialite ?? seedMatch?.specialite ?? null;
+      const nextPhotos = acteur.photos?.length ? acteur.photos : (seedMatch?.photos ?? []);
       const nextPin =
         normalizePinCode(acteur.pinCode) ??
         normalizePinCode(seedMatch?.pinCode) ??
-        DEFAULT_MERCHANT_PIN;
+        (nextMerchant ? DEFAULT_MERCHANT_PIN : null);
       const nextMerchantEmail =
         acteur.merchantEmail?.trim() ||
         seedMatch?.merchantEmail ||
-        defaultMerchantEmail(acteur.userId);
+        (nextMerchant ? defaultMerchantEmail(acteur.userId) : null);
       const nextSocial = acteur.socialLinks
         ? normalizeSocialLinks(acteur.socialLinks)
         : normalizeSocialLinks(seedMatch?.socialLinks ?? emptySocialLinks());
@@ -203,6 +261,8 @@ class LocalDatabase {
         nextSpecialite !== acteur.specialite ||
         nextPin !== acteur.pinCode ||
         nextMerchantEmail !== acteur.merchantEmail ||
+        nextMerchant !== acteur.isMerchant ||
+        nextPhotos.length !== (acteur.photos?.length ?? 0) ||
         !socialLinksEqual(nextSocial, acteur.socialLinks) ||
         nextMode !== acteur.regleFideliteMode ||
         nextValeur !== acteur.regleFideliteValeur
@@ -216,6 +276,7 @@ class LocalDatabase {
         latitude: nextLat,
         longitude: nextLng,
         telephone: nextTel,
+        photos: nextPhotos,
         menu: nextMenu,
         appointmentUrl: nextAppointment,
         rating: nextRating,
@@ -225,16 +286,22 @@ class LocalDatabase {
         pinCode: nextPin,
         merchantEmail: nextMerchantEmail,
         socialLinks: nextSocial,
+        isMerchant: nextMerchant,
         regleFideliteMode: nextMode,
         regleFideliteValeur: nextValeur,
       };
     });
 
-    const knownActeurIds = new Set(acteursLocaux.map((acteur) => acteur.id));
-    for (const seedActeur of seed.acteursLocaux) {
-      if (!knownActeurIds.has(seedActeur.id)) {
-        acteursLocaux.push(seedActeur);
-        changed = true;
+    if (catalogStale) {
+      acteursLocaux = syncCatalogActeurs(acteursLocaux, seed.acteursLocaux);
+      changed = true;
+    } else {
+      const knownActeurIds = new Set(acteursLocaux.map((acteur) => acteur.id));
+      for (const seedActeur of seed.acteursLocaux) {
+        if (!knownActeurIds.has(seedActeur.id)) {
+          acteursLocaux.push(seedActeur);
+          changed = true;
+        }
       }
     }
 
@@ -326,8 +393,11 @@ class LocalDatabase {
       localRelais,
       privilegeConsommations,
     };
-    if (changed) this.persist(migrated);
-    return changed ? migrated : { ...data, relaisCreneaux, platformSettings };
+    if (changed || catalogStale) this.persist(migrated);
+    if (catalogStale || readSeedCatalogVersion() !== SEED_CATALOG_VERSION) {
+      writeSeedCatalogVersion(SEED_CATALOG_VERSION);
+    }
+    return changed || catalogStale ? migrated : { ...data, relaisCreneaux, platformSettings };
   }
 
   private persist(data: DatabaseSchema = this.data): void {
@@ -436,6 +506,7 @@ class LocalDatabase {
   reset(): void {
     const seed = createSeedData();
     this.persist(seed);
+    writeSeedCatalogVersion(SEED_CATALOG_VERSION);
   }
 
   getAll<K extends keyof DatabaseSchema>(collection: K): DatabaseSchema[K] {
@@ -632,6 +703,7 @@ class LocalDatabase {
       pinCode: DEFAULT_MERCHANT_PIN,
       merchantEmail: this.getById('users', data.userId)?.email ?? defaultMerchantEmail(data.userId),
       socialLinks: emptySocialLinks(),
+      isMerchant: true,
       createdAt: now,
       updatedAt: now,
     });

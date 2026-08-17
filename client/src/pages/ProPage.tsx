@@ -62,8 +62,8 @@ export function ProPage() {
   const locale = i18n.language === 'fr' ? 'fr-FR' : 'en-GB';
 
   const myShops = useMemo(() => {
-    if (isDemoOrAdmin) return acteurs;
-    return acteurs.filter((acteur) => acteur.userId === currentUserId);
+    const list = isDemoOrAdmin ? acteurs : acteurs.filter((acteur) => acteur.userId === currentUserId);
+    return list.filter((acteur) => acteur.isMerchant !== false);
   }, [acteurs, currentUserId, isDemoOrAdmin]);
 
   const showShopSelector = isDemoOrAdmin && myShops.length > 1;

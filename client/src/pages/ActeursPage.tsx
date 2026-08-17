@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
-  ActeurLocalCategory,
   DIRECTORY_CATEGORIES,
   hasQrVitrine,
   isRestaurantCategory,
@@ -62,14 +61,9 @@ export function ActeursPage() {
     loadActeurs();
   }, [currentUserId]);
 
-  const directoryActeurs = useMemo(
-    () => acteurs.filter((acteur) => acteur.categorie !== ActeurLocalCategory.TourismeConciergerie),
-    [acteurs],
-  );
-
   const filteredActeurs = useMemo(
     () =>
-      directoryActeurs.filter((a) => {
+      acteurs.filter((a) => {
         const matchesCategory = categoryFilter === 'all' || a.categorie === categoryFilter;
         const matchesQuery =
           matchesSearch(a.nomCommerce, query) ||
@@ -79,7 +73,7 @@ export function ActeursPage() {
           matchesSearch(a.specialite ?? '', query);
         return matchesCategory && matchesQuery;
       }),
-    [directoryActeurs, query, categoryFilter],
+    [acteurs, query, categoryFilter],
   );
 
   const categoryOptions = useMemo(

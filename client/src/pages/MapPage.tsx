@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import {
   ActeurLocalCategory,
   CHARTRONS_MAP_CENTER,
-  culturePlacePois,
   hasCoordinates,
   LOCAL_RELAIS_PHONE,
   STATIC_MAP_POIS,
@@ -41,6 +40,7 @@ type MapLayer = MapPinKind;
 const LAYERS: MapLayer[] = ['commerce', 'sante', 'tourisme', 'relais', 'marche', 'event'];
 
 function acteurKind(acteur: ActeurLocal): MapPinKind {
+  if (acteur.id === 'acteur-poi-cult-001') return 'marche';
   if (acteur.categorie === ActeurLocalCategory.TourismeConciergerie) return 'tourisme';
   if (acteur.categorie === ActeurLocalCategory.SanteSoinsServices) return 'sante';
   return 'commerce';
@@ -166,7 +166,7 @@ export function MapPage() {
       adresse: acteur.adresse,
       latitude: acteur.latitude,
       longitude: acteur.longitude,
-      href: acteur.categorie === ActeurLocalCategory.TourismeConciergerie ? undefined : acteurHref(),
+      href: acteurHref(),
       telephone: acteur.telephone,
       imageUrl: acteur.photos[0],
       rating: acteur.rating,
@@ -199,22 +199,7 @@ export function MapPage() {
       telephone: poi.telephone ?? (poi.kind === 'relais' ? LOCAL_RELAIS_PHONE : null),
     }));
 
-    const fromCulture: MapPin[] = culturePlacePois().map((poi) => ({
-      id: poi.id,
-      kind: poi.kind,
-      title: poi.title,
-      subtitle: poi.subtitle,
-      adresse: poi.adresse,
-      latitude: poi.latitude,
-      longitude: poi.longitude,
-      telephone: poi.telephone,
-      imageUrl: poi.imageUrl,
-      rating: poi.rating,
-      reviewsCount: poi.reviewsCount,
-      openingHours: poi.openingHours,
-    }));
-
-    return [...fromActeurs, ...fromEvents, ...fromPois, ...fromCulture];
+    return [...fromActeurs, ...fromEvents, ...fromPois];
   }, [acteurs, events, t]);
 
   const favoriteIds = useMemo(() => favorites.map((place) => place.id), [favorites]);

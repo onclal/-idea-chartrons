@@ -15,6 +15,9 @@ import {
   normalizeSocialLinks,
 } from '../logic/commerce.js';
 import { createChartronsPoiActeurs } from './chartronsPois.js';
+
+/** Bump when seed acteurs / Chartrons POIs change so localStorage upserts the catalog. */
+export const SEED_CATALOG_VERSION = 2;
 import {
   defaultRegleForCategory,
   generateQrClientCode,
@@ -640,6 +643,7 @@ export function createSeedData(): DatabaseSchema {
                   website: 'https://www.cafedumarche-chartrons.fr/',
                 })
               : emptySocialLinks(),
+          isMerchant: true,
         };
       }),
       ...createChartronsPoiActeurs(now),

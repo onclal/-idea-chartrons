@@ -126,6 +126,7 @@ export interface ActeurLocal {
   pinCode: string | null;
   merchantEmail: string | null;
   socialLinks: CommerceSocialLinks;
+  isMerchant: boolean;
   createdAt: string;
   updatedAt: string;
 }

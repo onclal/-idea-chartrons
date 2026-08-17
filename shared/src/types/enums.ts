@@ -50,6 +50,7 @@ export const DIRECTORY_CATEGORIES = [
   ActeurLocalCategory.SanteSoinsServices,
   ActeurLocalCategory.StartupsB2B,
   ActeurLocalCategory.CommercesArtisanat,
+  ActeurLocalCategory.TourismeConciergerie,
 ] as const;
 
 export enum EventType {
