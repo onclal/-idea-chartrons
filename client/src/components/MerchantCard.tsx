@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
+  canClickAndCollect,
   hasQrVitrine,
   isRestaurantCategory,
   isVipMerchant,
@@ -13,6 +14,8 @@ import { AppointmentButton } from './AppointmentButton';
 import { PlaceMeta } from './PlaceMeta';
 import { MerchantSocialSection } from './MerchantSocialSection';
 import { MerchantReviews } from './MerchantReviews';
+import { DailyMenuSection } from './DailyMenuSection';
+import { OrderModal } from './OrderModal';
 import { RestaurantMenu } from './RestaurantMenu';
 import { AdminDeleteButton } from './AdminDeleteButton';
 import { QrCodeDisplay } from './QrCodeDisplay';
@@ -47,6 +50,7 @@ export function MerchantCard({
   const { t } = useTranslation();
   const vip = isVipMerchant(acteur);
   const [reviewSummary, setReviewSummary] = useState<ReviewSummary>(() => getAverageRating(acteur.id));
+  const [orderOpen, setOrderOpen] = useState(false);
 
   useEffect(() => {
     setReviewSummary(getAverageRating(acteur.id));
@@ -96,6 +100,19 @@ export function MerchantCard({
         <div className="mt-2">
           <PhoneLink phone={acteur.telephone} />
         </div>
+        {vip && <DailyMenuSection acteur={acteur} />}
+        {canClickAndCollect(acteur) && (
+          <div className="mt-3" onClick={(event) => event.stopPropagation()}>
+            <Button
+              type="button"
+              variant="primary"
+              className="w-full"
+              onClick={() => setOrderOpen(true)}
+            >
+              {t('acteurs.clickCollect.cta')}
+            </Button>
+          </div>
+        )}
         <MerchantSocialSection acteur={acteur} onUpdated={onUpdated} />
         <MerchantReviews merchantId={acteur.id} onSummaryChange={setReviewSummary} />
         <div className="mt-2 space-y-2" onClick={(event) => event.stopPropagation()}>
@@ -170,6 +187,9 @@ export function MerchantCard({
           </div>
         )}
       </div>
+      {canClickAndCollect(acteur) && (
+        <OrderModal open={orderOpen} onClose={() => setOrderOpen(false)} acteur={acteur} />
+      )}
     </Card>
   );
 }

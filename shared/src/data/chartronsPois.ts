@@ -278,6 +278,12 @@ export function chartronsPoiToActeur(poi: ChartronsPoi, now: string): ActeurLoca
     socialLinks: emptySocialLinks(),
     isMerchant: poi.isMerchant,
     isVip: poi.id === 'poi-rest-001',
+    phoneForOrders: poi.phone ?? null,
+    dailyMenuText: poi.id === 'poi-rest-001' ? 'Plat du jour : magret de canard, jus au poivre' : null,
+    dailyMenuImage:
+      poi.id === 'poi-rest-001'
+        ? 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=800&q=80'
+        : null,
     createdAt: now,
     updatedAt: now,
   };

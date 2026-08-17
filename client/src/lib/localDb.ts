@@ -131,6 +131,9 @@ function mergeCatalogActeur(current: ActeurLocal | undefined, seedActeur: Acteur
     menu: current.menu ?? seedActeur.menu,
     appointmentUrl: current.appointmentUrl ?? seedActeur.appointmentUrl,
     qrCodeVitrine: current.qrCodeVitrine ?? seedActeur.qrCodeVitrine,
+    dailyMenuImage: current.dailyMenuImage ?? seedActeur.dailyMenuImage,
+    dailyMenuText: current.dailyMenuText ?? seedActeur.dailyMenuText,
+    phoneForOrders: current.phoneForOrders ?? seedActeur.phoneForOrders,
   };
 }
 
@@ -249,6 +252,9 @@ class LocalDatabase {
         : defaultRegleForCategory(nextCategory as ActeurLocalCategory);
       const nextMode = acteur.regleFideliteMode ?? fallbackRule.mode;
       const nextValeur = acteur.regleFideliteValeur ?? fallbackRule.valeur;
+      const nextDailyImage = acteur.dailyMenuImage ?? seedMatch?.dailyMenuImage ?? null;
+      const nextDailyText = acteur.dailyMenuText ?? seedMatch?.dailyMenuText ?? null;
+      const nextOrderPhone = acteur.phoneForOrders ?? seedMatch?.phoneForOrders ?? null;
       if (
         nextCategory !== acteur.categorie ||
         nextQr !== acteur.qrCodeVitrine ||
@@ -268,7 +274,10 @@ class LocalDatabase {
         nextPhotos.length !== (acteur.photos?.length ?? 0) ||
         !socialLinksEqual(nextSocial, acteur.socialLinks) ||
         nextMode !== acteur.regleFideliteMode ||
-        nextValeur !== acteur.regleFideliteValeur
+        nextValeur !== acteur.regleFideliteValeur ||
+        nextDailyImage !== (acteur.dailyMenuImage ?? null) ||
+        nextDailyText !== (acteur.dailyMenuText ?? null) ||
+        nextOrderPhone !== (acteur.phoneForOrders ?? null)
       ) {
         changed = true;
       }
@@ -291,6 +300,9 @@ class LocalDatabase {
         socialLinks: nextSocial,
         isMerchant: nextMerchant,
         isVip: nextVip,
+        dailyMenuImage: nextDailyImage,
+        dailyMenuText: nextDailyText,
+        phoneForOrders: nextOrderPhone,
         regleFideliteMode: nextMode,
         regleFideliteValeur: nextValeur,
       };

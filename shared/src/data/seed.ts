@@ -17,7 +17,7 @@ import {
 import { createChartronsPoiActeurs } from './chartronsPois.js';
 
 /** Bump when seed acteurs / Chartrons POIs change so localStorage upserts the catalog. */
-export const SEED_CATALOG_VERSION = 3;
+export const SEED_CATALOG_VERSION = 4;
 import {
   defaultRegleForCategory,
   generateQrClientCode,
@@ -645,6 +645,13 @@ export function createSeedData(): DatabaseSchema {
               : emptySocialLinks(),
           isMerchant: true,
           isVip: acteur.id === 'acteur-1' || acteur.id === 'acteur-2',
+          phoneForOrders: acteur.telephone,
+          dailyMenuText:
+            acteur.id === 'acteur-2' ? 'Plat du jour : Tartiflette aux cèpes' : null,
+          dailyMenuImage:
+            acteur.id === 'acteur-2'
+              ? 'https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=800&q=80'
+              : null,
         };
       }),
       ...createChartronsPoiActeurs(now),

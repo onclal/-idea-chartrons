@@ -6,6 +6,7 @@ import {
   CHARTRONS_MAP_CENTER,
   hasCoordinates,
   isVipMerchant,
+  canClickAndCollect,
   LOCAL_RELAIS_PHONE,
   STATIC_MAP_POIS,
   type ActeurLocal,
@@ -18,6 +19,8 @@ import { AppointmentButton } from '../components/AppointmentButton';
 import { PlaceMeta } from '../components/PlaceMeta';
 import { MerchantSocialSection } from '../components/MerchantSocialSection';
 import { MerchantReviews } from '../components/MerchantReviews';
+import { DailyMenuSection } from '../components/DailyMenuSection';
+import { OrderModal } from '../components/OrderModal';
 import { PhoneLink } from '../components/PhoneLink';
 import { FavoriteButton } from '../components/FavoriteButton';
 import { FavoritesDrawer } from '../components/FavoritesDrawer';
@@ -120,6 +123,7 @@ export function MapPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [acteurs, setActeurs] = useState<ActeurLocal[]>([]);
   const [reviewSummary, setReviewSummary] = useState<ReviewSummary>({ rating: 0, count: 0 });
+  const [orderOpen, setOrderOpen] = useState(false);
   const [events, setEvents] = useState<AgendaEvenement[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeLayers, setActiveLayers] = useState<Set<MapLayer>>(new Set(LAYERS));
@@ -608,6 +612,21 @@ export function MapPage() {
               </div>
               <FavoriteButton place={pinToFavorite(selectedPin)} />
             </div>
+            {selectedActeur && isVipMerchant(selectedActeur) && (
+              <DailyMenuSection acteur={selectedActeur} />
+            )}
+            {selectedActeur && canClickAndCollect(selectedActeur) && (
+              <div className="mt-3">
+                <Button
+                  type="button"
+                  variant="primary"
+                  className="w-full"
+                  onClick={() => setOrderOpen(true)}
+                >
+                  {t('acteurs.clickCollect.cta')}
+                </Button>
+              </div>
+            )}
             {selectedActeur && (
               <MerchantSocialSection
                 acteur={selectedActeur}
@@ -643,6 +662,10 @@ export function MapPage() {
         </Card>
       ) : (
         <p className="text-xs text-chartrons-warm-gray text-center">{t('map.tapHint')}</p>
+      )}
+
+      {selectedActeur && canClickAndCollect(selectedActeur) && (
+        <OrderModal open={orderOpen} onClose={() => setOrderOpen(false)} acteur={selectedActeur} />
       )}
 
       <FavoritesDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />

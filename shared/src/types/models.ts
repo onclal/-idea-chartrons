@@ -129,6 +129,9 @@ export interface ActeurLocal {
   isMerchant: boolean;
   /** Compte Espace Pro : réseaux publics, badge VIP et messagerie directe. */
   isVip: boolean;
+  dailyMenuImage?: string | null;
+  dailyMenuText?: string | null;
+  phoneForOrders?: string | null;
   createdAt: string;
   updatedAt: string;
 }
