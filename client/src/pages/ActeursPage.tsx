@@ -3,25 +3,16 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   DIRECTORY_CATEGORIES,
-  hasQrVitrine,
-  isRestaurantCategory,
   type ActeurLocal,
   type User,
 } from '@idea-chartrons/shared';
-import { Badge, Button, Card, EmptyState, Loading, Select } from '../components/ui';
+import { Button, EmptyState, Loading, Select } from '../components/ui';
 import { PageHelp } from '../components/PageHelp';
-import { PhoneLink } from '../components/PhoneLink';
-import { AppointmentButton } from '../components/AppointmentButton';
-import { PlaceMeta } from '../components/PlaceMeta';
-import { MerchantSocialSection } from '../components/MerchantSocialSection';
-import { RestaurantMenu } from '../components/RestaurantMenu';
+import { MerchantCard } from '../components/MerchantCard';
 import { ContactForm } from '../components/ContactForm';
 import { ActeurCreateForm } from '../components/ActeurCreateForm';
-import { AdminDeleteButton } from '../components/AdminDeleteButton';
 import { FideliteScanner } from '../components/FideliteScanner';
 import { FideliteHistory } from '../components/FideliteHistory';
-import { QrCodeDisplay } from '../components/QrCodeDisplay';
-import { VipOfferCard } from '../components/VipOfferCard';
 import { useAdmin } from '../context/AdminContext';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -212,123 +203,23 @@ export function ActeursPage() {
           {filteredActeurs.map((acteur) => {
             const isExpanded = expandedId === acteur.id;
             return (
-              <Card
+              <MerchantCard
                 key={acteur.id}
-                className="!p-0 overflow-hidden cursor-pointer bg-white text-chartrons-olive-dark"
-                onClick={() => setExpandedId(isExpanded ? null : acteur.id)}
-              >
-                {acteur.photos[0] && (
-                  <img src={acteur.photos[0]} alt="" className="w-full h-40 object-cover" />
-                )}
-                <div className="p-4">
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <h3 className="font-semibold text-chartrons-olive-dark text-base">{acteur.nomCommerce}</h3>
-                      <div className="flex flex-wrap gap-1.5 mt-1.5">
-                        <Badge variant="olive">{t(`acteurs.categories.${acteur.categorie}`)}</Badge>
-                        {acteur.offreVip && (
-                          <Badge variant="vip" icon="⭐">{t('badges.vip')}</Badge>
-                        )}
-                        {!hasQrVitrine(acteur) && (
-                          <Badge variant="stone">{t('acteurs.qrOptional')}</Badge>
-                        )}
-                      </div>
-                    </div>
-                    <span className="text-chartrons-warm-gray text-sm">{isExpanded ? '▲' : '▼'}</span>
-                  </div>
-
-                  <p className="text-sm text-chartrons-olive-dark/80 mt-2">{acteur.description}</p>
-                  <PlaceMeta
-                    rating={acteur.rating}
-                    reviewsCount={acteur.reviewsCount}
-                    openingHours={acteur.openingHours}
-                    specialite={acteur.specialite}
-                  />
-                  <p className="text-xs text-chartrons-olive-dark/70 mt-2">📍 {acteur.adresse}</p>
-                  <div className="mt-2">
-                    <PhoneLink phone={acteur.telephone} />
-                  </div>
-                  <MerchantSocialSection
-                    acteur={acteur}
-                    onUpdated={(updated) =>
-                      setActeurs((list) => list.map((item) => (item.id === updated.id ? updated : item)))
-                    }
-                  />
-                  <div className="mt-2 space-y-2" onClick={(event) => event.stopPropagation()}>
-                    <AppointmentButton acteur={acteur} />
-                    <Button
-                      variant="ghost"
-                      size="md"
-                      className="w-full border border-chartrons-beige"
-                      onClick={() =>
-                        setContactContext(t('contact.shopContext', { name: acteur.nomCommerce }))
-                      }
-                    >
-                      {t('contact.askQuestion')}
-                    </Button>
-                  </div>
-
-                  {isRestaurantCategory(acteur.categorie) && (
-                    <div className="mt-3" onClick={(event) => event.stopPropagation()}>
-                      <RestaurantMenu acteur={acteur} />
-                    </div>
-                  )}
-
-                  <VipOfferCard acteur={acteur} userPoints={user?.pointsFidelite ?? 0} />
-
-                  <AdminDeleteButton
-                    label={t('admin.deleteActeur')}
-                    confirmMessage={t('admin.deleteActeurConfirm', { name: acteur.nomCommerce })}
-                    onDelete={() => handleDeleteActeur(acteur.id)}
-                    className="mt-3"
-                  />
-
-                  {isExpanded && (
-                    <div className="mt-4 pt-4 border-t border-chartrons-gold/10 flex flex-col items-center gap-2">
-                      {hasQrVitrine(acteur) ? (
-                        <>
-                          <p className="text-xs font-medium text-chartrons-warm-gray">
-                            {t('acteurs.qrVitrine')}
-                          </p>
-                          <QrCodeDisplay
-                            value={acteur.qrCodeVitrine}
-                            label={acteur.qrCodeVitrine}
-                            size={140}
-                          />
-                          <p className="text-[10px] text-chartrons-warm-gray text-center">
-                            {t('acteurs.qrHint')}
-                          </p>
-                        </>
-                      ) : (
-                        <>
-                          <p className="text-xs font-medium text-chartrons-warm-gray">
-                            {t('acteurs.qrOptional')}
-                          </p>
-                          <p className="text-[10px] text-chartrons-warm-gray text-center">
-                            {t('acteurs.qrOptionalHint')}
-                          </p>
-                          {canManageFidelite(acteur) && (
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="gold"
-                              disabled={generatingQrId === acteur.id}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleGenerateQr(acteur.id);
-                              }}
-                            >
-                              {generatingQrId === acteur.id
-                                ? t('common.loading')
-                                : t('acteurs.generateQr')}
-                            </Button>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </Card>
+                acteur={acteur}
+                isExpanded={isExpanded}
+                userPoints={user?.pointsFidelite ?? 0}
+                generatingQrId={generatingQrId}
+                canManageFidelite={canManageFidelite(acteur)}
+                onToggle={() => setExpandedId(isExpanded ? null : acteur.id)}
+                onUpdated={(updated) =>
+                  setActeurs((list) => list.map((item) => (item.id === updated.id ? updated : item)))
+                }
+                onAskQuestion={() =>
+                  setContactContext(t('contact.shopContext', { name: acteur.nomCommerce }))
+                }
+                onDelete={() => handleDeleteActeur(acteur.id)}
+                onGenerateQr={() => handleGenerateQr(acteur.id)}
+              />
             );
           })}
         </div>

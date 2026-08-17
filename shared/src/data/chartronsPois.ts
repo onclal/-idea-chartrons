@@ -277,6 +277,7 @@ export function chartronsPoiToActeur(poi: ChartronsPoi, now: string): ActeurLoca
     merchantEmail: poi.isMerchant ? defaultMerchantEmail(ownerId) : null,
     socialLinks: emptySocialLinks(),
     isMerchant: poi.isMerchant,
+    isVip: poi.id === 'poi-rest-001',
     createdAt: now,
     updatedAt: now,
   };

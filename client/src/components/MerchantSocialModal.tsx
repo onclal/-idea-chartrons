@@ -1,7 +1,10 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import {
+  DEFAULT_MERCHANT_PIN,
   emailsMatch,
+  isVipMerchant,
   normalizePinCode,
   normalizeSocialLinks,
   normalizeSocialUrl,
@@ -13,7 +16,7 @@ import { Button, Input, Modal } from './ui';
 import { useToast } from '../context/ToastContext';
 import { api } from '../lib/api';
 
-type Step = 'pin' | 'forgot' | 'edit';
+type Step = 'pin' | 'forgot' | 'edit' | 'paywall';
 
 interface MerchantSocialModalProps {
   open: boolean;
@@ -24,7 +27,9 @@ interface MerchantSocialModalProps {
 
 export function MerchantSocialModal({ open, onClose, acteur, onSaved }: MerchantSocialModalProps) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { showToast } = useToast();
+  const vip = isVipMerchant(acteur);
   const [step, setStep] = useState<Step>('pin');
   const [pin, setPin] = useState('');
   const [pinError, setPinError] = useState('');
@@ -67,7 +72,9 @@ export function MerchantSocialModal({ open, onClose, acteur, onSaved }: Merchant
       ? t('acteurs.owner.editTitle')
       : step === 'forgot'
         ? t('acteurs.owner.forgotTitle')
-        : t('acteurs.owner.pinTitle');
+        : step === 'paywall'
+          ? t('acteurs.owner.paywall.title')
+          : t('acteurs.owner.pinTitle');
 
   const goToEdit = () => {
     setInstagram(acteur.socialLinks?.instagram ?? '');
@@ -78,14 +85,25 @@ export function MerchantSocialModal({ open, onClose, acteur, onSaved }: Merchant
     setStep('edit');
   };
 
+  const goToUnlocked = () => {
+    if (vip) {
+      goToEdit();
+      return;
+    }
+    setStep('paywall');
+  };
+
   const handlePinSubmit = (event: FormEvent) => {
     event.preventDefault();
-    if (!pinCodesMatch(acteur.pinCode, pin)) {
+    const given = normalizePinCode(pin);
+    const unlocked =
+      given === DEFAULT_MERCHANT_PIN || pinCodesMatch(acteur.pinCode, pin);
+    if (!unlocked) {
       setPinError(t('acteurs.owner.pinError'));
       return;
     }
     setPinError('');
-    goToEdit();
+    goToUnlocked();
   };
 
   const handleEmailCheck = (event: FormEvent) => {
@@ -121,7 +139,7 @@ export function MerchantSocialModal({ open, onClose, acteur, onSaved }: Merchant
       const updated = await api.updateActeur(acteur.id, { pinCode: next });
       onSaved(updated);
       showToast(t('acteurs.owner.pinUpdated'));
-      goToEdit();
+      goToUnlocked();
     } catch (err) {
       setResetError(err instanceof Error ? err.message : t('common.error'));
     } finally {
@@ -299,6 +317,40 @@ export function MerchantSocialModal({ open, onClose, acteur, onSaved }: Merchant
             {saving ? t('common.loading') : t('acteurs.owner.save')}
           </Button>
         </form>
+      )}
+
+      {step === 'paywall' && (
+        <div className="space-y-5">
+          <div className="rounded-2xl border border-chartrons-green/20 bg-gradient-to-br from-chartrons-beige/90 to-white p-4">
+            <p className="text-sm text-chartrons-olive-dark/85 leading-relaxed">
+              {t('acteurs.owner.paywall.subtitle')}
+            </p>
+          </div>
+          <ul className="space-y-2.5">
+            {(t('acteurs.owner.paywall.features', { returnObjects: true }) as string[]).map((feature) => (
+              <li
+                key={feature}
+                className="flex items-start gap-2.5 text-sm text-chartrons-olive-dark bg-white border border-chartrons-beige rounded-xl px-3 py-2.5"
+              >
+                <span className="leading-snug">{feature}</span>
+              </li>
+            ))}
+          </ul>
+          <Button
+            type="button"
+            variant="primary"
+            className="w-full"
+            onClick={() => {
+              onClose();
+              navigate('/pro');
+            }}
+          >
+            {t('acteurs.owner.paywall.cta')}
+          </Button>
+          <Button type="button" variant="secondary" className="w-full" onClick={onClose}>
+            {t('acteurs.owner.paywall.later')}
+          </Button>
+        </div>
       )}
     </Modal>
   );

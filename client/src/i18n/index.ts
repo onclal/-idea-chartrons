@@ -264,6 +264,18 @@ const resources = {
           save: 'Enregistrer les modifications',
           saved: 'Liens mis à jour',
           invalidUrl: 'Le lien {{network}} n’est pas valide.',
+          paywall: {
+            title: 'Multipliez vos contacts avec l’Espace Pro 🚀',
+            subtitle:
+              'Permettez aux habitants des Chartrons d’accéder directement à vos réseaux sociaux, votre site et votre WhatsApp !',
+            features: [
+              '📸 Liens directs vers Instagram, Facebook, WhatsApp & Web',
+              '⭐ Badge "Offre VIP" + Mise en avant prioritaire',
+              '💬 Activation de la messagerie directe avec les clients',
+            ],
+            cta: 'Découvrir l’Espace Pro',
+            later: 'Plus tard',
+          },
         },
       },
       map: {
@@ -1538,6 +1550,18 @@ const resources = {
           save: 'Save changes',
           saved: 'Links updated',
           invalidUrl: 'The {{network}} link is not valid.',
+          paywall: {
+            title: 'Grow your contacts with Pro Space 🚀',
+            subtitle:
+              'Let Chartrons residents reach your social networks, website and WhatsApp directly!',
+            features: [
+              '📸 Direct links to Instagram, Facebook, WhatsApp & Web',
+              '⭐ “VIP Offer” badge + priority placement',
+              '💬 Direct messaging with customers',
+            ],
+            cta: 'Discover Pro Space',
+            later: 'Later',
+          },
         },
       },
       map: {

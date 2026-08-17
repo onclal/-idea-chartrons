@@ -5,6 +5,7 @@ import {
   ActeurLocalCategory,
   CHARTRONS_MAP_CENTER,
   hasCoordinates,
+  isVipMerchant,
   LOCAL_RELAIS_PHONE,
   STATIC_MAP_POIS,
   type ActeurLocal,
@@ -573,8 +574,11 @@ export function MapPage() {
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
                 <h3 className="font-semibold text-chartrons-olive-dark">{selectedPin.title}</h3>
-                <div className="mt-1.5">
+                <div className="mt-1.5 flex flex-wrap gap-1.5">
                   <Badge variant="olive">{selectedPin.subtitle}</Badge>
+                  {selectedActeur && isVipMerchant(selectedActeur) && (
+                    <Badge variant="vip" icon="⭐">{t('badges.vip')}</Badge>
+                  )}
                 </div>
                 <PlaceMeta
                   rating={selectedPin.rating}

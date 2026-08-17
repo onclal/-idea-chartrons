@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { hasSocialLinks, type ActeurLocal } from '@idea-chartrons/shared';
+import { hasSocialLinks, isVipMerchant, type ActeurLocal } from '@idea-chartrons/shared';
 import { Button } from './ui';
 import { SocialLinksRow } from './SocialLinksRow';
 import { MerchantSocialModal } from './MerchantSocialModal';
@@ -14,11 +14,12 @@ export function MerchantSocialSection({ acteur, onUpdated }: MerchantSocialSecti
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const showOwner = acteur.isMerchant !== false;
-  if (!showOwner && !hasSocialLinks(acteur.socialLinks)) return null;
+  const showSocials = isVipMerchant(acteur) && hasSocialLinks(acteur.socialLinks);
+  if (!showOwner && !showSocials) return null;
 
   return (
     <div className="mt-3 space-y-2" onClick={(event) => event.stopPropagation()}>
-      <SocialLinksRow links={acteur.socialLinks} />
+      {showSocials ? <SocialLinksRow links={acteur.socialLinks} /> : null}
       {showOwner && (
         <>
           <Button

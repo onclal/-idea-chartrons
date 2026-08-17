@@ -127,6 +127,8 @@ export interface ActeurLocal {
   merchantEmail: string | null;
   socialLinks: CommerceSocialLinks;
   isMerchant: boolean;
+  /** Compte Espace Pro : réseaux publics, badge VIP et messagerie directe. */
+  isVip: boolean;
   createdAt: string;
   updatedAt: string;
 }

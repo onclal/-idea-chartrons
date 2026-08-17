@@ -1,5 +1,6 @@
 export * from './types/enums.js';
 export * from './types/models.js';
+export * from './types/merchant.js';
 export * from './logic/relais.js';
 export * from './logic/fidelite.js';
 export * from './logic/commerce.js';

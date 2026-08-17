@@ -17,7 +17,7 @@ import {
 import { createChartronsPoiActeurs } from './chartronsPois.js';
 
 /** Bump when seed acteurs / Chartrons POIs change so localStorage upserts the catalog. */
-export const SEED_CATALOG_VERSION = 2;
+export const SEED_CATALOG_VERSION = 3;
 import {
   defaultRegleForCategory,
   generateQrClientCode,
@@ -644,6 +644,7 @@ export function createSeedData(): DatabaseSchema {
                 })
               : emptySocialLinks(),
           isMerchant: true,
+          isVip: acteur.id === 'acteur-1' || acteur.id === 'acteur-2',
         };
       }),
       ...createChartronsPoiActeurs(now),

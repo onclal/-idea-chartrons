@@ -124,6 +124,7 @@ function mergeCatalogActeur(current: ActeurLocal | undefined, seedActeur: Acteur
     openingHours: current.openingHours ?? seedActeur.openingHours,
     telephone: current.telephone ?? seedActeur.telephone,
     isMerchant: seedActeur.isMerchant,
+    isVip: seedActeur.isVip,
     pinCode: current.pinCode ?? seedActeur.pinCode,
     merchantEmail: current.merchantEmail ?? seedActeur.merchantEmail,
     socialLinks: current.socialLinks ?? seedActeur.socialLinks,
@@ -220,6 +221,7 @@ class LocalDatabase {
         ? acteur.categorie
         : (seedMatch?.categorie ?? mappedLegacy ?? ActeurLocalCategory.CommercesArtisanat);
       const nextMerchant = seedMatch?.isMerchant ?? acteur.isMerchant ?? true;
+      const nextVip = seedMatch ? seedMatch.isVip : acteur.isVip === true;
       const nextQr = acteur.qrCodeVitrine || null;
       const nextLat = acteur.latitude ?? seedMatch?.latitude ?? null;
       const nextLng = acteur.longitude ?? seedMatch?.longitude ?? null;
@@ -262,6 +264,7 @@ class LocalDatabase {
         nextPin !== acteur.pinCode ||
         nextMerchantEmail !== acteur.merchantEmail ||
         nextMerchant !== acteur.isMerchant ||
+        nextVip !== acteur.isVip ||
         nextPhotos.length !== (acteur.photos?.length ?? 0) ||
         !socialLinksEqual(nextSocial, acteur.socialLinks) ||
         nextMode !== acteur.regleFideliteMode ||
@@ -287,6 +290,7 @@ class LocalDatabase {
         merchantEmail: nextMerchantEmail,
         socialLinks: nextSocial,
         isMerchant: nextMerchant,
+        isVip: nextVip,
         regleFideliteMode: nextMode,
         regleFideliteValeur: nextValeur,
       };
@@ -704,6 +708,7 @@ class LocalDatabase {
       merchantEmail: this.getById('users', data.userId)?.email ?? defaultMerchantEmail(data.userId),
       socialLinks: emptySocialLinks(),
       isMerchant: true,
+      isVip: false,
       createdAt: now,
       updatedAt: now,
     });
