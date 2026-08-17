@@ -5,8 +5,8 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
-/** GitHub Pages project URL: https://onclal.github.io/-idea-chartrons/ */
-const GITHUB_PAGES_BASE = '/-idea-chartrons/';
+/** GitHub Pages project URL: https://onclal.github.io/idea-chartrons/ */
+const GITHUB_PAGES_BASE = '/idea-chartrons/';
 
 export default defineConfig({
   base: GITHUB_PAGES_BASE,

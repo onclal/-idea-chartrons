@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "description": "Plateforme hyper-locale pour le quartier des Chartrons à Bordeaux",
-  "homepage": "https://onclal.github.io/-idea-chartrons/",
+  "homepage": "https://onclal.github.io/idea-chartrons/",
   "workspaces": [
     "client",
     "server",
