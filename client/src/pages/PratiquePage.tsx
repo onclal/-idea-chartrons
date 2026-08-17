@@ -4,6 +4,8 @@ import { Badge, Button, Card } from '../components/ui';
 import { PageHelp } from '../components/PageHelp';
 import { DirectionsButton } from '../components/DirectionsButton';
 import { CallButton } from '../components/CallButton';
+import { CivicReporting } from '../components/CivicReporting';
+import { EmergencySafety } from '../components/EmergencySafety';
 import { PhoneLink } from '../components/PhoneLink';
 import {
   BULKY_WASTE,
@@ -225,6 +227,14 @@ export function PratiquePage() {
             <CallButton phone={artisan.phone} className="w-full" />
           </Card>
         ))}
+      </Section>
+
+      <Section id="signalements" index={7} title={t('pratique.civic.title')} hint={t('pratique.civic.hint')}>
+        <CivicReporting />
+      </Section>
+
+      <Section id="urgences" index={8} title={t('pratique.safety.title')} hint={t('pratique.safety.hint')}>
+        <EmergencySafety />
       </Section>
     </div>
   );

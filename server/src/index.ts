@@ -1,6 +1,7 @@
 import cors from 'cors';
 import express from 'express';
 import acteursRouter from './routes/acteurs.js';
+import conciergeRouter from './routes/concierge.js';
 import eventsRouter from './routes/events.js';
 import fideliteRouter from './routes/fidelite.js';
 import postsRouter from './routes/posts.js';
@@ -25,6 +26,7 @@ app.use('/api/events', eventsRouter);
 app.use('/api/relais', relaisRouter);
 app.use('/api/fidelite', fideliteRouter);
 app.use('/api/sync', syncRouter);
+app.use('/api/concierge', conciergeRouter);
 
 app.listen(PORT, () => {
   console.log(`🏘️  IDÉA CHARTRONS API running on http://localhost:${PORT}`);

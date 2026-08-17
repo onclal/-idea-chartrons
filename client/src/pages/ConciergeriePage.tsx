@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { AIConcierge } from '../components/AIConcierge';
 import { Button, Card, Input, Textarea } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -69,6 +70,8 @@ export function ConciergeriePage() {
         <h2 className="text-xl font-bold text-chartrons-bordeaux">{t('conciergerie.title')}</h2>
         <p className="text-sm text-chartrons-warm-gray mt-1">{t('conciergerie.subtitle')}</p>
       </div>
+
+      <AIConcierge />
 
       <Card className="!p-4 bg-gradient-to-br from-chartrons-beige/70 to-white space-y-3">
         <p className="text-sm text-chartrons-olive-dark leading-relaxed">{t('conciergerie.intro')}</p>

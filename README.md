@@ -15,6 +15,9 @@ Application de démonstration qui connecte habitants, commerçants et bénévole
 | **Commerces & Fidélité** | Fiches commerçants rue Notre-Dame, scanner QR, points VIP déblocables |
 | **Agenda** | Brocantes, animations, promos — tri chronologique, export `.ics` |
 | **Profil** | Switch utilisateur de test, historique fidélité, réinitialisation des données démo |
+| **Concierge IA** | Assistant multilingue (FR, EN, ES, DE, IT, PT, NL) : Top 5 commerces avec budget estimé, Click & Collect WhatsApp/SMS, itinéraires à pied et notes patrimoine |
+| **Signalements civiques** | Propreté, voirie, éclairage, déchets, bruit, stationnement — texte prêt à envoyer vers Allô Mairie ou la Police Municipale |
+| **Urgences & évacuation** | Barre d'appel en un geste (15/17/18/112/114), risque de crue de la Garonne, consignes type Plan Communal de Sauvegarde, points de regroupement |
 
 > **Persistance** : toutes les données sont stockées dans le **LocalStorage** du navigateur (mode mock autonome, sans backend requis en production).
 
@@ -110,6 +113,28 @@ Changer d'utilisateur via **Profil → Changer d'utilisateur de test**.
 
 ---
 
+## Concierge IA multilingue
+
+L'endpoint `POST /api/concierge` (Express) interroge **OpenAI `gpt-4o-mini`**. La clé reste côté serveur : elle n'est jamais envoyée au navigateur.
+
+```bash
+cp server/.env.example server/.env   # puis renseigner OPENAI_API_KEY
+npm run dev                          # client + API
+```
+
+| Vérification | Commande |
+|--------------|----------|
+| Clé détectée | `curl localhost:3001/api/concierge/status` |
+| Réponse | `curl -X POST localhost:3001/api/concierge -H 'Content-Type: application/json' -d '{"message":"une boulangerie rue Notre-Dame"}'` |
+
+**Garde-fous du prompt** : le modèle ne reçoit que les commerces du quartier issus de `shared/src/data/chartronsPois.ts` et l'histoire des rues de `shared/src/data/chartronsHeritage.ts`. Il ne peut donc pas inventer d'adresse, se limite à 5 recommandations et redirige toute question hors quartier vers une piste locale.
+
+**Sans backend** (build statique GitHub Pages, hors ligne ou clé absente) : le moteur de correspondance de `shared/src/logic/concierge.ts` tourne directement dans le navigateur et produit le même Top 5 avec budgets et notes patrimoine, dans la langue détectée. La réponse est alors marquée « hors ligne ».
+
+Pour brancher une API distante sur le site statique, définir `VITE_CONCIERGE_API_URL` au build.
+
+---
+
 ## Build de production
 
 ```bash
@@ -184,12 +209,15 @@ npm run build:client
 | `npm run build:client` | Build client pour déploiement |
 | `npm run preview` | Prévisualiser `client/dist` |
 | `npm start` | Démarrer l'API compilée |
+| `npm run deploy` | Build complet puis publication sur la branche `gh-pages` |
 
 ---
 
 ## Langues
 
-Français (par défaut) et Anglais — bascule via les boutons **FR / EN** dans le header.
+Interface en Français (par défaut) et Anglais — bascule via les boutons **FR / EN** dans le header.
+
+Le concierge IA détecte en plus l'espagnol, l'allemand, l'italien, le portugais et le néerlandais, et répond dans la langue du visiteur (sélecteur « Langue de réponse » ou détection automatique).
 
 ---
 
