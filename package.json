@@ -17,6 +17,7 @@
     "build:client": "npm run build --workspace=shared && npm run build --workspace=client",
     "preview": "npm run preview --workspace=client",
     "start": "npm run start --workspace=server",
+    "import:osm": "node scripts/import-osm-chartrons.mjs",
     "deploy": "npm run build && gh-pages -d client/dist -t -b gh-pages"
   },
   "devDependencies": {

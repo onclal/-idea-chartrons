@@ -9,3 +9,4 @@ export * from './logic/tourDeControle.js';
 export * from './data/seed.js';
 export * from './data/mapPois.js';
 export * from './data/chartronsPois.js';
+export * from './data/osmChartronsPois.js';

@@ -17,7 +17,7 @@ import {
 import { createChartronsPoiActeurs } from './chartronsPois.js';
 
 /** Bump when seed acteurs / Chartrons POIs change so localStorage upserts the catalog. */
-export const SEED_CATALOG_VERSION = 4;
+export const SEED_CATALOG_VERSION = 5;
 import {
   defaultRegleForCategory,
   generateQrClientCode,

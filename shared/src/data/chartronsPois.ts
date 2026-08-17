@@ -1,7 +1,14 @@
 import { ActeurLocalCategory } from '../types/enums.js';
 import type { ActeurLocal } from '../types/models.js';
-import { createCafeMarcheMenu, DEFAULT_MERCHANT_PIN, defaultMerchantEmail, emptySocialLinks } from '../logic/commerce.js';
+import {
+  createCafeMarcheMenu,
+  DEFAULT_MERCHANT_PIN,
+  defaultMerchantEmail,
+  emptySocialLinks,
+  sanitizeExternalUrl,
+} from '../logic/commerce.js';
 import { defaultRegleForCategory, generateQrVitrineCode } from '../logic/fidelite.js';
+import { OSM_CHARTRONS_POIS } from './osmChartronsPois.js';
 
 export type ChartronsPoiCategory =
   | 'bouche_restauration'
@@ -23,6 +30,7 @@ export interface ChartronsPoi {
   hasBooking?: boolean;
   bookingUrl?: string;
   phone?: string;
+  website?: string;
   imageUrl?: string;
   rating?: number;
   reviewsCount?: number;
@@ -230,11 +238,57 @@ export const CHARTRONS_POIS: ChartronsPoi[] = [
 ];
 
 function categoryToActeur(category: ChartronsPoiCategory, subcategory: string): ActeurLocalCategory {
+  const sub = subcategory.toLowerCase();
   if (category === 'sante_bien_etre') return ActeurLocalCategory.SanteSoinsServices;
   if (category === 'patrimoine_culture') return ActeurLocalCategory.TourismeConciergerie;
+  if (
+    sub.includes('bar') ||
+    sub.includes('pub') ||
+    sub.includes('night') ||
+    sub.includes('guinguette') ||
+    sub.includes('boîte')
+  ) {
+    return ActeurLocalCategory.BarsNightlife;
+  }
+  if (
+    sub.includes('hôtel') ||
+    sub.includes('hotel') ||
+    sub.includes('conciergerie') ||
+    sub.includes('musée') ||
+    sub.includes('galerie') ||
+    sub.includes('maison d’hôtes') ||
+    sub.includes("maison d'hotes")
+  ) {
+    return ActeurLocalCategory.TourismeConciergerie;
+  }
+  if (
+    sub.includes('bureau') ||
+    sub.includes('agence immobilière') ||
+    sub.includes('assurance') ||
+    sub.includes('avocat') ||
+    sub.includes('notaire') ||
+    sub.includes('architecte') ||
+    sub.includes('coworking') ||
+    sub.includes('conseil') ||
+    sub.includes('emploi') ||
+    sub.includes('expert-comptable')
+  ) {
+    return ActeurLocalCategory.StartupsB2B;
+  }
   if (category === 'bouche_restauration') {
-    const sub = subcategory.toLowerCase();
-    if (sub.includes('boulangerie') || sub.includes('caviste')) {
+    if (
+      sub.includes('boulangerie') ||
+      sub.includes('pâtisserie') ||
+      sub.includes('caviste') ||
+      sub.includes('épicerie') ||
+      sub.includes('boucher') ||
+      sub.includes('fromager') ||
+      sub.includes('primeur') ||
+      sub.includes('supermarché') ||
+      sub.includes('alimentation') ||
+      sub.includes('traiteur') ||
+      sub.includes('chocolatier')
+    ) {
       return ActeurLocalCategory.CommercesArtisanat;
     }
     return ActeurLocalCategory.RestaurationMenus;
@@ -275,10 +329,12 @@ export function chartronsPoiToActeur(poi: ChartronsPoi, now: string): ActeurLoca
     specialite: poi.subcategory,
     pinCode: poi.isMerchant ? DEFAULT_MERCHANT_PIN : null,
     merchantEmail: poi.isMerchant ? defaultMerchantEmail(ownerId) : null,
-    socialLinks: emptySocialLinks(),
+    socialLinks: poi.website
+      ? { ...emptySocialLinks(), website: sanitizeExternalUrl(poi.website) }
+      : emptySocialLinks(),
     isMerchant: poi.isMerchant,
     isVip: poi.id === 'poi-rest-001',
-    phoneForOrders: poi.phone ?? null,
+    phoneForOrders: poi.id === 'poi-rest-001' ? poi.phone ?? null : null,
     dailyMenuText: poi.id === 'poi-rest-001' ? 'Plat du jour : magret de canard, jus au poivre' : null,
     dailyMenuImage:
       poi.id === 'poi-rest-001'
@@ -290,7 +346,7 @@ export function chartronsPoiToActeur(poi: ChartronsPoi, now: string): ActeurLoca
 }
 
 export function createChartronsPoiActeurs(now: string): ActeurLocal[] {
-  return CHARTRONS_POIS.map((poi) => chartronsPoiToActeur(poi, now));
+  return [...CHARTRONS_POIS, ...OSM_CHARTRONS_POIS].map((poi) => chartronsPoiToActeur(poi, now));
 }
 
 export function culturePlacePois(): Array<{
