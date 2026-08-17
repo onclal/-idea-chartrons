@@ -40,6 +40,15 @@ export function SiteFooter() {
           >
             {t('footer.cgv')}
           </Link>
+          <span className="text-chartrons-sand" aria-hidden>
+            ·
+          </span>
+          <Link
+            to="/admin"
+            className="inline-flex items-center justify-center min-h-[44px] px-3 text-[11px] text-chartrons-warm-gray/70 hover:text-chartrons-bordeaux hover:underline"
+          >
+            {t('footer.admin')}
+          </Link>
         </div>
       </div>
     </footer>

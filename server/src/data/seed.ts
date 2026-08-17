@@ -1,1 +1,1 @@
-export { createSeedData, seedData, DEMO_USER_IDS } from '@idea-chartrons/shared';
+export { createSeedData, seedData, DEMO_DEVICE_ID } from '@idea-chartrons/shared';

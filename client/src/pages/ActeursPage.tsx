@@ -1,11 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import {
-  DIRECTORY_CATEGORIES,
-  type ActeurLocal,
-  type User,
-} from '@idea-chartrons/shared';
+import { DIRECTORY_CATEGORIES, type ActeurLocal } from '@idea-chartrons/shared';
 import { Button, EmptyState, Loading, Select } from '../components/ui';
 import { PageHelp } from '../components/PageHelp';
 import { MerchantCard } from '../components/MerchantCard';
@@ -14,21 +10,21 @@ import { ActeurCreateForm } from '../components/ActeurCreateForm';
 import { FideliteScanner } from '../components/FideliteScanner';
 import { FideliteHistory } from '../components/FideliteHistory';
 import { useAdmin } from '../context/AdminContext';
-import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { matchesSearch, useSearch } from '../context/SearchContext';
 import { api, type FideliteScanResult } from '../lib/api';
+import { getDeviceId } from '../lib/guestCarnet';
 
 type CategoryFilter = 'all' | (typeof DIRECTORY_CATEGORIES)[number];
 
 export function ActeursPage() {
   const { t } = useTranslation();
   const { query } = useSearch();
-  const { currentUser, currentUserId, refreshUser, isMerchant } = useAuth();
   const { isAdminMode } = useAdmin();
   const { showToast } = useToast();
   const [acteurs, setActeurs] = useState<ActeurLocal[]>([]);
-  const [user, setUser] = useState<User | null>(null);
+  const [carnetPoints, setCarnetPoints] = useState(0);
+  const deviceId = getDeviceId();
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('all');
@@ -39,10 +35,10 @@ export function ActeursPage() {
 
   const loadActeurs = () => {
     setLoading(true);
-    Promise.all([api.getActeurs(), api.getUser(currentUserId)])
-      .then(([acteursData, userData]) => {
+    Promise.all([api.getActeurs(), api.getCarnetPoints(deviceId)])
+      .then(([acteursData, points]) => {
         setActeurs(acteursData);
-        setUser(userData);
+        setCarnetPoints(points);
         if (acteursData[0]) setExpandedId((current) => current ?? acteursData[0].id);
       })
       .catch(console.error)
@@ -51,7 +47,8 @@ export function ActeursPage() {
 
   useEffect(() => {
     loadActeurs();
-  }, [currentUserId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [deviceId]);
 
   useEffect(() => {
     if (searchParams.get('referencer') === '1') setShowCreate(true);
@@ -93,8 +90,7 @@ export function ActeursPage() {
   );
 
   const handleScanSuccess = async (result: FideliteScanResult) => {
-    setUser((u) => (u ? { ...u, pointsFidelite: result.totalPoints } : u));
-    await refreshUser();
+    setCarnetPoints(result.totalPoints);
     showToast(t('toast.pointsEarned', { points: result.pointsGagnes }));
     if (result.vipUnlocked) {
       setTimeout(() => showToast(t('toast.vipUnlocked', { offer: result.vipUnlocked }), 'info'), 400);
@@ -122,8 +118,8 @@ export function ActeursPage() {
     }
   };
 
-  const canManageFidelite = (acteur: ActeurLocal) =>
-    isAdminMode || acteur.userId === currentUserId;
+  // En mode invité, seule la modération admin peut piloter la fidélité d'un commerce.
+  const canManageFidelite = (_acteur: ActeurLocal) => isAdminMode;
 
   if (loading) return <Loading message={t('common.loading')} />;
 
@@ -147,24 +143,14 @@ export function ActeursPage() {
         </Button>
       </div>
 
-      {isMerchant && (
-        <Link
-          to="/pro"
-          className="block p-3 rounded-2xl bg-chartrons-green/10 border border-chartrons-green/20 hover:bg-chartrons-green/15 transition-colors"
-        >
-          <p className="text-sm font-semibold text-chartrons-green-dark">{t('proSpace.open')}</p>
-          <p className="text-xs text-chartrons-warm-gray mt-0.5">{t('proSpace.subtitle')}</p>
-        </Link>
-      )}
-
       <FideliteScanner
         acteurs={acteurs}
-        userId={currentUserId}
-        userPoints={user?.pointsFidelite ?? currentUser?.pointsFidelite ?? 0}
+        deviceId={deviceId}
+        carnetPoints={carnetPoints}
         onScanSuccess={handleScanSuccess}
       />
 
-      <FideliteHistory userId={currentUserId} userPoints={user?.pointsFidelite ?? 0} />
+      <FideliteHistory deviceId={deviceId} carnetPoints={carnetPoints} />
 
       <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
         <button
@@ -221,7 +207,7 @@ export function ActeursPage() {
                 key={acteur.id}
                 acteur={acteur}
                 isExpanded={isExpanded}
-                userPoints={user?.pointsFidelite ?? 0}
+                carnetPoints={carnetPoints}
                 generatingQrId={generatingQrId}
                 canManageFidelite={canManageFidelite(acteur)}
                 onToggle={() => setExpandedId(isExpanded ? null : acteur.id)}

@@ -14,7 +14,8 @@ Application de démonstration qui connecte habitants, commerçants et bénévole
 | **Local Relais** | Réservation de créneaux dépôt/retrait, statuts dynamiques, QR codes, alertes pickup |
 | **Commerces & Fidélité** | Fiches commerçants rue Notre-Dame, scanner QR, points VIP déblocables |
 | **Agenda** | Brocantes, animations, promos — tri chronologique, export `.ics` |
-| **Profil** | Switch utilisateur de test, historique fidélité, réinitialisation des données démo |
+| **Carnet (mode invité)** | Points et contributions de cet appareil — aucun compte, aucun profil |
+| **Dashboard Admin** | Accès `/admin` par code (`VITE_ADMIN_PASSCODE`) : POI, ardoises VIP, signalements, concierge IA |
 | **Concierge IA** | Assistant multilingue (FR, EN, ES, DE, IT, PT, NL) : Top 5 commerces avec budget estimé, Click & Collect WhatsApp/SMS, itinéraires à pied et notes patrimoine |
 | **Signalements civiques** | Propreté, voirie, éclairage, déchets, bruit, stationnement — texte prêt à envoyer vers Allô Mairie ou la Police Municipale |
 | **Urgences & évacuation** | Barre d'appel en un geste (15/17/18/112/114), risque de crue de la Garonne, consignes type Plan Communal de Sauvegarde, points de regroupement |
@@ -60,7 +61,7 @@ idea-chartrons/
 │   ├── public/          # Assets statiques + _redirects Netlify
 │   └── src/
 │       ├── lib/localDb.ts   # Persistance LocalStorage
-│       ├── context/         # Auth, Toast, Search
+│       ├── context/         # Admin (code d'accès), Toast, Search
 │       └── pages/           # Écrans de l'application
 ├── server/              # API Express (optionnelle, port 3001)
 ├── shared/              # Types, enums, logique métier, seed
@@ -101,15 +102,11 @@ npm run dev
 - Frontend : http://localhost:5173
 - API : http://localhost:3001/api/health
 
-### Utilisateurs de démo
+### Mode invité & administration
 
-| Utilisateur | Rôle | ID |
-|-------------|------|----|
-| Marie Dupont | Habitant | `user-1` |
-| Thomas Martin | Commerçant | `user-2` |
-| Sophie Bernard | Bénévol Local Relais | `user-3` |
+Aucun compte habitant ou commerçant. Les points vivent dans le **carnet de l’appareil**.
 
-Changer d'utilisateur via **Profil → Changer d'utilisateur de test**.
+Le tableau de bord `/admin` (raccourci discret dans le pied de page) s’ouvre avec le code `VITE_ADMIN_PASSCODE` (voir `client/.env.example`). Repli local de démonstration : `Chartrons2026`.
 
 ---
 
@@ -225,12 +222,12 @@ Le concierge IA détecte en plus l'espagnol, l'allemand, l'italien, le portugais
 
 Voir [docs/DATABASE_SCHEMA.md](docs/DATABASE_SCHEMA.md) pour le schéma complet.
 
-- **Users** — Habitants, commerçants, bénévoles relais
-- **Posts_Annonces** — Dons, ventes, services, petits boulots
+- **Posts_Annonces** — Dons, ventes, services, petits boulots (auteur anonyme / nom libre)
 - **Local_Relais** — Dépôts/retraits, créneaux, QR codes
-- **Acteurs_Locaux** — Commerces, brocanteurs, artisans
+- **Acteurs_Locaux** — Commerces classés par taxonomie unifiée
+- **Civic_Reports** — Signalements Mairie / Police Municipale
 - **Agenda_Evénements** — Brocantes, animations, promos
-- **Cartes_Fidélité_Scans** — Historique points fidélité
+- **Cartes_Fidélité_Scans** — Historique points par `deviceId`
 
 ---
 

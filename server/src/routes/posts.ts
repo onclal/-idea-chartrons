@@ -18,17 +18,17 @@ router.get('/:id', (req, res) => {
 });
 
 router.post('/', (req, res) => {
-  const { titre, description, type, prix, photos, auteurId, telephone } = req.body as {
+  const { titre, description, type, prix, photos, auteurNom, telephone } = req.body as {
     titre?: string;
     description?: string;
     type?: PostType;
     prix?: number | null;
     photos?: string[];
-    auteurId?: string;
+    auteurNom?: string | null;
     telephone?: string | null;
   };
 
-  if (!titre || !description || !type || !auteurId) {
+  if (!titre || !description || !type) {
     res.status(400).json({ error: 'Missing required fields' });
     return;
   }
@@ -36,7 +36,7 @@ router.post('/', (req, res) => {
   const now = new Date().toISOString();
   const post = store.create('postsAnnonces', {
     id: `post-${Date.now()}`,
-    auteurId,
+    auteurNom: auteurNom?.trim() || null,
     titre,
     description,
     type,

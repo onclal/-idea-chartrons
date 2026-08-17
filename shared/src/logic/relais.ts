@@ -175,10 +175,13 @@ export function slotFromId(id: string): RelaisCreneau | null {
   };
 }
 
-export function countReadyForPickup(relaisList: LocalRelais[], userId: string): number {
-  return relaisList.filter(
-    (r) => r.userId === userId && isReadyForPickup(r),
-  ).length;
+/**
+ * Colis prêts à retirer parmi les dépôts effectués depuis cet appareil.
+ * La propriété est mémorisée localement (aucun compte), d'où la liste d'annonces fournie.
+ */
+export function countReadyForPickup(relaisList: LocalRelais[], ownedPostIds: string[]): number {
+  const owned = new Set(ownedPostIds);
+  return relaisList.filter((r) => owned.has(r.postId) && isReadyForPickup(r)).length;
 }
 
 export function getNextStatus(current: LocalRelaisRetraitStatus): LocalRelaisRetraitStatus | null {

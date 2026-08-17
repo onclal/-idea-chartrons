@@ -10,11 +10,10 @@ import type { ContactMessage } from '../../lib/contact';
 import { formatDateTime } from '../../lib/format';
 
 const QUICK_LINKS = [
+  { to: '/admin/panneau', key: 'panel', icon: '🛡️' },
   { to: '/admin/annonces', key: 'posts', icon: '📋' },
-  { to: '/admin/commerces', key: 'acteurs', icon: '🏪' },
   { to: '/admin/agenda', key: 'events', icon: '📅' },
   { to: '/admin/relais', key: 'relais', icon: '📦' },
-  { to: '/admin/utilisateurs', key: 'users', icon: '👥' },
 ] as const;
 
 export function AdminDashboardPage() {
@@ -55,7 +54,7 @@ export function AdminDashboardPage() {
   useEffect(load, []);
 
   const handleReset = async () => {
-    if (!window.confirm(t('profile.resetConfirm'))) return;
+    if (!window.confirm(t('adminSpace.dashboard.resetConfirm'))) return;
     setResetting(true);
     try {
       await api.resetDemoData();
@@ -136,6 +135,20 @@ export function AdminDashboardPage() {
       }),
       accent: 'text-chartrons-brick',
     },
+    {
+      icon: '📮',
+      value: `${stats.signalementsAExaminer} / ${stats.signalementsTotal}`,
+      label: t('adminSpace.panel.tabs.reports'),
+      hint: t('adminSpace.reports.subtitle'),
+      accent: 'text-chartrons-olive-dark',
+    },
+    {
+      icon: '🍽️',
+      value: stats.ardoisesEnAttente,
+      label: t('adminSpace.panel.tabs.ardoises'),
+      hint: t('adminSpace.ardoises.subtitle'),
+      accent: 'text-chartrons-bordeaux',
+    },
   ];
 
   return (
@@ -145,7 +158,7 @@ export function AdminDashboardPage() {
         subtitle={t('adminSpace.dashboard.welcomeSub')}
       />
 
-      <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 lg:gap-4">
+      <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 lg:gap-4">
         {heroKpis.map((kpi) => (
           <Card key={kpi.label} className="!p-4 lg:!p-5 bg-chartrons-beige/35 border-chartrons-beige">
             <div className="flex items-start gap-3">
@@ -413,7 +426,7 @@ export function AdminDashboardPage() {
       </Card>
 
       <Card className="!p-4 lg:!p-5">
-        <p className="text-sm text-chartrons-warm-gray mb-3">{t('profile.resetHint')}</p>
+        <p className="text-sm text-chartrons-warm-gray mb-3">{t('adminSpace.dashboard.resetHint')}</p>
         <Button variant="secondary" disabled={resetting} onClick={handleReset} className="w-full sm:w-auto">
           {resetting ? t('common.loading') : t('adminSpace.dashboard.reset')}
         </Button>

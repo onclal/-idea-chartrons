@@ -2,7 +2,6 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { merchantOrderPhone, type ActeurLocal } from '@idea-chartrons/shared';
 import { Button, Input, Modal, Textarea } from './ui';
-import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { buildSmsHref, buildWhatsAppHref } from '../lib/phone';
 
@@ -40,7 +39,6 @@ function buildOrderMessage(input: {
 
 export function OrderModal({ open, onClose, acteur }: OrderModalProps) {
   const { t } = useTranslation();
-  const { currentUser } = useAuth();
   const { showToast } = useToast();
   const [clientName, setClientName] = useState('');
   const [clientPhone, setClientPhone] = useState('');
@@ -50,12 +48,12 @@ export function OrderModal({ open, onClose, acteur }: OrderModalProps) {
 
   useEffect(() => {
     if (!open) return;
-    setClientName(currentUser?.nom ?? '');
+    setClientName('');
     setClientPhone('');
     setPickupTime(defaultPickupTime());
     setOrderDetails('');
     setError('');
-  }, [open, currentUser?.nom, acteur.id]);
+  }, [open, acteur.id]);
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();

@@ -6,7 +6,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { ADMIN_PASSWORD, ADMIN_SESSION_KEY } from '../config/admin';
+import { ADMIN_PASSCODE, ADMIN_SESSION_KEY } from '../config/admin';
 
 interface AdminContextValue {
   isAdminMode: boolean;
@@ -28,7 +28,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   }, [isAdminMode]);
 
   const login = useCallback((password: string) => {
-    if (password.trim() !== ADMIN_PASSWORD) return false;
+    if (password.trim() !== ADMIN_PASSCODE) return false;
     setIsAdminMode(true);
     return true;
   }, []);

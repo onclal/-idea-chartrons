@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSearch } from '../context/SearchContext';
 import { useAdmin } from '../context/AdminContext';
-import { useAuth } from '../context/AuthContext';
 import { useFavorites } from '../context/FavoritesContext';
 import { usePwa } from '../context/PwaContext';
 import { CategoryTabs } from './CategoryTabs';
@@ -32,7 +31,6 @@ export function Header() {
   const { t, i18n } = useTranslation();
   const { query, setQuery } = useSearch();
   const { isAdminMode } = useAdmin();
-  const { isMerchant } = useAuth();
   const { favorites } = useFavorites();
   const { online } = usePwa();
   const navigate = useNavigate();
@@ -67,14 +65,6 @@ export function Header() {
               <p className="text-[10px] text-white/65 truncate">{t('app.subtitle')}</p>
             </Link>
             <div className="flex items-center gap-2 shrink-0">
-              {isMerchant && (
-                <Link
-                  to="/pro"
-                  className="touch-target hidden sm:inline-flex items-center px-3 py-1.5 rounded-xl bg-white/15 text-white text-xs font-semibold hover:bg-white/25 transition-colors"
-                >
-                  {t('proSpace.open')}
-                </Link>
-              )}
               {isAdminMode && (
                 <>
                   <Link

@@ -191,7 +191,7 @@ export function CarnetSyncCard() {
             <p className="text-xs text-chartrons-warm-gray">{t('sync.codeLabel')}</p>
             <p className="text-2xl font-bold tracking-[0.3em] text-chartrons-bordeaux mt-1">{published.code}</p>
             <div className="flex justify-center mt-3">
-              <QRCodeSVG value={appUrl(`/profile?sync=${published.code}`)} size={128} bgColor="#FFFFFF" fgColor="#1F4D3A" />
+              <QRCodeSVG value={appUrl(`/carnet?sync=${published.code}`)} size={128} bgColor="#FFFFFF" fgColor="#1F4D3A" />
             </div>
             <p className="text-[11px] text-chartrons-warm-gray mt-2">{t('sync.qrHint')}</p>
           </div>

@@ -23,20 +23,20 @@ router.get('/creneaux', (req, res) => {
   res.json(creneaux.filter(isCreneauAvailable));
 });
 
-router.get('/user/:userId', (req, res) => {
-  const relais = store.getAll('localRelais').filter((r) => r.userId === req.params.userId);
+router.get('/post/:postId', (req, res) => {
+  const relais = store.getAll('localRelais').filter((r) => r.postId === req.params.postId);
   res.json(relais);
 });
 
 router.post('/', (req, res) => {
-  const { postId, userId, creneauDepotId } = req.body as {
+  const { postId, deposantNom, creneauDepotId } = req.body as {
     postId?: string;
-    userId?: string;
+    deposantNom?: string | null;
     creneauDepotId?: string;
   };
 
-  if (!postId || !userId || !creneauDepotId) {
-    res.status(400).json({ error: 'postId, userId and creneauDepotId are required' });
+  if (!postId || !creneauDepotId) {
+    res.status(400).json({ error: 'postId and creneauDepotId are required' });
     return;
   }
 
@@ -66,7 +66,7 @@ router.post('/', (req, res) => {
   const relais = store.create('localRelais', {
     id: `relais-${Date.now()}`,
     postId,
-    userId,
+    deposantNom: deposantNom?.trim() || null,
     codeQrValidation: code,
     dateDepot: now,
     statutRetrait: LocalRelaisRetraitStatus.EnAttente,

@@ -1,8 +1,12 @@
 import {
   ActeurLocalCategory,
+  ArdoiseStatus,
   calculateAwardPoints,
   calculateScanPoints,
   CHARTRONS_MAP_CENTER,
+  CivicReportChannel,
+  CivicReportStatus,
+  classifySubcategory,
   computeTourDeControle,
   createSeedData,
   createUpcomingMarcheChartronsEvents,
@@ -10,8 +14,9 @@ import {
   defaultMerchantEmail,
   defaultRegleForCategory,
   emptySocialLinks,
-  findUserByClientToken,
-  generateQrClientCode,
+  isChartronsSubcategory,
+  parseCarnetToken,
+  totalCarnetPoints,
   generateQrVitrineCode,
   getActeurFideliteRegle,
   getFideliteNiveau,
@@ -34,17 +39,17 @@ import {
   slotFromId,
   type ActeurLocal,
   type AgendaEvenement,
+  type ChartronsSubcategory,
+  type CivicReport,
   type DatabaseSchema,
   type EventType,
   type FideliteNiveau,
   type PostAnnonce,
-  type PreferredLanguage,
+  type ReportSubcategoryId,
   type LocalRelais,
   type RelaisCreneau,
   type RelaisSettings,
   type PlatformSettings,
-  type User,
-  type UserRole,
 } from '@idea-chartrons/shared';
 import { DB_STORAGE_KEY, SEED_CATALOG_KEY, isQuotaError, purgeObsoleteLocalStorage, writeLocalStorage } from './storage';
 
@@ -210,12 +215,6 @@ class LocalDatabase {
     let changed = false;
     const seed = createSeedData();
 
-    const users = (data.users ?? []).map((user) => {
-      const nextQr = user.qrCodeClient || generateQrClientCode(user.id);
-      if (nextQr !== user.qrCodeClient) changed = true;
-      return { ...user, qrCodeClient: nextQr };
-    });
-
     const catalogStale = readSeedCatalogVersion() < SEED_CATALOG_VERSION;
     let acteursLocaux: ActeurLocal[] = (data.acteursLocaux ?? []).map((acteur) => {
       const seedMatch = seed.acteursLocaux.find((item) => item.id === acteur.id);
@@ -235,6 +234,13 @@ class LocalDatabase {
       const nextReviews = acteur.reviewsCount ?? seedMatch?.reviewsCount ?? null;
       const nextHours = acteur.openingHours ?? seedMatch?.openingHours ?? null;
       const nextSpecialite = acteur.specialite ?? seedMatch?.specialite ?? null;
+      const nextSubcategory =
+        acteur.subcategory && isChartronsSubcategory(acteur.subcategory)
+          ? acteur.subcategory
+          : (seedMatch?.subcategory ??
+            classifySubcategory(nextSpecialite ?? '', 'services_artisanat'));
+      const nextArdoiseStatus =
+        acteur.dailyMenuStatus ?? seedMatch?.dailyMenuStatus ?? ArdoiseStatus.Approved;
       const nextPhotos = acteur.photos?.length ? acteur.photos : (seedMatch?.photos ?? []);
       const nextPin =
         normalizePinCode(acteur.pinCode) ??
@@ -243,7 +249,7 @@ class LocalDatabase {
       const nextMerchantEmail =
         acteur.merchantEmail?.trim() ||
         seedMatch?.merchantEmail ||
-        (nextMerchant ? defaultMerchantEmail(acteur.userId) : null);
+        (nextMerchant ? defaultMerchantEmail(acteur.nomCommerce) : null);
       const nextSocial = acteur.socialLinks
         ? normalizeSocialLinks(acteur.socialLinks)
         : normalizeSocialLinks(seedMatch?.socialLinks ?? emptySocialLinks());
@@ -267,6 +273,8 @@ class LocalDatabase {
         nextReviews !== acteur.reviewsCount ||
         nextHours !== acteur.openingHours ||
         nextSpecialite !== acteur.specialite ||
+        nextSubcategory !== acteur.subcategory ||
+        nextArdoiseStatus !== acteur.dailyMenuStatus ||
         nextPin !== acteur.pinCode ||
         nextMerchantEmail !== acteur.merchantEmail ||
         nextMerchant !== acteur.isMerchant ||
@@ -295,6 +303,8 @@ class LocalDatabase {
         reviewsCount: nextReviews,
         openingHours: nextHours,
         specialite: nextSpecialite,
+        subcategory: nextSubcategory,
+        dailyMenuStatus: nextArdoiseStatus,
         pinCode: nextPin,
         merchantEmail: nextMerchantEmail,
         socialLinks: nextSocial,
@@ -341,7 +351,7 @@ class LocalDatabase {
       }
     }
 
-    for (const marche of createUpcomingMarcheChartronsEvents('user-1', new Date().toISOString())) {
+    for (const marche of createUpcomingMarcheChartronsEvents('Ville de Bordeaux', new Date().toISOString())) {
       if (!knownEventIds.has(marche.id)) {
         agendaEvenements.push(marche);
         knownEventIds.add(marche.id);
@@ -397,10 +407,13 @@ class LocalDatabase {
       }
     }
 
+    const civicReports = data.civicReports ?? seed.civicReports;
+    if (!data.civicReports) changed = true;
+
     const migrated = {
       ...data,
-      users,
       acteursLocaux,
+      civicReports,
       agendaEvenements: prunedEvents,
       postsAnnonces,
       relaisCreneaux,
@@ -578,50 +591,6 @@ class LocalDatabase {
     }
   }
 
-  // ── Users ──
-
-  getUsers(): User[] {
-    return this.getAll('users');
-  }
-
-  getUser(id: string): User {
-    const user = this.getById('users', id);
-    if (!user) throw new Error('User not found');
-    return user;
-  }
-
-  createUser(data: {
-    nom: string;
-    email: string;
-    role: UserRole;
-    badgeVerifie: boolean;
-    adresse: string;
-    languePreferee: PreferredLanguage;
-    pointsFidelite: number;
-  }): User {
-    const now = new Date().toISOString();
-    const id = `user-${Date.now()}`;
-    return this.create('users', {
-      id,
-      nom: data.nom,
-      email: data.email,
-      role: data.role,
-      badgeVerifie: data.badgeVerifie,
-      adresse: data.adresse,
-      languePreferee: data.languePreferee,
-      pointsFidelite: data.pointsFidelite,
-      qrCodeClient: generateQrClientCode(id),
-      createdAt: now,
-      updatedAt: now,
-    });
-  }
-
-  updateUser(userId: string, patch: Partial<Omit<User, 'id' | 'createdAt'>>): User {
-    const updated = this.update('users', userId, patch);
-    if (!updated) throw new Error('User not found');
-    return updated;
-  }
-
   // ── Posts ──
 
   getPosts(): PostAnnonce[] {
@@ -634,14 +603,14 @@ class LocalDatabase {
     type: PostType;
     prix: number | null;
     photos: string[];
-    auteurId: string;
+    auteurNom?: string | null;
     statut?: PostStatus;
     telephone?: string | null;
   }): PostAnnonce {
     const now = new Date().toISOString();
     return this.create('postsAnnonces', {
       id: `post-${Date.now()}`,
-      auteurId: data.auteurId,
+      auteurNom: data.auteurNom?.trim() || null,
       titre: data.titre,
       description: data.description,
       type: data.type,
@@ -677,9 +646,9 @@ class LocalDatabase {
   }
 
   createActeur(data: {
-    userId: string;
     nomCommerce: string;
     categorie: ActeurLocalCategory;
+    subcategory?: ChartronsSubcategory;
     description: string;
     adresse: string;
     photos: string[];
@@ -696,7 +665,6 @@ class LocalDatabase {
     const rule = defaultRegleForCategory(data.categorie);
     return this.create('acteursLocaux', {
       id: `acteur-${Date.now()}`,
-      userId: data.userId,
       nomCommerce: data.nomCommerce,
       categorie: data.categorie,
       description: data.description,
@@ -716,8 +684,9 @@ class LocalDatabase {
       reviewsCount: null,
       openingHours: null,
       specialite: null,
+      subcategory: data.subcategory ?? classifySubcategory('', data.categorie),
       pinCode: DEFAULT_MERCHANT_PIN,
-      merchantEmail: this.getById('users', data.userId)?.email ?? defaultMerchantEmail(data.userId),
+      merchantEmail: defaultMerchantEmail(data.nomCommerce),
       socialLinks: emptySocialLinks(),
       isMerchant: true,
       isVip: false,
@@ -763,7 +732,7 @@ class LocalDatabase {
   }
 
   createEvent(data: {
-    organisateurId: string;
+    organisateurNom?: string | null;
     titre: string;
     description: string;
     dateDebut: string;
@@ -777,7 +746,7 @@ class LocalDatabase {
     const now = new Date().toISOString();
     return this.create('agendaEvenements', {
       id: `event-${Date.now()}`,
-      organisateurId: data.organisateurId,
+      organisateurNom: data.organisateurNom?.trim() || null,
       titre: data.titre,
       description: data.description,
       dateDebut: data.dateDebut,
@@ -813,8 +782,9 @@ class LocalDatabase {
     return this.getAll('localRelais');
   }
 
-  getRelaisByUser(userId: string): LocalRelais[] {
-    return this.getAll('localRelais').filter((r) => r.userId === userId);
+  getRelaisByPosts(postIds: string[]): LocalRelais[] {
+    const owned = new Set(postIds);
+    return this.getAll('localRelais').filter((r) => owned.has(r.postId));
   }
 
   getRelaisSettings(): RelaisSettings {
@@ -867,7 +837,7 @@ class LocalDatabase {
 
   proposeDepotLocal(data: {
     postId: string;
-    userId: string;
+    deposantNom?: string | null;
     creneauDepotId: string;
   }): LocalRelais {
     try {
@@ -890,7 +860,7 @@ class LocalDatabase {
 
   private commitDepotLocal(data: {
     postId: string;
-    userId: string;
+    deposantNom?: string | null;
     creneauDepotId: string;
   }): LocalRelais {
     const post = this.getById('postsAnnonces', data.postId);
@@ -913,7 +883,7 @@ class LocalDatabase {
     const relais = this.create('localRelais', {
       id: `relais-${Date.now()}`,
       postId: data.postId,
-      userId: data.userId,
+      deposantNom: data.deposantNom?.trim() || null,
       codeQrValidation: code,
       dateDepot: now,
       statutRetrait: LocalRelaisRetraitStatus.EnAttente,
@@ -984,36 +954,44 @@ class LocalDatabase {
 
   // ── Fidélité ──
 
-  scanFidelite(data: { userId: string; commerceId: string; qrCode: string }) {
+  /** Points du carnet de cet appareil, toujours recalculés depuis l'historique. */
+  getCarnetPoints(deviceId: string): number {
+    return totalCarnetPoints(
+      this.getAll('cartesFideliteScans').filter((s) => s.deviceId === deviceId),
+    );
+  }
+
+  scanFidelite(data: { deviceId: string; commerceId: string; qrCode: string }) {
     const acteur = this.getById('acteursLocaux', data.commerceId);
     if (!acteur?.qrCodeVitrine || acteur.qrCodeVitrine !== data.qrCode) {
       throw new Error('Invalid QR code for this merchant');
     }
 
-    const user = this.getUser(data.userId);
-    const previousScans = this.getAll('cartesFideliteScans').filter((s) => s.userId === data.userId);
-    const calculation = calculateScanPoints(acteur, user, previousScans);
+    const previousScans = this.getAll('cartesFideliteScans').filter(
+      (s) => s.deviceId === data.deviceId,
+    );
+    const calculation = calculateScanPoints(acteur, previousScans);
 
     if (calculation.total === 0) {
       throw new Error('Already scanned this merchant today. Try again tomorrow.');
     }
 
+    const pointsBefore = totalCarnetPoints(previousScans);
     const now = new Date().toISOString();
     const scan = this.create('cartesFideliteScans', {
       id: `scan-${Date.now()}`,
-      userId: data.userId,
+      deviceId: data.deviceId,
       commerceId: data.commerceId,
       pointsGagnes: calculation.total,
       date: now,
     });
 
-    const totalPoints = user.pointsFidelite + calculation.total;
-    this.update('users', data.userId, { pointsFidelite: totalPoints });
+    const totalPoints = pointsBefore + calculation.total;
 
     const newlyUnlocked =
       acteur.offreVip &&
       isVipUnlocked(totalPoints, acteur) &&
-      !isVipUnlocked(user.pointsFidelite, acteur);
+      !isVipUnlocked(pointsBefore, acteur);
 
     return {
       scan,
@@ -1026,9 +1004,9 @@ class LocalDatabase {
     };
   }
 
-  getFideliteHistory(userId: string) {
+  getFideliteHistory(deviceId: string) {
     const scans = this.getAll('cartesFideliteScans')
-      .filter((s) => s.userId === userId)
+      .filter((s) => s.deviceId === deviceId)
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
     const acteurs = this.getAll('acteursLocaux');
@@ -1038,7 +1016,7 @@ class LocalDatabase {
     }));
   }
 
-  getVipStatus(userId: string): {
+  getVipStatus(deviceId: string): {
     points: number;
     niveau: FideliteNiveau;
     vipStatus: Array<{
@@ -1050,7 +1028,7 @@ class LocalDatabase {
       niveau: FideliteNiveau;
     }>;
   } {
-    const user = this.getUser(userId);
+    const points = this.getCarnetPoints(deviceId);
     const acteurs = this.getAll('acteursLocaux');
     const vipStatus = acteurs
       .filter((a) => a.offreVip)
@@ -1059,47 +1037,44 @@ class LocalDatabase {
         commerceNom: a.nomCommerce,
         offreVip: a.offreVip,
         pointsRequis: a.pointsRequisVip,
-        unlocked: isVipUnlocked(user.pointsFidelite, a),
-        niveau: getFideliteNiveau(user.pointsFidelite),
+        unlocked: isVipUnlocked(points, a),
+        niveau: getFideliteNiveau(points),
       }));
 
-    return { points: user.pointsFidelite, niveau: getFideliteNiveau(user.pointsFidelite), vipStatus };
+    return { points, niveau: getFideliteNiveau(points), vipStatus };
   }
 
-  awardFidelite(data: { commerceId: string; clientToken: string; montant?: number }) {
+  /** Le commerce crédite un carnet à partir du jeton présenté en caisse. */
+  awardFidelite(data: { commerceId: string; carnetToken: string; montant?: number }) {
     const acteur = this.getById('acteursLocaux', data.commerceId);
     if (!acteur) throw new Error('Acteur not found');
 
-    const client = findUserByClientToken(this.getAll('users'), data.clientToken);
-    if (!client) throw new Error('CLIENT_NOT_FOUND');
+    const deviceId = parseCarnetToken(data.carnetToken);
+    if (!deviceId) throw new Error('CARNET_NOT_FOUND');
 
     const rule = getActeurFideliteRegle(acteur);
     const pointsGagnes = calculateAwardPoints(rule, data.montant);
     if (pointsGagnes <= 0) throw new Error('INVALID_POINTS');
 
+    const pointsBefore = this.getCarnetPoints(deviceId);
     const now = new Date().toISOString();
     const scan = this.create('cartesFideliteScans', {
       id: `scan-${Date.now()}`,
-      userId: client.id,
+      deviceId,
       commerceId: data.commerceId,
       pointsGagnes,
       date: now,
     });
 
-    const totalPoints = client.pointsFidelite + pointsGagnes;
-    this.update('users', client.id, { pointsFidelite: totalPoints });
-
+    const totalPoints = pointsBefore + pointsGagnes;
     const newlyUnlocked =
-      acteur.offreVip &&
-      isVipUnlocked(totalPoints, acteur) &&
-      !isVipUnlocked(client.pointsFidelite, acteur);
+      acteur.offreVip && isVipUnlocked(totalPoints, acteur) && !isVipUnlocked(pointsBefore, acteur);
 
     return {
       scan,
       pointsGagnes,
       totalPoints,
-      clientNom: client.nom,
-      clientId: client.id,
+      carnetId: deviceId,
       commerce: acteur.nomCommerce,
       niveau: getFideliteNiveau(totalPoints),
       vipUnlocked: newlyUnlocked ? acteur.offreVip : null,
@@ -1107,25 +1082,82 @@ class LocalDatabase {
   }
 
   getCommerceFideliteHistory(commerceId: string) {
-    const users = this.getAll('users');
     return this.getAll('cartesFideliteScans')
       .filter((scan) => scan.commerceId === commerceId)
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-      .slice(0, 20)
-      .map((scan) => ({
-        ...scan,
-        clientNom: users.find((user) => user.id === scan.userId)?.nom ?? 'Client',
-      }));
+      .slice(0, 20);
+  }
+
+  // ── Signalements citoyens ──
+
+  getCivicReports(): CivicReport[] {
+    return [...this.getAll('civicReports')].sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    );
+  }
+
+  createCivicReport(data: {
+    subcategoryId: ReportSubcategoryId;
+    channel: CivicReportChannel;
+    lieu: string;
+    details: string;
+    langue: string;
+  }): CivicReport {
+    const now = new Date().toISOString();
+    return this.create('civicReports', {
+      id: `report-${Date.now()}`,
+      subcategoryId: data.subcategoryId,
+      channel: data.channel,
+      lieu: data.lieu.trim(),
+      details: data.details.trim(),
+      statut: CivicReportStatus.Nouveau,
+      langue: data.langue,
+      createdAt: now,
+      updatedAt: now,
+    });
+  }
+
+  setCivicReportStatus(reportId: string, statut: CivicReportStatus): CivicReport {
+    const updated = this.update('civicReports', reportId, {
+      statut,
+      updatedAt: new Date().toISOString(),
+    });
+    if (!updated) throw new Error('Report not found');
+    return updated;
+  }
+
+  deleteCivicReport(reportId: string): void {
+    if (!this.remove('civicReports', reportId)) throw new Error('Report not found');
+  }
+
+  // ── Modération des ardoises ──
+
+  /** Ardoises soumises par les commerces et en attente de relecture. */
+  getPendingArdoises(): ActeurLocal[] {
+    return this.getAll('acteursLocaux').filter(
+      (acteur) =>
+        (acteur.dailyMenuText || acteur.dailyMenuImage) &&
+        acteur.dailyMenuStatus === ArdoiseStatus.Pending,
+    );
+  }
+
+  setArdoiseStatus(acteurId: string, statut: ArdoiseStatus): ActeurLocal {
+    const updated = this.update('acteursLocaux', acteurId, {
+      dailyMenuStatus: statut,
+      updatedAt: new Date().toISOString(),
+    });
+    if (!updated) throw new Error('Acteur not found');
+    return updated;
   }
 
   getTourDeControle() {
     return computeTourDeControle({
-      users: this.getAll('users'),
       posts: this.getAll('postsAnnonces'),
       relais: this.getAll('localRelais'),
       acteurs: this.getAll('acteursLocaux'),
       scans: this.getAll('cartesFideliteScans'),
       consommations: this.getAll('privilegeConsommations') ?? [],
+      signalements: this.getAll('civicReports') ?? [],
     });
   }
 }

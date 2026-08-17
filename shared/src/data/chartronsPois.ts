@@ -1,4 +1,4 @@
-import { ActeurLocalCategory } from '../types/enums.js';
+import { ActeurLocalCategory, ArdoiseStatus } from '../types/enums.js';
 import type { ActeurLocal } from '../types/models.js';
 import {
   createCafeMarcheMenu,
@@ -9,6 +9,7 @@ import {
 } from '../logic/commerce.js';
 import { defaultRegleForCategory, generateQrVitrineCode } from '../logic/fidelite.js';
 import { OSM_CHARTRONS_POIS } from './osmChartronsPois.js';
+import type { ChartronsSubcategory } from './taxonomy.js';
 
 export type ChartronsPoiCategory =
   | 'bouche_restauration'
@@ -21,7 +22,10 @@ export interface ChartronsPoi {
   id: string;
   name: string;
   category: ChartronsPoiCategory;
-  subcategory: string;
+  /** Sous-catégorie unifiée et typée : seule taxonomie autorisée pour filtrer/router. */
+  subcategory: ChartronsSubcategory;
+  /** Spécialité fine affichée à l'écran (« Boulangerie », « Coiffeur & Barbier »…). */
+  specialty: string;
   address: string;
   coordinates: { lat: number; lng: number };
   description: string;
@@ -47,7 +51,8 @@ export const CHARTRONS_POIS: ChartronsPoi[] = [
     id: 'poi-rest-001',
     name: 'Bistro des Chartrons',
     category: 'bouche_restauration',
-    subcategory: 'Restaurant & Bistro',
+    subcategory: 'restauration_cafes',
+    specialty: 'Restaurant & Bistro',
     address: '73 Rue Notre-Dame, 33000 Bordeaux',
     coordinates: { lat: 44.8525, lng: -0.571 },
     description: 'Cuisine traditionnelle de saison et produits locaux au cœur de la Rue Notre-Dame.',
@@ -63,7 +68,8 @@ export const CHARTRONS_POIS: ChartronsPoi[] = [
     id: 'poi-rest-002',
     name: 'Boulangerie L’Amour du Pain',
     category: 'bouche_restauration',
-    subcategory: 'Boulangerie',
+    subcategory: 'metiers_de_bouche',
+    specialty: 'Boulangerie',
     address: '42 Cours Portal, 33000 Bordeaux',
     coordinates: { lat: 44.854, lng: -0.5735 },
     description: 'Pains au levain naturel, viennoiseries artisanales et pâtisseries fines.',
@@ -77,7 +83,8 @@ export const CHARTRONS_POIS: ChartronsPoi[] = [
     id: 'poi-rest-003',
     name: 'La Cave des Chartrons',
     category: 'bouche_restauration',
-    subcategory: 'Caviste',
+    subcategory: 'metiers_de_bouche',
+    specialty: 'Caviste',
     address: '18 Rue Notre-Dame, 33000 Bordeaux',
     coordinates: { lat: 44.8505, lng: -0.5722 },
     description: 'Sélection rigoureuse de vins de Bordeaux, vins bio et spiritueux.',
@@ -92,7 +99,8 @@ export const CHARTRONS_POIS: ChartronsPoi[] = [
     id: 'poi-rest-004',
     name: 'Café de la Halle',
     category: 'bouche_restauration',
-    subcategory: 'Café & Salon de thé',
+    subcategory: 'restauration_cafes',
+    specialty: 'Café & Salon de thé',
     address: 'Place du Marché des Chartrons, 33000 Bordeaux',
     coordinates: { lat: 44.8532, lng: -0.5718 },
     description: 'Terrasse iconique sous la Halle des Chartrons pour une pause café ou un apéritif.',
@@ -107,7 +115,8 @@ export const CHARTRONS_POIS: ChartronsPoi[] = [
     id: 'poi-deco-001',
     name: 'Antiquités Village Chartrons',
     category: 'mode_deco_antiquites',
-    subcategory: 'Antiquaire',
+    subcategory: 'boutiques',
+    specialty: 'Antiquaire',
     address: '61 Rue Notre-Dame, 33000 Bordeaux',
     coordinates: { lat: 44.852, lng: -0.5712 },
     description: 'Mobilier ancien, objets d’art et curiosités du XVIIIe et XIXe siècle.',
@@ -121,7 +130,8 @@ export const CHARTRONS_POIS: ChartronsPoi[] = [
     id: 'poi-deco-002',
     name: 'Concept Store Chartronnais',
     category: 'mode_deco_antiquites',
-    subcategory: 'Maison & Décoration',
+    subcategory: 'boutiques',
+    specialty: 'Maison & Décoration',
     address: '88 Rue Notre-Dame, 33000 Bordeaux',
     coordinates: { lat: 44.8535, lng: -0.5705 },
     description: 'Objets de décoration éco-responsables, vêtements créateurs et accessoires.',
@@ -135,7 +145,8 @@ export const CHARTRONS_POIS: ChartronsPoi[] = [
     id: 'poi-sante-001',
     name: 'Pharmacie des Chartrons',
     category: 'sante_bien_etre',
-    subcategory: 'Pharmacie',
+    subcategory: 'services_proximite',
+    specialty: 'Pharmacie',
     address: '55 Cours Portal, 33000 Bordeaux',
     coordinates: { lat: 44.8548, lng: -0.573 },
     description: 'Pharmacie de quartier, parapharmacie, orthopédie et conseils santé.',
@@ -150,7 +161,8 @@ export const CHARTRONS_POIS: ChartronsPoi[] = [
     id: 'poi-sante-002',
     name: 'Salon Coiffure Notre-Dame',
     category: 'sante_bien_etre',
-    subcategory: 'Coiffeur & Barbier',
+    subcategory: 'services_proximite',
+    specialty: 'Coiffeur & Barbier',
     address: '34 Rue Notre-Dame, 33000 Bordeaux',
     coordinates: { lat: 44.8512, lng: -0.5719 },
     description: 'Coupes hommes/femmes, soins capillaires naturels et taille de barbe.',
@@ -166,7 +178,8 @@ export const CHARTRONS_POIS: ChartronsPoi[] = [
     id: 'poi-cult-001',
     name: 'Halle des Chartrons',
     category: 'patrimoine_culture',
-    subcategory: 'Patrimoine & Culture',
+    subcategory: 'patrimoine_tourisme',
+    specialty: 'Patrimoine & Culture',
     address: 'Place du Marché des Chartrons, 33000 Bordeaux',
     coordinates: { lat: 44.8532, lng: -0.5718 },
     description: 'Ancien marché couvert octogonal du XIXe siècle, espace d’expositions et événements.',
@@ -180,7 +193,8 @@ export const CHARTRONS_POIS: ChartronsPoi[] = [
     id: 'poi-cult-002',
     name: 'Église Saint-Louis des Chartrons',
     category: 'patrimoine_culture',
-    subcategory: 'Lieu de culte',
+    subcategory: 'patrimoine_tourisme',
+    specialty: 'Lieu de culte',
     address: '51 Rue Notre-Dame, 33000 Bordeaux',
     coordinates: { lat: 44.8518, lng: -0.5714 },
     description: 'Église néo-gothique remarquable, célèbre pour son grand orgue historique.',
@@ -194,7 +208,8 @@ export const CHARTRONS_POIS: ChartronsPoi[] = [
     id: 'poi-cult-003',
     name: 'Musée du Vin et du Négoce',
     category: 'patrimoine_culture',
-    subcategory: 'Musée',
+    subcategory: 'patrimoine_tourisme',
+    specialty: 'Musée',
     address: '41 Rue Borie, 33000 Bordeaux',
     coordinates: { lat: 44.8542, lng: -0.5695 },
     description: 'Découverte de l’histoire des négociants en vin bordelais et dégustations.',
@@ -210,7 +225,8 @@ export const CHARTRONS_POIS: ChartronsPoi[] = [
     id: 'poi-serv-001',
     name: 'Atelier Vélo des Chartrons',
     category: 'services_artisanat',
-    subcategory: 'Réparateur de vélos',
+    subcategory: 'artisans',
+    specialty: 'Réparateur de vélos',
     address: '12 Cours de la Martinique, 33000 Bordeaux',
     coordinates: { lat: 44.8552, lng: -0.572 },
     description: 'Réparation rapide, entretien et vente de vélos urbains et électriques.',
@@ -225,7 +241,8 @@ export const CHARTRONS_POIS: ChartronsPoi[] = [
     id: 'poi-serv-002',
     name: 'Pressing Écologique du Cours',
     category: 'services_artisanat',
-    subcategory: 'Pressing & Laverie',
+    subcategory: 'services_proximite',
+    specialty: 'Pressing & Laverie',
     address: '28 Cours Portal, 33000 Bordeaux',
     coordinates: { lat: 44.853, lng: -0.574 },
     description: 'Nettoyage à sec écologique sans solvant toxique et retouches de vêtements.',
@@ -237,77 +254,59 @@ export const CHARTRONS_POIS: ChartronsPoi[] = [
   },
 ];
 
-function categoryToActeur(category: ChartronsPoiCategory, subcategory: string): ActeurLocalCategory {
-  const sub = subcategory.toLowerCase();
-  if (category === 'sante_bien_etre') return ActeurLocalCategory.SanteSoinsServices;
-  if (category === 'patrimoine_culture') return ActeurLocalCategory.TourismeConciergerie;
-  if (
-    sub.includes('bar') ||
-    sub.includes('pub') ||
-    sub.includes('night') ||
-    sub.includes('guinguette') ||
-    sub.includes('boîte')
-  ) {
-    return ActeurLocalCategory.BarsNightlife;
-  }
-  if (
-    sub.includes('hôtel') ||
-    sub.includes('hotel') ||
-    sub.includes('conciergerie') ||
-    sub.includes('musée') ||
-    sub.includes('galerie') ||
-    sub.includes('maison d’hôtes') ||
-    sub.includes("maison d'hotes")
-  ) {
-    return ActeurLocalCategory.TourismeConciergerie;
-  }
-  if (
-    sub.includes('bureau') ||
-    sub.includes('agence immobilière') ||
-    sub.includes('assurance') ||
-    sub.includes('avocat') ||
-    sub.includes('notaire') ||
-    sub.includes('architecte') ||
-    sub.includes('coworking') ||
-    sub.includes('conseil') ||
-    sub.includes('emploi') ||
-    sub.includes('expert-comptable')
-  ) {
-    return ActeurLocalCategory.StartupsB2B;
-  }
-  if (category === 'bouche_restauration') {
-    if (
-      sub.includes('boulangerie') ||
-      sub.includes('pâtisserie') ||
-      sub.includes('caviste') ||
-      sub.includes('épicerie') ||
-      sub.includes('boucher') ||
-      sub.includes('fromager') ||
-      sub.includes('primeur') ||
-      sub.includes('supermarché') ||
-      sub.includes('alimentation') ||
-      sub.includes('traiteur') ||
-      sub.includes('chocolatier')
-    ) {
-      return ActeurLocalCategory.CommercesArtisanat;
-    }
-    return ActeurLocalCategory.RestaurationMenus;
-  }
-  return ActeurLocalCategory.CommercesArtisanat;
+const NIGHTLIFE_SPECIALTIES = ['bar', 'pub', 'night', 'guinguette', 'boite'];
+
+const OFFICE_SPECIALTIES = [
+  'banque', 'assurance', 'avocat', 'notaire', 'architecte', 'agence', 'bureau', 'coworking',
+  'reprographie', 'formation', 'informatique', 'poste', 'financiers', 'developer', 'advertising',
+  'publisher', 'union', 'emploi', 'voyages',
+];
+
+const CARE_SPECIALTIES = [
+  'pharmacie', 'medecin', 'laboratoire', 'opticien', 'medecine', 'sante', 'beaute', 'coiffeur',
+  'barbier', 'veterinaire', 'rehabilitation', 'personal', 'grooming',
+];
+
+function specialtyMatches(specialty: string, keywords: string[]): boolean {
+  const normalized = specialty
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+  return keywords.some((keyword) => normalized.includes(keyword));
 }
 
-function ownerForPoi(poi: ChartronsPoi): string {
-  if (poi.id.startsWith('poi-sante-001') || poi.id.startsWith('poi-serv')) return 'user-1';
-  return 'user-2';
+/** Traduit la taxonomie unifiée vers les catégories de l'annuaire. */
+function categoryToActeur(poi: ChartronsPoi): ActeurLocalCategory {
+  if (specialtyMatches(poi.specialty, NIGHTLIFE_SPECIALTIES)) {
+    return ActeurLocalCategory.BarsNightlife;
+  }
+  switch (poi.subcategory) {
+    case 'patrimoine_tourisme':
+      return ActeurLocalCategory.TourismeConciergerie;
+    case 'restauration_cafes':
+      return ActeurLocalCategory.RestaurationMenus;
+    case 'metiers_de_bouche':
+    case 'artisans':
+    case 'boutiques':
+      return ActeurLocalCategory.CommercesArtisanat;
+    case 'services_proximite':
+      if (specialtyMatches(poi.specialty, CARE_SPECIALTIES)) {
+        return ActeurLocalCategory.SanteSoinsServices;
+      }
+      if (specialtyMatches(poi.specialty, OFFICE_SPECIALTIES)) {
+        return ActeurLocalCategory.StartupsB2B;
+      }
+      return ActeurLocalCategory.CommercesArtisanat;
+    default:
+      return ActeurLocalCategory.CommercesArtisanat;
+  }
 }
 
 export function chartronsPoiToActeur(poi: ChartronsPoi, now: string): ActeurLocal {
-  const categorie = categoryToActeur(poi.category, poi.subcategory);
+  const categorie = categoryToActeur(poi);
   const rule = defaultRegleForCategory(categorie);
-  const ownerId = ownerForPoi(poi);
   return {
     id: `acteur-${poi.id}`,
-    userId: ownerId,
     nomCommerce: poi.name,
     categorie,
     description: poi.description,
@@ -326,9 +325,10 @@ export function chartronsPoiToActeur(poi: ChartronsPoi, now: string): ActeurLoca
     rating: poi.rating ?? null,
     reviewsCount: poi.reviewsCount ?? null,
     openingHours: poi.openingHours ?? null,
-    specialite: poi.subcategory,
+    specialite: poi.specialty,
+    subcategory: poi.subcategory,
     pinCode: poi.isMerchant ? DEFAULT_MERCHANT_PIN : null,
-    merchantEmail: poi.isMerchant ? defaultMerchantEmail(ownerId) : null,
+    merchantEmail: poi.isMerchant ? defaultMerchantEmail(poi.name) : null,
     socialLinks: poi.website
       ? { ...emptySocialLinks(), website: sanitizeExternalUrl(poi.website) }
       : emptySocialLinks(),
@@ -340,6 +340,8 @@ export function chartronsPoiToActeur(poi: ChartronsPoi, now: string): ActeurLoca
       poi.id === 'poi-rest-001'
         ? 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=800&q=80'
         : null,
+    dailyMenuStatus: poi.id === 'poi-rest-001' ? ArdoiseStatus.Approved : ArdoiseStatus.Pending,
+    dailyMenuSubmittedAt: poi.id === 'poi-rest-001' ? now : null,
     createdAt: now,
     updatedAt: now,
   };
@@ -366,7 +368,7 @@ export function culturePlacePois(): Array<{
   return CHARTRONS_POIS.filter((poi) => !poi.isMerchant).map((poi) => ({
     id: poi.id,
     title: poi.name,
-    subtitle: poi.subcategory,
+    subtitle: poi.specialty,
     adresse: poi.address,
     latitude: poi.coordinates.lat,
     longitude: poi.coordinates.lng,

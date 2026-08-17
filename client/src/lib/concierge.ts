@@ -11,6 +11,12 @@ import {
   type ConciergeRecommendation,
   type StreetHeritage,
 } from '@idea-chartrons/shared';
+import {
+  buildConciergeInstructions,
+  loadConciergeSettings,
+  recordConciergeUsage,
+  type ConciergeSettings,
+} from './conciergeSettings';
 import { walkingItineraryUrl } from './itinerary';
 import { buildSmsHref, buildWhatsAppHref } from './phone';
 
@@ -56,7 +62,8 @@ function resolveLang(choice: ConciergeLangChoice, message: string, uiLang: strin
 export function localConciergeAnswer(input: AskConciergeInput): ConciergeAnswer {
   const lang = resolveLang(input.lang, input.message, input.uiLang);
   const analysis = analyzeConciergeQuery(input.message);
-  const recommendations = rankConciergeMatches(analysis);
+  const maxResults = loadConciergeSettings().maxResults;
+  const recommendations = rankConciergeMatches(analysis).slice(0, maxResults);
   return {
     reply: buildLocalConciergeReply(analysis, recommendations, lang),
     source: 'local',
@@ -72,6 +79,15 @@ export function localConciergeAnswer(input: AskConciergeInput): ConciergeAnswer 
  * sinon : le site publié sur GitHub Pages est statique et n’a pas de backend.
  */
 export async function askConcierge(input: AskConciergeInput): Promise<ConciergeAnswer> {
+  const answer = await requestConcierge(input, loadConciergeSettings());
+  recordConciergeUsage(answer);
+  return answer;
+}
+
+async function requestConcierge(
+  input: AskConciergeInput,
+  settings: ConciergeSettings,
+): Promise<ConciergeAnswer> {
   try {
     const response = await fetch(CONCIERGE_ENDPOINT, {
       method: 'POST',
@@ -80,6 +96,7 @@ export async function askConcierge(input: AskConciergeInput): Promise<ConciergeA
         message: input.message,
         lang: input.lang,
         uiLang: input.uiLang,
+        instructions: buildConciergeInstructions(settings),
         history: input.history.slice(-6).map((turn) => ({ role: turn.role, content: turn.content })),
       }),
     });
@@ -94,7 +111,10 @@ export async function askConcierge(input: AskConciergeInput): Promise<ConciergeA
       source: data.source === 'openai' ? 'openai' : 'local',
       lang: data.lang ?? fallback.lang,
       isLocalQuery: data.isLocalQuery ?? fallback.isLocalQuery,
-      recommendations: Array.isArray(data.recommendations) ? data.recommendations : fallback.recommendations,
+      recommendations: (Array.isArray(data.recommendations)
+        ? data.recommendations
+        : fallback.recommendations
+      ).slice(0, settings.maxResults),
       heritage: Array.isArray(data.heritage) ? data.heritage : fallback.heritage,
     };
   } catch {

@@ -7,15 +7,15 @@ import { Badge } from './ui';
 interface PickupAlertProps {
   relaisList: LocalRelais[];
   posts: PostAnnonce[];
-  userId?: string;
+  /** Annonces déposées depuis cet appareil (propriété mémorisée localement). */
+  ownedPostIds: string[];
 }
 
-export function PickupAlert({ relaisList, posts, userId = 'user-1' }: PickupAlertProps) {
+export function PickupAlert({ relaisList, posts, ownedPostIds }: PickupAlertProps) {
   const { t } = useTranslation();
 
-  const readyItems = relaisList.filter(
-    (r) => r.userId === userId && isReadyForPickup(r),
-  );
+  const owned = new Set(ownedPostIds);
+  const readyItems = relaisList.filter((r) => owned.has(r.postId) && isReadyForPickup(r));
 
   if (readyItems.length === 0) return null;
 

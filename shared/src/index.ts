@@ -12,3 +12,4 @@ export * from './data/mapPois.js';
 export * from './data/chartronsPois.js';
 export * from './data/osmChartronsPois.js';
 export * from './data/chartronsHeritage.js';
+export * from './data/taxonomy.js';

@@ -9,13 +9,16 @@ import type {
   PostAnnonce,
   PostStatus,
   PostType,
-  PreferredLanguage,
   RelaisCreneau,
   RelaisCreneauType,
   RelaisSettings,
   PlatformSettings,
-  User,
-  UserRole,
+  ArdoiseStatus,
+  ChartronsSubcategory,
+  CivicReport,
+  CivicReportChannel,
+  CivicReportStatus,
+  ReportSubcategoryId,
 } from '@idea-chartrons/shared';
 import { localDb, withDelay, resetLocalDb } from './localDb';
 import { getMenus, updateMenus, upsertAppointmentLink } from './gbp';
@@ -27,7 +30,6 @@ export interface FideliteScanResult {
   breakdown: {
     base: number;
     firstScanBonus: number;
-    verifiedBonus: number;
     total: number;
   };
   totalPoints: number;
@@ -40,16 +42,14 @@ export interface FideliteHistoryEntry extends CarteFideliteScan {
   commerceNom: string;
 }
 
-export interface FideliteCommerceHistoryEntry extends CarteFideliteScan {
-  clientNom: string;
-}
+export type FideliteCommerceHistoryEntry = CarteFideliteScan;
 
 export interface FideliteAwardResult {
   scan: CarteFideliteScan;
   pointsGagnes: number;
   totalPoints: number;
-  clientNom: string;
-  clientId: string;
+  /** Carnet d'appareil crédité, jamais une personne. */
+  carnetId: string;
   commerce: string;
   niveau: FideliteNiveau;
   vipUnlocked: string | null;
@@ -65,8 +65,6 @@ export interface VipStatusEntry {
 }
 
 export const api = {
-  getUsers: () => withDelay(() => localDb.getUsers()),
-  getUser: (id: string) => withDelay(() => localDb.getUser(id)),
   getPosts: () => withDelay(() => localDb.getPosts()),
   createPost: (data: {
     titre: string;
@@ -74,7 +72,7 @@ export const api = {
     type: PostType;
     prix: number | null;
     photos: string[];
-    auteurId: string;
+    auteurNom?: string | null;
     statut?: PostStatus;
     telephone?: string | null;
   }) => withDelay(() => localDb.createPost(data)),
@@ -86,9 +84,9 @@ export const api = {
   }),
   getActeurs: () => withDelay(() => localDb.getAll('acteursLocaux')),
   createActeur: (data: {
-    userId: string;
     nomCommerce: string;
     categorie: ActeurLocalCategory;
+    subcategory?: ChartronsSubcategory;
     description: string;
     adresse: string;
     photos: string[];
@@ -114,7 +112,7 @@ export const api = {
   }),
   getEvents: () => withDelay(() => localDb.getAll('agendaEvenements')),
   createEvent: (data: {
-    organisateurId: string;
+    organisateurNom?: string | null;
     titre: string;
     description: string;
     dateDebut: string;
@@ -130,19 +128,8 @@ export const api = {
     localDb.deleteEvent(eventId);
     return { ok: true };
   }),
-  createUser: (data: {
-    nom: string;
-    email: string;
-    role: UserRole;
-    badgeVerifie: boolean;
-    adresse: string;
-    languePreferee: PreferredLanguage;
-    pointsFidelite: number;
-  }) => withDelay(() => localDb.createUser(data)),
-  updateUser: (userId: string, patch: Partial<Omit<User, 'id' | 'createdAt'>>) =>
-    withDelay(() => localDb.updateUser(userId, patch)),
   getRelais: () => withDelay(() => localDb.getRelais()),
-  getRelaisByUser: (userId: string) => withDelay(() => localDb.getRelaisByUser(userId)),
+  getRelaisByPosts: (postIds: string[]) => withDelay(() => localDb.getRelaisByPosts(postIds)),
   getCreneaux: (type?: RelaisCreneauType) =>
     withDelay(() => localDb.getCreneaux(type)),
   getAllCreneaux: () => withDelay((): RelaisCreneau[] => localDb.getAllCreneaux()),
@@ -154,22 +141,40 @@ export const api = {
     withDelay(() => localDb.updateRelaisSettings(patch)),
   setCreneauBlocked: (creneauId: string, blocked: boolean) =>
     withDelay(() => localDb.setCreneauBlocked(creneauId, blocked)),
-  proposeDepotLocal: (data: { postId: string; userId: string; creneauDepotId: string }) =>
+  proposeDepotLocal: (data: { postId: string; deposantNom?: string | null; creneauDepotId: string }) =>
     withDelay(() => localDb.proposeDepotLocal(data)),
   reserverRetrait: (relaisId: string, creneauRetraitId: string) =>
     withDelay(() => localDb.reserverRetrait(relaisId, creneauRetraitId)),
   avancerStatutRelais: (relaisId: string) =>
     withDelay(() => localDb.avancerStatutRelais(relaisId)),
-  scanFidelite: (data: { userId: string; commerceId: string; qrCode: string }) =>
+  scanFidelite: (data: { deviceId: string; commerceId: string; qrCode: string }) =>
     withDelay(() => localDb.scanFidelite(data)),
-  awardFidelite: (data: { commerceId: string; clientToken: string; montant?: number }) =>
+  awardFidelite: (data: { commerceId: string; carnetToken: string; montant?: number }) =>
     withDelay(() => localDb.awardFidelite(data)),
-  getFideliteHistory: (userId: string) => withDelay(() => localDb.getFideliteHistory(userId)),
+  getFideliteHistory: (deviceId: string) => withDelay(() => localDb.getFideliteHistory(deviceId)),
   getCommerceFideliteHistory: (commerceId: string) =>
     withDelay(() => localDb.getCommerceFideliteHistory(commerceId)),
-  getVipStatus: (userId: string) => withDelay(() => localDb.getVipStatus(userId)),
+  getVipStatus: (deviceId: string) => withDelay(() => localDb.getVipStatus(deviceId)),
+  getCarnetPoints: (deviceId: string) => withDelay(() => localDb.getCarnetPoints(deviceId)),
   getFidelite: () => withDelay(() => localDb.getAll('cartesFideliteScans')),
   getTourDeControle: () => withDelay(() => localDb.getTourDeControle()),
+  getCivicReports: () => withDelay((): CivicReport[] => localDb.getCivicReports()),
+  createCivicReport: (data: {
+    subcategoryId: ReportSubcategoryId;
+    channel: CivicReportChannel;
+    lieu: string;
+    details: string;
+    langue: string;
+  }) => withDelay(() => localDb.createCivicReport(data)),
+  setCivicReportStatus: (reportId: string, statut: CivicReportStatus) =>
+    withDelay(() => localDb.setCivicReportStatus(reportId, statut)),
+  deleteCivicReport: (reportId: string) => withDelay(() => {
+    localDb.deleteCivicReport(reportId);
+    return { ok: true };
+  }),
+  getPendingArdoises: () => withDelay(() => localDb.getPendingArdoises()),
+  setArdoiseStatus: (acteurId: string, statut: ArdoiseStatus) =>
+    withDelay(() => localDb.setArdoiseStatus(acteurId, statut)),
   sendContact: (data: { name: string; email: string; message: string; context: string }) =>
     withDelay(() => saveContactMessage(data)),
   getContactMessages: () => withDelay((): ContactMessage[] => loadContactMessages()),

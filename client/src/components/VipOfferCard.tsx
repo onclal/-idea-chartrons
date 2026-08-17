@@ -5,16 +5,16 @@ import { Badge } from './ui';
 
 interface VipOfferCardProps {
   acteur: ActeurLocal;
-  userPoints: number;
+  carnetPoints: number;
 }
 
-export function VipOfferCard({ acteur, userPoints }: VipOfferCardProps) {
+export function VipOfferCard({ acteur, carnetPoints }: VipOfferCardProps) {
   const { t } = useTranslation();
 
   if (!acteur.offreVip) return null;
 
-  const unlocked = isVipUnlocked(userPoints, acteur);
-  const progress = getVipProgress(userPoints, acteur);
+  const unlocked = isVipUnlocked(carnetPoints, acteur);
+  const progress = getVipProgress(carnetPoints, acteur);
 
   return (
     <div
@@ -29,7 +29,7 @@ export function VipOfferCard({ acteur, userPoints }: VipOfferCardProps) {
           {unlocked ? '🎉' : '🔒'} {t('acteurs.vip')}
         </p>
         <Badge variant={unlocked ? 'gold' : 'gray'}>
-          {unlocked ? t('fidelite.unlocked') : `${userPoints}/${acteur.pointsRequisVip} pts`}
+          {unlocked ? t('fidelite.unlocked') : `${carnetPoints}/${acteur.pointsRequisVip} pts`}
         </Badge>
       </div>
       <p className={`text-xs ${unlocked ? 'text-chartrons-green-dark' : 'text-chartrons-warm-gray'}`}>
@@ -44,7 +44,7 @@ export function VipOfferCard({ acteur, userPoints }: VipOfferCardProps) {
             />
           </div>
           <p className="text-[10px] text-chartrons-warm-gray mt-1">
-            {t('fidelite.pointsNeeded', { count: acteur.pointsRequisVip - userPoints })}
+            {t('fidelite.pointsNeeded', { count: acteur.pointsRequisVip - carnetPoints })}
           </p>
         </div>
       )}

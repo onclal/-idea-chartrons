@@ -1,7 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, Input, Modal, Textarea } from './ui';
-import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { api } from '../lib/api';
 import { ADMIN_CONTACT_EMAIL } from '../lib/contact';
@@ -14,7 +13,6 @@ interface ContactFormProps {
 
 export function ContactForm({ open, onClose, context }: ContactFormProps) {
   const { t } = useTranslation();
-  const { currentUser } = useAuth();
   const { showToast } = useToast();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -24,11 +22,11 @@ export function ContactForm({ open, onClose, context }: ContactFormProps) {
 
   useEffect(() => {
     if (!open) return;
-    setName(currentUser?.nom ?? '');
-    setEmail(currentUser?.email ?? '');
+    setName('');
+    setEmail('');
     setMessage('');
     setError('');
-  }, [open, currentUser]);
+  }, [open]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();

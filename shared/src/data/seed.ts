@@ -17,21 +17,19 @@ import {
 import { createChartronsPoiActeurs } from './chartronsPois.js';
 
 /** Bump when seed acteurs / Chartrons POIs change so localStorage upserts the catalog. */
-export const SEED_CATALOG_VERSION = 5;
-import {
-  defaultRegleForCategory,
-  generateQrClientCode,
-} from '../logic/fidelite.js';
+export const SEED_CATALOG_VERSION = 6;
+import { defaultRegleForCategory } from '../logic/fidelite.js';
 import {
   ActeurLocalCategory,
+  ArdoiseStatus,
+  CivicReportChannel,
+  CivicReportStatus,
   EventType,
   FideliteRegleMode,
   LocalRelaisRetraitStatus,
   PostStatus,
   PostType,
-  PreferredLanguage,
   RelaisCreneauType,
-  UserRole,
 } from '../types/enums.js';
 import type {
   ActeurLocal,
@@ -41,6 +39,12 @@ import type {
   RelaisCreneau,
   RelaisSettings,
 } from '../types/models.js';
+
+/**
+ * Carnet de démonstration rattaché à l'appareil (jamais à une personne).
+ * Le navigateur reprend cet identifiant à la première visite, puis peut le régénérer.
+ */
+export const DEMO_DEVICE_ID = 'carnet-demo';
 
 function localYmd(date: Date): string {
   const year = date.getFullYear();
@@ -159,7 +163,7 @@ function nextMarcheStart(from: Date): Date {
 }
 
 export function createUpcomingMarcheChartronsEvents(
-  organisateurId: string,
+  organisateurNom: string,
   nowIso: string,
   weeks = 8,
 ): AgendaEvenement[] {
@@ -177,7 +181,7 @@ export function createUpcomingMarcheChartronsEvents(
 
     events.push({
       id: `event-marche-chartrons-${ymd}`,
-      organisateurId,
+      organisateurNom,
       titre: MARCHE_CHARTRONS.titre,
       description: MARCHE_CHARTRONS.description,
       dateDebut: dateDebut.toISOString(),
@@ -203,51 +207,10 @@ export function createSeedData(): DatabaseSchema {
   const tomorrow = localYmd(tomorrowDate);
 
   const seed = {
-    users: [
-      {
-        id: 'user-1',
-        nom: 'Marie Dupont',
-        email: 'marie.dupont@chartrons.fr',
-        role: UserRole.Habitant,
-        badgeVerifie: true,
-        adresse: '12 Rue Notre-Dame, 33000 Bordeaux',
-        languePreferee: PreferredLanguage.FR,
-        pointsFidelite: 120,
-        qrCodeClient: generateQrClientCode('user-1'),
-        createdAt: now,
-        updatedAt: now,
-      },
-      {
-        id: 'user-2',
-        nom: 'Thomas Martin',
-        email: 'thomas@brocante-chartrons.fr',
-        role: UserRole.Commercant,
-        badgeVerifie: true,
-        adresse: '45 Cours Portal, 33000 Bordeaux',
-        languePreferee: PreferredLanguage.FR,
-        pointsFidelite: 340,
-        qrCodeClient: generateQrClientCode('user-2'),
-        createdAt: now,
-        updatedAt: now,
-      },
-      {
-        id: 'user-3',
-        nom: 'Sophie Bernard',
-        email: 'sophie.bernard@chartrons.fr',
-        role: UserRole.BenevolRelais,
-        badgeVerifie: true,
-        adresse: '26 place Jean Jaques Rabaud',
-        languePreferee: PreferredLanguage.FR,
-        pointsFidelite: 0,
-        qrCodeClient: generateQrClientCode('user-3'),
-        createdAt: now,
-        updatedAt: now,
-      },
-    ],
     postsAnnonces: [
       {
         id: 'post-1',
-        auteurId: 'user-1',
+        auteurNom: 'Marie',
         titre: 'Vélo enfant 14 pouces',
         description: 'Vélo en bon état, idéal pour enfant de 4-6 ans. Quelques traces d\'usage normales.',
         type: PostType.Vente,
@@ -260,7 +223,7 @@ export function createSeedData(): DatabaseSchema {
       },
       {
         id: 'post-2',
-        auteurId: 'user-3',
+        auteurNom: 'Sophie',
         titre: 'Livres de cuisine à donner',
         description: 'Collection de 15 livres de cuisine française. État impeccable.',
         type: PostType.Don,
@@ -273,7 +236,7 @@ export function createSeedData(): DatabaseSchema {
       },
       {
         id: 'post-3',
-        auteurId: 'user-1',
+        auteurNom: 'Marie',
         titre: 'Aide bricolage léger',
         description: 'Disponible le week-end pour petits travaux : montage meubles, accrochage tableaux.',
         type: PostType.ServiceAide,
@@ -286,7 +249,7 @@ export function createSeedData(): DatabaseSchema {
       },
       {
         id: 'post-4',
-        auteurId: 'user-2',
+        auteurNom: 'Thomas',
         titre: 'Arrosage plantes — vacances',
         description: 'Petit boulot : arroser les plantes pendant 2 semaines en août.',
         type: PostType.PetitBoulot,
@@ -299,7 +262,7 @@ export function createSeedData(): DatabaseSchema {
       },
       {
         id: 'post-5',
-        auteurId: 'user-2',
+        auteurNom: 'Brocante des Chartrons',
         titre: 'Grande Vente Vintage de Printemps - Brocante des Chartrons',
         description:
           'Venez découvrir nos nouveaux arrivages d’antiquités et de meubles vintage ce week-end. Réduction spéciale pour les voisins !',
@@ -319,7 +282,7 @@ export function createSeedData(): DatabaseSchema {
       {
         id: 'relais-1',
         postId: 'post-1',
-        userId: 'user-1',
+        deposantNom: 'Marie',
         codeQrValidation: 'QR-CHARTRONS-001',
         dateDepot: now,
         statutRetrait: LocalRelaisRetraitStatus.EnAttente,
@@ -331,7 +294,7 @@ export function createSeedData(): DatabaseSchema {
       {
         id: 'relais-2',
         postId: 'post-4',
-        userId: 'user-1',
+        deposantNom: 'Thomas',
         codeQrValidation: 'QR-CHARTRONS-002',
         dateDepot: now,
         statutRetrait: LocalRelaisRetraitStatus.DisponibleAuLocal,
@@ -344,7 +307,8 @@ export function createSeedData(): DatabaseSchema {
     acteursLocaux: [
       {
         id: 'acteur-1',
-        userId: 'user-2',
+        subcategory: 'boutiques' as const,
+        specialiteFine: 'Antiquaire',
         nomCommerce: 'Brocante des Chartrons',
         categorie: ActeurLocalCategory.CommercesArtisanat,
         description: 'Brocante authentique au cœur du quartier. Meubles vintage, vaisselle et objets de charme.',
@@ -361,7 +325,8 @@ export function createSeedData(): DatabaseSchema {
       },
       {
         id: 'acteur-2',
-        userId: 'user-2',
+        subcategory: 'restauration_cafes' as const,
+        specialiteFine: 'Café & Salon de thé',
         nomCommerce: 'Café du Marché',
         categorie: ActeurLocalCategory.RestaurationMenus,
         description: 'Bistrot de quartier avec terrasse ombragée. Menu du jour, pâtisseries maison et produits locaux.',
@@ -378,7 +343,8 @@ export function createSeedData(): DatabaseSchema {
       },
       {
         id: 'acteur-3',
-        userId: 'user-1',
+        subcategory: 'artisans' as const,
+        specialiteFine: 'Atelier de céramique',
         nomCommerce: 'Atelier Céramique Chartrons',
         categorie: ActeurLocalCategory.CommercesArtisanat,
         description: 'Céramique artisanale faite main. Ateliers découverte le samedi matin.',
@@ -395,7 +361,8 @@ export function createSeedData(): DatabaseSchema {
       },
       {
         id: 'acteur-4',
-        userId: 'user-1',
+        subcategory: 'services_proximite' as const,
+        specialiteFine: 'Cabinet infirmier',
         nomCommerce: 'Cabinet Infirmier des Chartrons',
         categorie: ActeurLocalCategory.SanteSoinsServices,
         description: 'Soins infirmiers de proximité : pansements, suivi à domicile, vaccinations et petits soins du quotidien.',
@@ -412,7 +379,8 @@ export function createSeedData(): DatabaseSchema {
       },
       {
         id: 'acteur-5',
-        userId: 'user-2',
+        subcategory: 'services_proximite' as const,
+        specialiteFine: 'Vétérinaire',
         nomCommerce: 'Clinique Vétérinaire Portal',
         categorie: ActeurLocalCategory.SanteSoinsServices,
         description: 'Consultations, urgences et suivi des animaux de compagnie. Accueil sans rendez-vous le matin.',
@@ -429,7 +397,8 @@ export function createSeedData(): DatabaseSchema {
       },
       {
         id: 'acteur-6',
-        userId: 'user-2',
+        subcategory: 'patrimoine_tourisme' as const,
+        specialiteFine: 'Conciergerie',
         nomCommerce: 'Conciergerie des Chartrons',
         categorie: ActeurLocalCategory.TourismeConciergerie,
         description: 'Accueil des voyageurs, remise des clés, linge et conseils de quartier pour les locations saisonnières.',
@@ -446,7 +415,8 @@ export function createSeedData(): DatabaseSchema {
       },
       {
         id: 'acteur-7',
-        userId: 'user-1',
+        subcategory: 'patrimoine_tourisme' as const,
+        specialiteFine: 'Consigne bagages',
         nomCommerce: 'Consigne Chartrons',
         categorie: ActeurLocalCategory.TourismeConciergerie,
         description: 'Consigne bagages pour visiteurs de passage. Idéal avant un train, un marché ou une visite des quais.',
@@ -463,7 +433,8 @@ export function createSeedData(): DatabaseSchema {
       },
       {
         id: 'acteur-8',
-        userId: 'user-2',
+        subcategory: 'restauration_cafes' as const,
+        specialiteFine: 'Bar',
         nomCommerce: 'Le Comptoir Portal',
         categorie: ActeurLocalCategory.BarsNightlife,
         description: 'Bar de quartier : happy hours, planches et soirées live. Terrasse jusqu’à tard le week-end.',
@@ -480,7 +451,8 @@ export function createSeedData(): DatabaseSchema {
       },
       {
         id: 'acteur-9',
-        userId: 'user-1',
+        subcategory: 'services_proximite' as const,
+        specialiteFine: 'Coworking',
         nomCommerce: 'Atelier Numérique Chartrons',
         categorie: ActeurLocalCategory.StartupsB2B,
         description: 'Coworking et services tertiaires pour indépendants et startups du quartier. Salles de réunion et factotum.',
@@ -497,7 +469,8 @@ export function createSeedData(): DatabaseSchema {
       },
       {
         id: 'acteur-10',
-        userId: 'user-2',
+        subcategory: 'services_proximite' as const,
+        specialiteFine: 'Coiffeur & Barbier',
         nomCommerce: 'Atelier Coiffure des Chartrons',
         categorie: ActeurLocalCategory.SanteSoinsServices,
         description: 'Salon de coiffure et soins : coupes, couleur, barbe. Accueil sur rendez-vous en semaine.',
@@ -514,10 +487,10 @@ export function createSeedData(): DatabaseSchema {
       },
     ],
     agendaEvenements: [
-      ...createUpcomingMarcheChartronsEvents('user-1', now),
+      ...createUpcomingMarcheChartronsEvents('Ville de Bordeaux', now),
       {
         id: 'event-1',
-        organisateurId: 'user-2',
+        organisateurNom: 'Brocante des Chartrons',
         titre: 'Grande Brocante du Dimanche',
         description: 'Brocante mensuelle sur le Cours Portal. Plus de 50 exposants.',
         dateDebut: '2026-08-17T08:00:00.000Z',
@@ -532,7 +505,7 @@ export function createSeedData(): DatabaseSchema {
       },
       {
         id: 'event-2',
-        organisateurId: 'user-1',
+        organisateurNom: 'Comité de quartier',
         titre: 'Apéro des Voisins — Été',
         description: 'Rencontre conviviale sur la place du marché. Apéritif participatif.',
         dateDebut: '2026-08-22T17:00:00.000Z',
@@ -547,7 +520,7 @@ export function createSeedData(): DatabaseSchema {
       },
       {
         id: 'event-3',
-        organisateurId: 'user-2',
+        organisateurNom: 'Café du Marché',
         titre: 'Happy Hour -50%',
         description: 'Promo flash sur tous les cafés et pâtisseries entre 16h et 18h.',
         dateDebut: '2026-08-15T14:00:00.000Z',
@@ -564,21 +537,21 @@ export function createSeedData(): DatabaseSchema {
     cartesFideliteScans: [
       {
         id: 'scan-1',
-        userId: 'user-1',
+        deviceId: DEMO_DEVICE_ID,
         commerceId: 'acteur-1',
         pointsGagnes: 17,
         date: new Date(Date.now() - 3 * 86400000).toISOString(),
       },
       {
         id: 'scan-2',
-        userId: 'user-1',
+        deviceId: DEMO_DEVICE_ID,
         commerceId: 'acteur-2',
         pointsGagnes: 12,
         date: new Date(Date.now() - 2 * 86400000).toISOString(),
       },
       {
         id: 'scan-3',
-        userId: 'user-1',
+        deviceId: DEMO_DEVICE_ID,
         commerceId: 'acteur-3',
         pointsGagnes: 15,
         date: new Date(Date.now() - 86400000).toISOString(),
@@ -587,24 +560,59 @@ export function createSeedData(): DatabaseSchema {
     privilegeConsommations: [
       {
         id: 'privilege-1',
-        userId: 'user-1',
+        deviceId: DEMO_DEVICE_ID,
         commerceId: 'acteur-2',
         offreVip: 'Café offert',
         date: new Date(Date.now() - 2 * 86400000).toISOString(),
       },
       {
         id: 'privilege-2',
-        userId: 'user-1',
+        deviceId: DEMO_DEVICE_ID,
         commerceId: 'acteur-1',
         offreVip: '-10% sur votre prochain achat',
         date: new Date(Date.now() - 86400000).toISOString(),
       },
       {
         id: 'privilege-3',
-        userId: 'user-2',
+        deviceId: 'carnet-visiteur',
         commerceId: 'acteur-2',
         offreVip: 'Café offert',
         date: new Date(Date.now() - 5 * 3600000).toISOString(),
+      },
+    ],
+    civicReports: [
+      {
+        id: 'report-1',
+        subcategoryId: 'voirie_proprete' as const,
+        channel: CivicReportChannel.Mairie,
+        lieu: 'Cours Portal, devant le n°45',
+        details: 'Dépôt sauvage de cartons et encombrants sur le trottoir depuis deux jours.',
+        statut: CivicReportStatus.Nouveau,
+        langue: 'fr',
+        createdAt: new Date(Date.now() - 6 * 3600000).toISOString(),
+        updatedAt: new Date(Date.now() - 6 * 3600000).toISOString(),
+      },
+      {
+        id: 'report-2',
+        subcategoryId: 'eclairage_public' as const,
+        channel: CivicReportChannel.Mairie,
+        lieu: 'Rue Notre-Dame, angle Rue Borie',
+        details: 'Lampadaire éteint depuis une semaine, passage sombre le soir.',
+        statut: CivicReportStatus.Valide,
+        langue: 'fr',
+        createdAt: new Date(Date.now() - 2 * 86400000).toISOString(),
+        updatedAt: new Date(Date.now() - 86400000).toISOString(),
+      },
+      {
+        id: 'report-3',
+        subcategoryId: 'nuisances_sonores' as const,
+        channel: CivicReportChannel.Police,
+        lieu: 'Quai des Chartrons, terrasse côté fleuve',
+        details: 'Musique amplifiée après 23h plusieurs soirs cette semaine.',
+        statut: CivicReportStatus.Transmis,
+        langue: 'fr',
+        createdAt: new Date(Date.now() - 4 * 86400000).toISOString(),
+        updatedAt: new Date(Date.now() - 3 * 86400000).toISOString(),
       },
     ],
   };
@@ -612,7 +620,7 @@ export function createSeedData(): DatabaseSchema {
   return {
     ...seed,
     acteursLocaux: [
-      ...seed.acteursLocaux.map((acteur): ActeurLocal => {
+      ...seed.acteursLocaux.map(({ specialiteFine, ...acteur }): ActeurLocal => {
         const rule =
           acteur.id === 'acteur-2'
             ? { mode: FideliteRegleMode.Visite, valeur: 5 }
@@ -631,9 +639,9 @@ export function createSeedData(): DatabaseSchema {
           rating: null,
           reviewsCount: null,
           openingHours: null,
-          specialite: null,
+          specialite: specialiteFine,
           pinCode: DEFAULT_MERCHANT_PIN,
-          merchantEmail: defaultMerchantEmail(acteur.userId),
+          merchantEmail: defaultMerchantEmail(acteur.nomCommerce),
           socialLinks:
             acteur.id === 'acteur-2'
               ? normalizeSocialLinks({
@@ -652,6 +660,8 @@ export function createSeedData(): DatabaseSchema {
             acteur.id === 'acteur-2'
               ? 'https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=800&q=80'
               : null,
+          dailyMenuStatus: acteur.id === 'acteur-2' ? ArdoiseStatus.Approved : ArdoiseStatus.Pending,
+          dailyMenuSubmittedAt: acteur.id === 'acteur-2' ? now : null,
         };
       }),
       ...createChartronsPoiActeurs(now),
@@ -666,5 +676,3 @@ export function createSeedData(): DatabaseSchema {
 }
 
 export const seedData = createSeedData();
-
-export const DEMO_USER_IDS = ['user-1', 'user-2', 'user-3'] as const;

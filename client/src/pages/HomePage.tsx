@@ -1,13 +1,13 @@
 import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { EventType, getFideliteNiveau, UserRole } from '@idea-chartrons/shared';
+import { EventType, getFideliteNiveau } from '@idea-chartrons/shared';
 import type { AgendaEvenement, LocalRelais, PostAnnonce } from '@idea-chartrons/shared';
 import { Badge, Card, Loading } from '../components/ui';
 import { PageHelp } from '../components/PageHelp';
 import { PickupAlert } from '../components/PickupAlert';
-import { useAuth } from '../context/AuthContext';
 import { api } from '../lib/api';
+import { getDeviceId, getOwnedPostIds } from '../lib/guestCarnet';
 
 function isUpcomingBrocante(event: AgendaEvenement): boolean {
   if (event.type !== EventType.Brocante) return false;
@@ -19,16 +19,24 @@ function isUpcomingBrocante(event: AgendaEvenement): boolean {
 
 export function HomePage() {
   const { t } = useTranslation();
-  const { currentUser, currentUserId, loading: authLoading } = useAuth();
   const [stats, setStats] = useState({ posts: 0, acteurs: 0, events: 0 });
+  const [carnetPoints, setCarnetPoints] = useState(0);
   const [relaisList, setRelaisList] = useState<LocalRelais[]>([]);
   const [posts, setPosts] = useState<PostAnnonce[]>([]);
   const [weekendBrocante, setWeekendBrocante] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  const ownedPostIds = getOwnedPostIds();
+
   useEffect(() => {
-    Promise.all([api.getPosts(), api.getActeurs(), api.getEvents(), api.getRelais()])
-      .then(([postsData, acteurs, events, relais]) => {
+    Promise.all([
+      api.getPosts(),
+      api.getActeurs(),
+      api.getEvents(),
+      api.getRelais(),
+      api.getCarnetPoints(getDeviceId()),
+    ])
+      .then(([postsData, acteurs, events, relais, points]) => {
         setStats({
           posts: postsData.filter((p) => p.statut === 'Disponible').length,
           acteurs: acteurs.length,
@@ -36,17 +44,16 @@ export function HomePage() {
         });
         setRelaisList(relais);
         setPosts(postsData);
+        setCarnetPoints(points);
         setWeekendBrocante(events.some(isUpcomingBrocante));
       })
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, [currentUserId]);
+  }, []);
 
-  if (authLoading || loading) return <Loading message={t('common.loading')} />;
+  if (loading) return <Loading message={t('common.loading')} />;
 
-  const userPoints = currentUser?.pointsFidelite ?? 0;
-  const niveau = getFideliteNiveau(userPoints);
-  const isBenevol = currentUser?.role === UserRole.BenevolRelais;
+  const niveau = getFideliteNiveau(carnetPoints);
 
   const ctaLinks = [
     { to: '/posts', label: t('home.cta.posts'), icon: '📋', gradient: 'from-chartrons-bordeaux to-chartrons-brick' },
@@ -63,7 +70,7 @@ export function HomePage() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <PickupAlert relaisList={relaisList} posts={posts} userId={currentUserId} />
+      <PickupAlert relaisList={relaisList} posts={posts} ownedPostIds={ownedPostIds} />
 
       {weekendBrocante && (
         <div className="flex justify-center">
@@ -82,16 +89,10 @@ export function HomePage() {
         <p className="text-chartrons-warm-gray text-sm leading-relaxed max-w-xs mx-auto">
           {t('home.description')}
         </p>
-        {currentUser && (
-          <div className="flex items-center justify-center gap-2 mt-3 flex-wrap">
-            <p className="text-xs text-chartrons-warm-gray">
-              {t('auth.loggedInAs', { name: currentUser.nom.split(' ')[0] })}
-            </p>
-            {isBenevol && (
-              <Badge variant="benevol" icon="🤝">{t('badges.benevol')}</Badge>
-            )}
-          </div>
-        )}
+        <div className="flex items-center justify-center gap-2 mt-3 flex-wrap">
+          <Badge variant="brass" icon="🙋">{t('guest.badge')}</Badge>
+          <p className="text-xs text-chartrons-warm-gray">{t('guest.noAccount')}</p>
+        </div>
       </section>
 
       <section className="grid grid-cols-2 gap-3">
@@ -99,7 +100,7 @@ export function HomePage() {
           { value: stats.posts, label: t('home.stats.posts'), color: 'text-chartrons-bordeaux' },
           { value: stats.acteurs, label: t('home.stats.acteurs'), color: 'text-chartrons-olive' },
           { value: stats.events, label: t('home.stats.events'), color: 'text-chartrons-brick' },
-          { value: userPoints, label: t('fidelite.yourPoints'), color: 'text-chartrons-brass' },
+          { value: carnetPoints, label: t('fidelite.yourPoints'), color: 'text-chartrons-brass' },
         ].map(({ value, label, color }) => (
           <Card key={label} className="text-center !p-4">
             <p className={`text-2xl font-bold ${color}`}>{value}</p>

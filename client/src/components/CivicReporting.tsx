@@ -1,8 +1,10 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { CivicReportChannel } from '@idea-chartrons/shared';
 import { Badge, Button, Card, Input, Textarea } from './ui';
 import { useToast } from '../context/ToastContext';
 import { buildCivicReportText, CIVIC_CHANNELS, CIVIC_REPORT_CATEGORIES } from '../data/civic';
+import { api } from '../lib/api';
 import { loc } from '../lib/locale';
 import { toTelHref } from '../lib/phone';
 
@@ -13,6 +15,7 @@ export function CivicReporting() {
   const [categoryId, setCategoryId] = useState(CIVIC_REPORT_CATEGORIES[0].id);
   const [place, setPlace] = useState('');
   const [details, setDetails] = useState('');
+  const [sending, setSending] = useState(false);
 
   const category = useMemo(
     () => CIVIC_REPORT_CATEGORIES.find((item) => item.id === categoryId) ?? CIVIC_REPORT_CATEGORIES[0],
@@ -31,6 +34,35 @@ export function CivicReporting() {
       showToast(t('civic.copied'));
     } catch {
       showToast(t('civic.copyFailed'), 'error');
+    }
+  };
+
+  /**
+   * Dépose le signalement dans la file de modération du quartier.
+   * Aucune identité n'est transmise : seuls la sous-catégorie, le lieu et les précisions partent.
+   */
+  const handleSubmit = async () => {
+    if (!place.trim()) {
+      showToast(t('civic.form.placeRequired'), 'error');
+      return;
+    }
+    setSending(true);
+    try {
+      await api.createCivicReport({
+        subcategoryId: category.id,
+        channel:
+          category.channel === 'police' ? CivicReportChannel.Police : CivicReportChannel.Mairie,
+        lieu: place,
+        details,
+        langue: lang,
+      });
+      setPlace('');
+      setDetails('');
+      showToast(t('civic.form.submitted'));
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : t('common.error'), 'error');
+    } finally {
+      setSending(false);
     }
   };
 
@@ -119,6 +151,9 @@ export function CivicReporting() {
           <Badge variant={category.channel === 'police' ? 'brick' : 'green'}>
             {t(`civic.routedTo.${category.channel}`)}
           </Badge>
+          <p className="text-xs text-chartrons-warm-gray leading-relaxed">
+            {t('civic.form.moderationHint')}
+          </p>
         </div>
 
         <Input
@@ -143,7 +178,16 @@ export function CivicReporting() {
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <Button type="button" variant="bordeaux" className="flex-1 min-w-[150px]" onClick={handleCopy}>
+          <Button
+            type="button"
+            variant="bordeaux"
+            className="flex-1 min-w-[150px]"
+            disabled={sending}
+            onClick={handleSubmit}
+          >
+            {sending ? t('common.loading') : t('civic.form.submit')}
+          </Button>
+          <Button type="button" variant="secondary" className="flex-1 min-w-[150px]" onClick={handleCopy}>
             {t('civic.form.copy')}
           </Button>
           <a

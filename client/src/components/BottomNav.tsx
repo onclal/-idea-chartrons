@@ -7,7 +7,7 @@ const navItems = [
   { path: '/carte', icon: '🗺️', key: 'carte' },
   { path: '/decouvrir', icon: '🚶', key: 'decouvrir' },
   { path: '/acteurs', icon: '🏪', key: 'acteurs' },
-  { path: '/profile', icon: '👤', key: 'profile' },
+  { path: '/carnet', icon: '📔', key: 'carnet' },
 ] as const;
 
 export function BottomNav() {

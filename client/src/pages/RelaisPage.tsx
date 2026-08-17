@@ -7,14 +7,15 @@ import { PhoneLink } from '../components/PhoneLink';
 import { ContactForm } from '../components/ContactForm';
 import { LocalRelaisCard } from '../components/LocalRelaisCard';
 import { PickupAlert } from '../components/PickupAlert';
-import { useAuth } from '../context/AuthContext';
+import { useAdmin } from '../context/AdminContext';
 import { useToast } from '../context/ToastContext';
 import { api } from '../lib/api';
 import { bookingErrorMessage } from '../lib/bookingErrors';
+import { getOwnedPostIds } from '../lib/guestCarnet';
 
 export function RelaisPage() {
   const { t } = useTranslation();
-  const { currentUserId, isRelaisStaff } = useAuth();
+  const { isAdminMode } = useAdmin();
   const { showToast } = useToast();
   const [relaisList, setRelaisList] = useState<LocalRelais[]>([]);
   const [posts, setPosts] = useState<PostAnnonce[]>([]);
@@ -35,7 +36,7 @@ export function RelaisPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  useEffect(loadData, [currentUserId]);
+  useEffect(loadData, [loadData]);
 
   const handleReserverRetrait = async (relaisId: string, creneauId: string) => {
     try {
@@ -69,7 +70,7 @@ export function RelaisPage() {
         <PageHelp page="relais" />
       </div>
 
-      <PickupAlert relaisList={relaisList} posts={posts} userId={currentUserId} />
+      <PickupAlert relaisList={relaisList} posts={posts} ownedPostIds={getOwnedPostIds()} />
 
       <LocalRelaisCard
         relaisList={relaisList}
@@ -78,7 +79,7 @@ export function RelaisPage() {
         onSelectQr={setSelectedQr}
         onReserverRetrait={handleReserverRetrait}
         onAvancerStatut={handleAvancerStatut}
-        isAdmin={isRelaisStaff}
+        isAdmin={isAdminMode}
       />
 
       <div className="rounded-2xl bg-chartrons-green/5 border border-chartrons-green/10 p-4">

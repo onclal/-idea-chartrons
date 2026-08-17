@@ -19,6 +19,7 @@ const OPENAI_URL = process.env.OPENAI_API_URL ?? 'https://api.openai.com/v1/chat
 const OPENAI_MODEL = process.env.OPENAI_MODEL ?? 'gpt-4o-mini';
 const REQUEST_TIMEOUT_MS = 20_000;
 const MAX_MESSAGE_LENGTH = 800;
+const MAX_INSTRUCTIONS_LENGTH = 1200;
 const MAX_HISTORY_TURNS = 6;
 const RATE_LIMIT_WINDOW_MS = 5 * 60 * 1000;
 const RATE_LIMIT_MAX_REQUESTS = 25;
@@ -62,6 +63,14 @@ function parseHistory(value: unknown): ConciergeTurn[] {
     }))
     .filter((turn) => turn.content.length > 0)
     .slice(-MAX_HISTORY_TURNS);
+}
+
+/** Consignes envoyées par le panneau d'administration, ajoutées au prompt système. */
+function parseInstructions(value: unknown): string {
+  return String(value ?? '')
+    .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, ' ')
+    .trim()
+    .slice(0, MAX_INSTRUCTIONS_LENGTH);
 }
 
 function resolveLang(requested: unknown, message: string, uiLang: unknown): ConciergeLang {
@@ -154,11 +163,16 @@ router.post('/', async (req, res) => {
   const heritage = heritageForQuery(analysis);
   const apiKey = process.env.OPENAI_API_KEY;
 
+  const instructions = parseInstructions(body.instructions);
+  const systemPrompt = instructions
+    ? `${buildConciergeSystemPrompt()}\n\nCONSIGNES DE L’ÉQUIPE IDÉA CHARTRONS :\n${instructions}`
+    : buildConciergeSystemPrompt();
+
   let reply: string | null = null;
   if (apiKey) {
     reply = await askOpenAI(
       apiKey,
-      buildConciergeSystemPrompt(),
+      systemPrompt,
       buildConciergeContext(analysis),
       parseHistory(body.history),
       message,

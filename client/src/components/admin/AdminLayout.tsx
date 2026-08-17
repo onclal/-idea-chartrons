@@ -8,11 +8,10 @@ import { ToastContainer } from '../ToastContainer';
 
 const NAV_ITEMS = [
   { to: '/admin', icon: '📊', key: 'overview', end: true },
+  { to: '/admin/panneau', icon: '🛡️', key: 'panel', end: false },
   { to: '/admin/annonces', icon: '📋', key: 'posts', end: false },
-  { to: '/admin/commerces', icon: '🏪', key: 'acteurs', end: false },
   { to: '/admin/agenda', icon: '📅', key: 'events', end: false },
   { to: '/admin/relais', icon: '📦', key: 'relais', end: false },
-  { to: '/admin/utilisateurs', icon: '👥', key: 'users', end: false },
 ] as const;
 
 function AdminLoginScreen() {

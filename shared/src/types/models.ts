@@ -1,32 +1,27 @@
+import type { ChartronsSubcategory, ReportSubcategoryId } from '../data/taxonomy.js';
 import {
   ActeurLocalCategory,
+  ArdoiseStatus,
+  CivicReportChannel,
+  CivicReportStatus,
   EventType,
   FideliteRegleMode,
   LocalRelaisRetraitStatus,
   PostStatus,
   PostType,
-  PreferredLanguage,
   RelaisCreneauType,
-  UserRole,
 } from './enums.js';
 
-export interface User {
-  id: string;
-  nom: string;
-  email: string;
-  role: UserRole;
-  badgeVerifie: boolean;
-  adresse: string;
-  languePreferee: PreferredLanguage;
-  pointsFidelite: number;
-  qrCodeClient: string;
-  createdAt: string;
-  updatedAt: string;
-}
+/**
+ * Mode invité intégral : aucune entité utilisateur, aucun profil, aucune session.
+ * Les contributions sont anonymes ; un simple nom d'affichage libre est optionnel,
+ * et la propriété d'un contenu est mémorisée côté navigateur uniquement.
+ */
 
 export interface PostAnnonce {
   id: string;
-  auteurId: string;
+  /** Nom d'affichage libre, facultatif. Aucun compte associé. */
+  auteurNom: string | null;
   titre: string;
   description: string;
   type: PostType;
@@ -71,7 +66,8 @@ export interface RelaisCreneau {
 export interface LocalRelais {
   id: string;
   postId: string;
-  userId: string;
+  /** Nom laissé au dépôt pour retrouver le colis, sans compte. */
+  deposantNom: string | null;
   codeQrValidation: string;
   dateDepot: string;
   statutRetrait: LocalRelaisRetraitStatus;
@@ -103,9 +99,10 @@ export interface CommerceSocialLinks {
 
 export interface ActeurLocal {
   id: string;
-  userId: string;
   nomCommerce: string;
   categorie: ActeurLocalCategory;
+  /** Sous-catégorie unifiée (taxonomie stricte partagée avec les POI et le concierge IA). */
+  subcategory: ChartronsSubcategory;
   description: string;
   adresse: string;
   telephone: string | null;
@@ -122,15 +119,19 @@ export interface ActeurLocal {
   rating: number | null;
   reviewsCount: number | null;
   openingHours: string | null;
+  /** Spécialité fine affichée (texte libre). */
   specialite: string | null;
   pinCode: string | null;
   merchantEmail: string | null;
   socialLinks: CommerceSocialLinks;
   isMerchant: boolean;
-  /** Compte Espace Pro : réseaux publics, badge VIP et messagerie directe. */
+  /** Commerce VIP : réseaux publics, Click & Collect et ardoise du jour. */
   isVip: boolean;
   dailyMenuImage?: string | null;
   dailyMenuText?: string | null;
+  /** Modération de l'ardoise : seules les ardoises approuvées sont publiques. */
+  dailyMenuStatus?: ArdoiseStatus;
+  dailyMenuSubmittedAt?: string | null;
   phoneForOrders?: string | null;
   createdAt: string;
   updatedAt: string;
@@ -138,7 +139,8 @@ export interface ActeurLocal {
 
 export interface AgendaEvenement {
   id: string;
-  organisateurId: string;
+  /** Nom d'organisateur libre, facultatif. */
+  organisateurNom: string | null;
   titre: string;
   description: string;
   dateDebut: string;
@@ -152,9 +154,10 @@ export interface AgendaEvenement {
   updatedAt: string;
 }
 
+/** Passage en caisse enregistré pour l'appareil courant (jamais pour une personne). */
 export interface CarteFideliteScan {
   id: string;
-  userId: string;
+  deviceId: string;
   commerceId: string;
   pointsGagnes: number;
   date: string;
@@ -162,14 +165,27 @@ export interface CarteFideliteScan {
 
 export interface PrivilegeConsommation {
   id: string;
-  userId: string;
+  deviceId: string;
   commerceId: string;
   offreVip: string;
   date: string;
 }
 
+/** Signalement citoyen, en attente de relecture avant transmission au service compétent. */
+export interface CivicReport {
+  id: string;
+  subcategoryId: ReportSubcategoryId;
+  channel: CivicReportChannel;
+  lieu: string;
+  details: string;
+  statut: CivicReportStatus;
+  /** Langue de rédaction, utile pour la transmission. */
+  langue: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface DatabaseSchema {
-  users: User[];
   postsAnnonces: PostAnnonce[];
   localRelais: LocalRelais[];
   relaisCreneaux: RelaisCreneau[];
@@ -179,4 +195,5 @@ export interface DatabaseSchema {
   agendaEvenements: AgendaEvenement[];
   cartesFideliteScans: CarteFideliteScan[];
   privilegeConsommations: PrivilegeConsommation[];
+  civicReports: CivicReport[];
 }

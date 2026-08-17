@@ -1,8 +1,14 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActeurLocalCategory, DIRECTORY_CATEGORIES, isServiceCategory } from '@idea-chartrons/shared';
+import {
+  ActeurLocalCategory,
+  CHARTRONS_SUBCATEGORIES,
+  CHARTRONS_SUBCATEGORY_LABELS,
+  DIRECTORY_CATEGORIES,
+  isServiceCategory,
+  type ChartronsSubcategory,
+} from '@idea-chartrons/shared';
 import { Button, Input, Modal, Select, Textarea } from './ui';
-import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { api } from '../lib/api';
 
@@ -13,8 +19,7 @@ interface ActeurCreateFormProps {
 }
 
 export function ActeurCreateForm({ open, onClose, onCreated }: ActeurCreateFormProps) {
-  const { t } = useTranslation();
-  const { currentUserId } = useAuth();
+  const { t, i18n } = useTranslation();
   const { showToast } = useToast();
   const [nomCommerce, setNomCommerce] = useState('');
   const [description, setDescription] = useState('');
@@ -22,6 +27,7 @@ export function ActeurCreateForm({ open, onClose, onCreated }: ActeurCreateFormP
   const [telephone, setTelephone] = useState('');
   const [appointmentUrl, setAppointmentUrl] = useState('');
   const [categorie, setCategorie] = useState<ActeurLocalCategory>(ActeurLocalCategory.CommercesArtisanat);
+  const [subcategory, setSubcategory] = useState<ChartronsSubcategory>('boutiques');
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [activerFidelite, setActiverFidelite] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -34,6 +40,7 @@ export function ActeurCreateForm({ open, onClose, onCreated }: ActeurCreateFormP
     setTelephone('');
     setAppointmentUrl('');
     setCategorie(ActeurLocalCategory.CommercesArtisanat);
+    setSubcategory('boutiques');
     setPhotoPreview(null);
     setActiverFidelite(false);
     setError(null);
@@ -53,9 +60,9 @@ export function ActeurCreateForm({ open, onClose, onCreated }: ActeurCreateFormP
     setError(null);
     try {
       await api.createActeur({
-        userId: currentUserId,
         nomCommerce: nomCommerce.trim(),
         categorie,
+        subcategory,
         description: description.trim(),
         adresse: adresse.trim(),
         telephone: telephone.trim() || null,
@@ -96,6 +103,16 @@ export function ActeurCreateForm({ open, onClose, onCreated }: ActeurCreateFormP
           options={DIRECTORY_CATEGORIES.map((cat) => ({
             value: cat,
             label: t(`acteurs.categories.${cat}`),
+          }))}
+        />
+
+        <Select
+          label={t('acteurs.create.subcategory')}
+          value={subcategory}
+          onChange={(e) => setSubcategory(e.target.value as ChartronsSubcategory)}
+          options={CHARTRONS_SUBCATEGORIES.map((value) => ({
+            value,
+            label: CHARTRONS_SUBCATEGORY_LABELS[value][i18n.language === 'en' ? 'en' : 'fr'],
           }))}
         />
 

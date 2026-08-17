@@ -6,7 +6,7 @@ import eventsRouter from './routes/events.js';
 import fideliteRouter from './routes/fidelite.js';
 import postsRouter from './routes/posts.js';
 import relaisRouter from './routes/relais.js';
-import usersRouter from './routes/users.js';
+import signalementsRouter from './routes/signalements.js';
 import syncRouter from './routes/sync.js';
 
 const app = express();
@@ -19,13 +19,13 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', app: 'IDÉA CHARTRONS', version: '1.0.0' });
 });
 
-app.use('/api/users', usersRouter);
 app.use('/api/posts', postsRouter);
 app.use('/api/acteurs', acteursRouter);
 app.use('/api/events', eventsRouter);
 app.use('/api/relais', relaisRouter);
 app.use('/api/fidelite', fideliteRouter);
 app.use('/api/sync', syncRouter);
+app.use('/api/signalements', signalementsRouter);
 app.use('/api/concierge', conciergeRouter);
 
 app.listen(PORT, () => {

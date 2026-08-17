@@ -1,66 +1,67 @@
 import {
   calculateAwardPoints,
   calculateScanPoints,
-  findUserByClientToken,
   getActeurFideliteRegle,
   getFideliteNiveau,
   isVipUnlocked,
+  parseCarnetToken,
+  totalCarnetPoints,
 } from '@idea-chartrons/shared';
 import { Router } from 'express';
 import { store } from '../data/store.js';
 
+/**
+ * Carnet de fidélité en mode invité : les points appartiennent à un carnet d'appareil
+ * et sont toujours recalculés depuis l'historique des passages. Aucun profil n'est stocké.
+ */
 const router = Router();
+
+function scansForDevice(deviceId: string) {
+  return store.getAll('cartesFideliteScans').filter((s) => s.deviceId === deviceId);
+}
 
 router.get('/', (_req, res) => {
   res.json(store.getAll('cartesFideliteScans'));
 });
 
-router.get('/user/:userId', (req, res) => {
-  const scans = store
-    .getAll('cartesFideliteScans')
-    .filter((s) => s.userId === req.params.userId)
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-
+router.get('/carnet/:deviceId', (req, res) => {
   const acteurs = store.getAll('acteursLocaux');
-  const enriched = scans.map((scan) => ({
-    ...scan,
-    commerceNom: acteurs.find((a) => a.id === scan.commerceId)?.nomCommerce ?? 'Commerce',
-  }));
+  const scans = scansForDevice(req.params.deviceId)
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .map((scan) => ({
+      ...scan,
+      commerceNom: acteurs.find((a) => a.id === scan.commerceId)?.nomCommerce ?? 'Commerce',
+    }));
 
-  res.json(enriched);
+  res.json(scans);
 });
 
-router.get('/user/:userId/vip', (req, res) => {
-  const user = store.getById('users', req.params.userId);
-  if (!user) {
-    res.status(404).json({ error: 'User not found' });
-    return;
-  }
-
-  const acteurs = store.getAll('acteursLocaux');
-  const vipStatus = acteurs
+router.get('/carnet/:deviceId/vip', (req, res) => {
+  const points = totalCarnetPoints(scansForDevice(req.params.deviceId));
+  const vipStatus = store
+    .getAll('acteursLocaux')
     .filter((a) => a.offreVip)
     .map((a) => ({
       commerceId: a.id,
       commerceNom: a.nomCommerce,
       offreVip: a.offreVip,
       pointsRequis: a.pointsRequisVip,
-      unlocked: isVipUnlocked(user.pointsFidelite, a),
-      niveau: getFideliteNiveau(user.pointsFidelite),
+      unlocked: isVipUnlocked(points, a),
+      niveau: getFideliteNiveau(points),
     }));
 
-  res.json({ points: user.pointsFidelite, niveau: getFideliteNiveau(user.pointsFidelite), vipStatus });
+  res.json({ points, niveau: getFideliteNiveau(points), vipStatus });
 });
 
 router.post('/scan', (req, res) => {
-  const { userId, commerceId, qrCode } = req.body as {
-    userId?: string;
+  const { deviceId, commerceId, qrCode } = req.body as {
+    deviceId?: string;
     commerceId?: string;
     qrCode?: string;
   };
 
-  if (!userId || !commerceId || !qrCode) {
-    res.status(400).json({ error: 'userId, commerceId and qrCode are required' });
+  if (!deviceId || !commerceId || !qrCode) {
+    res.status(400).json({ error: 'deviceId, commerceId and qrCode are required' });
     return;
   }
 
@@ -70,34 +71,26 @@ router.post('/scan', (req, res) => {
     return;
   }
 
-  const user = store.getById('users', userId);
-  if (!user) {
-    res.status(404).json({ error: 'User not found' });
-    return;
-  }
-
-  const previousScans = store.getAll('cartesFideliteScans').filter((s) => s.userId === userId);
-  const calculation = calculateScanPoints(acteur, user, previousScans);
+  const previousScans = scansForDevice(deviceId);
+  const calculation = calculateScanPoints(acteur, previousScans);
 
   if (calculation.total === 0) {
     res.status(429).json({ error: 'Already scanned this merchant today. Try again tomorrow.' });
     return;
   }
 
-  const now = new Date().toISOString();
-
+  const pointsBefore = totalCarnetPoints(previousScans);
   const scan = store.create('cartesFideliteScans', {
     id: `scan-${Date.now()}`,
-    userId,
+    deviceId,
     commerceId,
     pointsGagnes: calculation.total,
-    date: now,
+    date: new Date().toISOString(),
   });
 
-  const totalPoints = user.pointsFidelite + calculation.total;
-  store.update('users', userId, { pointsFidelite: totalPoints });
-
-  const newlyUnlocked = acteur.offreVip && isVipUnlocked(totalPoints, acteur) && !isVipUnlocked(user.pointsFidelite, acteur);
+  const totalPoints = pointsBefore + calculation.total;
+  const newlyUnlocked =
+    acteur.offreVip && isVipUnlocked(totalPoints, acteur) && !isVipUnlocked(pointsBefore, acteur);
 
   res.status(201).json({
     scan,
@@ -111,29 +104,24 @@ router.post('/scan', (req, res) => {
 });
 
 router.get('/commerce/:commerceId', (req, res) => {
-  const users = store.getAll('users');
   const scans = store
     .getAll('cartesFideliteScans')
     .filter((s) => s.commerceId === req.params.commerceId)
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    .slice(0, 20)
-    .map((scan) => ({
-      ...scan,
-      clientNom: users.find((user) => user.id === scan.userId)?.nom ?? 'Client',
-    }));
+    .slice(0, 20);
 
   res.json(scans);
 });
 
 router.post('/award', (req, res) => {
-  const { commerceId, clientToken, montant } = req.body as {
+  const { commerceId, carnetToken, montant } = req.body as {
     commerceId?: string;
-    clientToken?: string;
+    carnetToken?: string;
     montant?: number;
   };
 
-  if (!commerceId || !clientToken) {
-    res.status(400).json({ error: 'commerceId and clientToken are required' });
+  if (!commerceId || !carnetToken) {
+    res.status(400).json({ error: 'commerceId and carnetToken are required' });
     return;
   }
 
@@ -143,9 +131,9 @@ router.post('/award', (req, res) => {
     return;
   }
 
-  const client = findUserByClientToken(store.getAll('users'), clientToken);
-  if (!client) {
-    res.status(404).json({ error: 'CLIENT_NOT_FOUND' });
+  const deviceId = parseCarnetToken(carnetToken);
+  if (!deviceId) {
+    res.status(400).json({ error: 'INVALID_CARNET_TOKEN' });
     return;
   }
 
@@ -155,27 +143,24 @@ router.post('/award', (req, res) => {
     return;
   }
 
-  const now = new Date().toISOString();
+  const pointsBefore = totalCarnetPoints(scansForDevice(deviceId));
   const scan = store.create('cartesFideliteScans', {
     id: `scan-${Date.now()}`,
-    userId: client.id,
+    deviceId,
     commerceId,
     pointsGagnes,
-    date: now,
+    date: new Date().toISOString(),
   });
 
-  const totalPoints = client.pointsFidelite + pointsGagnes;
-  store.update('users', client.id, { pointsFidelite: totalPoints });
-
+  const totalPoints = pointsBefore + pointsGagnes;
   const newlyUnlocked =
-    acteur.offreVip && isVipUnlocked(totalPoints, acteur) && !isVipUnlocked(client.pointsFidelite, acteur);
+    acteur.offreVip && isVipUnlocked(totalPoints, acteur) && !isVipUnlocked(pointsBefore, acteur);
 
   res.status(201).json({
     scan,
     pointsGagnes,
     totalPoints,
-    clientNom: client.nom,
-    clientId: client.id,
+    carnetId: deviceId,
     commerce: acteur.nomCommerce,
     niveau: getFideliteNiveau(totalPoints),
     vipUnlocked: newlyUnlocked ? acteur.offreVip : null,

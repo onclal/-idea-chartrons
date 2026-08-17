@@ -25,7 +25,7 @@ import { getAverageRating } from '../services/reviewService';
 interface MerchantCardProps {
   acteur: ActeurLocal;
   isExpanded: boolean;
-  userPoints: number;
+  carnetPoints: number;
   generatingQrId: string | null;
   canManageFidelite: boolean;
   onToggle: () => void;
@@ -38,7 +38,7 @@ interface MerchantCardProps {
 export function MerchantCard({
   acteur,
   isExpanded,
-  userPoints,
+  carnetPoints,
   generatingQrId,
   canManageFidelite,
   onToggle,
@@ -133,7 +133,7 @@ export function MerchantCard({
           </div>
         )}
 
-        {vip && <VipOfferCard acteur={acteur} userPoints={userPoints} />}
+        {vip && <VipOfferCard acteur={acteur} carnetPoints={carnetPoints} />}
 
         <AdminDeleteButton
           label={t('admin.deleteActeur')}

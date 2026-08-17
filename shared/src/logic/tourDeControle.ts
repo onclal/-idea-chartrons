@@ -1,11 +1,11 @@
-import { LocalRelaisRetraitStatus } from '../types/enums.js';
+import { ArdoiseStatus, CivicReportStatus, LocalRelaisRetraitStatus } from '../types/enums.js';
 import type {
   ActeurLocal,
   CarteFideliteScan,
+  CivicReport,
   LocalRelais,
   PostAnnonce,
   PrivilegeConsommation,
-  User,
 } from '../types/models.js';
 import { isVipUnlocked } from './fidelite.js';
 
@@ -26,6 +26,8 @@ export interface CommerceActivite {
 
 export interface TourDeControleStats {
   pointsDistribues: number;
+  /** Nombre de carnets d'appareils actifs (remplace l'ancien décompte d'utilisateurs). */
+  carnetsActifs: number;
   creditsEnregistres: number;
   pointsViaCredits: number;
   privilegesDebloques: number;
@@ -36,19 +38,34 @@ export interface TourDeControleStats {
   relaisTotal: number;
   relaisEnCours: number;
   relaisRecuperes: number;
+  ardoisesEnAttente: number;
+  signalementsTotal: number;
+  signalementsAExaminer: number;
+  signalementsTransmis: number;
 }
 
 export function computeTourDeControle(data: {
-  users: User[];
   posts: PostAnnonce[];
   relais: LocalRelais[];
   acteurs: ActeurLocal[];
   scans: CarteFideliteScan[];
   consommations: PrivilegeConsommation[];
+  signalements?: CivicReport[];
 }): TourDeControleStats {
+  // Les points appartiennent aux carnets d'appareils : on les recompose depuis l'historique.
+  const pointsParCarnet = new Map<string, number>();
+  for (const scan of data.scans) {
+    pointsParCarnet.set(
+      scan.deviceId,
+      (pointsParCarnet.get(scan.deviceId) ?? 0) + (Number(scan.pointsGagnes) || 0),
+    );
+  }
+
   const vipShops = data.acteurs.filter((acteur) => Boolean(acteur.offreVip));
   const privilegeOffres: PrivilegeOfferStat[] = vipShops.map((acteur) => {
-    const debloques = data.users.filter((user) => isVipUnlocked(user.pointsFidelite, acteur)).length;
+    const debloques = [...pointsParCarnet.values()].filter((points) =>
+      isVipUnlocked(points, acteur),
+    ).length;
     const consommes = data.consommations.filter((item) => item.commerceId === acteur.id).length;
     return {
       commerceId: acteur.id,
@@ -84,10 +101,14 @@ export function computeTourDeControle(data: {
     (item) => item.statutRetrait === LocalRelaisRetraitStatus.Recupere,
   ).length;
 
+  const signalements = data.signalements ?? [];
+  const pointsTotal = data.scans.reduce((sum, scan) => sum + (Number(scan.pointsGagnes) || 0), 0);
+
   return {
-    pointsDistribues: data.users.reduce((sum, user) => sum + (user.pointsFidelite || 0), 0),
+    pointsDistribues: pointsTotal,
+    carnetsActifs: pointsParCarnet.size,
     creditsEnregistres: data.scans.length,
-    pointsViaCredits: data.scans.reduce((sum, scan) => sum + scan.pointsGagnes, 0),
+    pointsViaCredits: pointsTotal,
     privilegesDebloques: privilegeOffres.reduce((sum, item) => sum + item.debloques, 0),
     privilegesConsommes: data.consommations.length,
     privilegeOffres: privilegeOffres.sort((a, b) => b.consommes - a.consommes || b.debloques - a.debloques),
@@ -96,5 +117,17 @@ export function computeTourDeControle(data: {
     relaisTotal: data.relais.length,
     relaisEnCours: data.relais.length - relaisRecuperes,
     relaisRecuperes,
+    ardoisesEnAttente: data.acteurs.filter(
+      (acteur) =>
+        (acteur.dailyMenuText || acteur.dailyMenuImage) &&
+        acteur.dailyMenuStatus === ArdoiseStatus.Pending,
+    ).length,
+    signalementsTotal: signalements.length,
+    signalementsAExaminer: signalements.filter(
+      (item) =>
+        item.statut === CivicReportStatus.Nouveau || item.statut === CivicReportStatus.Valide,
+    ).length,
+    signalementsTransmis: signalements.filter((item) => item.statut === CivicReportStatus.Transmis)
+      .length,
   };
 }

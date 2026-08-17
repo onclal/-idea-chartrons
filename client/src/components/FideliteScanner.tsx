@@ -6,15 +6,16 @@ import { api, type FideliteScanResult } from '../lib/api';
 
 interface FideliteScannerProps {
   acteurs: ActeurLocal[];
-  userId?: string;
-  userPoints?: number;
+  /** Carnet de cet appareil : aucun compte n'est requis pour cumuler des points. */
+  deviceId: string;
+  carnetPoints?: number;
   onScanSuccess?: (result: FideliteScanResult) => void;
 }
 
 export function FideliteScanner({
   acteurs,
-  userId = 'user-1',
-  userPoints = 0,
+  deviceId,
+  carnetPoints = 0,
   onScanSuccess,
 }: FideliteScannerProps) {
   const { t } = useTranslation();
@@ -22,13 +23,13 @@ export function FideliteScanner({
   const [selectedActeur, setSelectedActeur] = useState('');
   const [result, setResult] = useState<FideliteScanResult | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [displayPoints, setDisplayPoints] = useState(userPoints);
+  const [displayPoints, setDisplayPoints] = useState(carnetPoints);
 
   const partenaires = useMemo(() => acteurs.filter(hasQrVitrine), [acteurs]);
 
   useEffect(() => {
-    setDisplayPoints(userPoints);
-  }, [userPoints]);
+    setDisplayPoints(carnetPoints);
+  }, [carnetPoints]);
 
   useEffect(() => {
     if (selectedActeur && !partenaires.some((a) => a.id === selectedActeur)) {
@@ -48,7 +49,7 @@ export function FideliteScanner({
 
     try {
       const response = await api.scanFidelite({
-        userId,
+        deviceId,
         commerceId: acteur.id,
         qrCode: acteur.qrCodeVitrine,
       });
@@ -146,7 +147,7 @@ export function FideliteScanner({
                 {t('fidelite.success', { commerce: result.commerce, points: result.pointsGagnes })}
               </p>
             </div>
-            <div className="grid grid-cols-3 gap-2 text-center">
+            <div className="grid grid-cols-2 gap-2 text-center">
               <div className="p-2 rounded-lg bg-white/60">
                 <p className="text-[10px] text-chartrons-warm-gray">{t('fidelite.breakdown.base')}</p>
                 <p className="text-sm font-bold text-chartrons-green">+{result.breakdown.base}</p>
@@ -154,10 +155,6 @@ export function FideliteScanner({
               <div className="p-2 rounded-lg bg-white/60">
                 <p className="text-[10px] text-chartrons-warm-gray">{t('fidelite.breakdown.first')}</p>
                 <p className="text-sm font-bold text-chartrons-green">+{result.breakdown.firstScanBonus}</p>
-              </div>
-              <div className="p-2 rounded-lg bg-white/60">
-                <p className="text-[10px] text-chartrons-warm-gray">{t('fidelite.breakdown.verified')}</p>
-                <p className="text-sm font-bold text-chartrons-green">+{result.breakdown.verifiedBonus}</p>
               </div>
             </div>
             {result.vipUnlocked && (

@@ -150,10 +150,12 @@ export function Button({
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
+  hint?: string;
 }
 
-export function Input({ label, className = '', id, ...props }: InputProps) {
+export function Input({ label, hint, className = '', id, ...props }: InputProps) {
   const inputId = id ?? label?.toLowerCase().replace(/\s+/g, '-');
+  const hintId = hint ? `${inputId}-hint` : undefined;
   return (
     <div className="space-y-1.5">
       {label && (
@@ -163,9 +165,15 @@ export function Input({ label, className = '', id, ...props }: InputProps) {
       )}
       <input
         id={inputId}
+        aria-describedby={hintId}
         className={`w-full px-4 py-3 rounded-xl border border-chartrons-beige bg-white text-base text-chartrons-olive-dark placeholder:text-chartrons-warm-gray/50 focus:outline-none focus:ring-2 focus:ring-chartrons-bordeaux/25 focus:border-chartrons-bordeaux/30 min-h-[48px] ${className}`}
         {...props}
       />
+      {hint && (
+        <p id={hintId} className="text-[11px] text-chartrons-warm-gray leading-snug">
+          {hint}
+        </p>
+      )}
     </div>
   );
 }

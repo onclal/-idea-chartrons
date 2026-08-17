@@ -1,59 +1,69 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActeurLocalCategory, type ActeurLocal, type User } from '@idea-chartrons/shared';
-import { AdminDataTable } from '../../components/admin/AdminDataTable';
-import { AdminPageHeader } from '../../components/admin/AdminPageHeader';
-import { AdminPhotoField } from '../../components/admin/AdminPhotoField';
-import { Badge, Button, Card, EmptyState, Input, Loading, Modal, Select, Textarea } from '../../components/ui';
+import {
+  ActeurLocalCategory,
+  CHARTRONS_SUBCATEGORIES,
+  CHARTRONS_SUBCATEGORY_LABELS,
+  classifySubcategory,
+  type ActeurLocal,
+  type ChartronsSubcategory,
+} from '@idea-chartrons/shared';
+import { AdminDataTable } from './AdminDataTable';
+import { AdminPageHeader } from './AdminPageHeader';
+import { AdminPhotoField } from './AdminPhotoField';
+import { Badge, Button, Card, EmptyState, Input, Loading, Modal, Select, Textarea } from '../ui';
 import { useToast } from '../../context/ToastContext';
 import { api } from '../../lib/api';
+import { loc } from '../../lib/locale';
 
 interface ActeurForm {
   nomCommerce: string;
   categorie: ActeurLocalCategory;
+  subcategory: ChartronsSubcategory;
   description: string;
   adresse: string;
   photo: string;
   offreVip: string;
   pointsRequisVip: string;
-  userId: string;
   telephone: string;
   activerFidelite: boolean;
 }
 
-const emptyForm = (userId: string): ActeurForm => ({
+const emptyForm = (): ActeurForm => ({
   nomCommerce: '',
   categorie: ActeurLocalCategory.CommercesArtisanat,
+  subcategory: classifySubcategory('', ActeurLocalCategory.CommercesArtisanat),
   description: '',
   adresse: '',
   telephone: '',
   photo: '',
   offreVip: '',
   pointsRequisVip: '50',
-  userId,
   activerFidelite: false,
 });
 
-export function AdminActeursPage() {
-  const { t } = useTranslation();
+/** Les fiches créées avant la taxonomie unifiée peuvent ne pas porter de sous-catégorie. */
+const resolveSubcategory = (acteur: ActeurLocal): ChartronsSubcategory => {
+  const current: ChartronsSubcategory | undefined = acteur.subcategory;
+  return current ?? classifySubcategory(acteur.specialite ?? '', acteur.categorie);
+};
+
+export function AdminPoiManager() {
+  const { t, i18n } = useTranslation();
   const { showToast } = useToast();
   const [acteurs, setActeurs] = useState<ActeurLocal[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState('');
   const [editing, setEditing] = useState<ActeurLocal | null>(null);
   const [creating, setCreating] = useState(false);
-  const [form, setForm] = useState<ActeurForm>(emptyForm(''));
+  const [form, setForm] = useState<ActeurForm>(emptyForm());
   const [saving, setSaving] = useState(false);
 
   const load = () => {
     setLoading(true);
-    Promise.all([api.getActeurs(), api.getUsers()])
-      .then(([acteursData, usersData]) => {
-        setActeurs(acteursData);
-        setUsers(usersData);
-        setForm((prev) => ({ ...prev, userId: prev.userId || usersData[0]?.id || '' }));
-      })
+    api
+      .getActeurs()
+      .then(setActeurs)
       .catch(console.error)
       .finally(() => setLoading(false));
   };
@@ -73,7 +83,7 @@ export function AdminActeursPage() {
 
   const openCreate = () => {
     setEditing(null);
-    setForm(emptyForm(users[0]?.id ?? ''));
+    setForm(emptyForm());
     setCreating(true);
   };
 
@@ -83,13 +93,13 @@ export function AdminActeursPage() {
     setForm({
       nomCommerce: acteur.nomCommerce,
       categorie: acteur.categorie,
+      subcategory: resolveSubcategory(acteur),
       description: acteur.description,
       adresse: acteur.adresse,
       telephone: acteur.telephone ?? '',
       photo: acteur.photos[0] ?? '',
       offreVip: acteur.offreVip ?? '',
       pointsRequisVip: String(acteur.pointsRequisVip),
-      userId: acteur.userId,
       activerFidelite: Boolean(acteur.qrCodeVitrine),
     });
   };
@@ -104,9 +114,9 @@ export function AdminActeursPage() {
     setSaving(true);
     try {
       const payload = {
-        userId: form.userId,
         nomCommerce: form.nomCommerce,
         categorie: form.categorie,
+        subcategory: form.subcategory,
         description: form.description,
         adresse: form.adresse,
         telephone: form.telephone.trim() || null,
@@ -161,7 +171,7 @@ export function AdminActeursPage() {
   return (
     <div className="animate-fade-in">
       <AdminPageHeader
-        title={t('adminSpace.nav.acteurs')}
+        title={t('adminSpace.panel.tabs.pois')}
         subtitle={t('adminSpace.pages.acteursSub')}
         action={
           <Button variant="bordeaux" onClick={openCreate} className="w-full sm:w-auto">
@@ -202,7 +212,12 @@ export function AdminActeursPage() {
           {
             header: t('adminSpace.fields.category'),
             render: (acteur) => (
-              <Badge variant="olive">{t(`acteurs.categories.${acteur.categorie}`)}</Badge>
+              <div className="flex flex-wrap gap-1.5">
+                <Badge variant="olive">{t(`acteurs.categories.${acteur.categorie}`)}</Badge>
+                <Badge variant="brass">
+                  {loc(i18n.language, CHARTRONS_SUBCATEGORY_LABELS[resolveSubcategory(acteur)])}
+                </Badge>
+              </div>
             ),
           },
           {
@@ -238,6 +253,9 @@ export function AdminActeursPage() {
                 <p className="text-xs text-chartrons-warm-gray mt-0.5">{acteur.adresse}</p>
                 <div className="flex flex-wrap gap-1.5 mt-2">
                   <Badge variant="olive">{t(`acteurs.categories.${acteur.categorie}`)}</Badge>
+                  <Badge variant="brass">
+                    {loc(i18n.language, CHARTRONS_SUBCATEGORY_LABELS[resolveSubcategory(acteur)])}
+                  </Badge>
                   {acteur.offreVip && (
                     <Badge variant="vip" icon="⭐">
                       {t('badges.vip')}
@@ -298,10 +316,13 @@ export function AdminActeursPage() {
               }))}
             />
             <Select
-              label={t('adminSpace.fields.owner')}
-              value={form.userId}
-              onChange={(e) => setForm((f) => ({ ...f, userId: e.target.value }))}
-              options={users.map((u) => ({ value: u.id, label: u.nom }))}
+              label={t('adminSpace.fields.subcategory')}
+              value={form.subcategory}
+              onChange={(e) => setForm((f) => ({ ...f, subcategory: e.target.value as ChartronsSubcategory }))}
+              options={CHARTRONS_SUBCATEGORIES.map((subcategory) => ({
+                value: subcategory,
+                label: loc(i18n.language, CHARTRONS_SUBCATEGORY_LABELS[subcategory]),
+              }))}
             />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { EventType, type AgendaEvenement, type User } from '@idea-chartrons/shared';
+import { EventType, type AgendaEvenement } from '@idea-chartrons/shared';
 import { AdminDataTable } from '../../components/admin/AdminDataTable';
 import { AdminPageHeader } from '../../components/admin/AdminPageHeader';
 import { AdminPhotoField } from '../../components/admin/AdminPhotoField';
@@ -16,10 +16,10 @@ interface EventForm {
   dateFin: string;
   image: string;
   type: EventType;
-  organisateurId: string;
+  organisateurNom: string;
 }
 
-const emptyForm = (organisateurId: string): EventForm => {
+const emptyForm = (): EventForm => {
   const start = new Date();
   start.setMinutes(0, 0, 0);
   const end = new Date(start.getTime() + 2 * 60 * 60 * 1000);
@@ -30,7 +30,7 @@ const emptyForm = (organisateurId: string): EventForm => {
     dateFin: toDatetimeLocal(end.toISOString()),
     image: '',
     type: EventType.AnimationAsso,
-    organisateurId,
+    organisateurNom: '',
   };
 };
 
@@ -38,22 +38,18 @@ export function AdminEventsPage() {
   const { t, i18n } = useTranslation();
   const { showToast } = useToast();
   const [events, setEvents] = useState<AgendaEvenement[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState('');
   const [editing, setEditing] = useState<AgendaEvenement | null>(null);
   const [creating, setCreating] = useState(false);
-  const [form, setForm] = useState<EventForm>(emptyForm(''));
+  const [form, setForm] = useState<EventForm>(emptyForm());
   const [saving, setSaving] = useState(false);
 
   const load = () => {
     setLoading(true);
-    Promise.all([api.getEvents(), api.getUsers()])
-      .then(([eventsData, usersData]) => {
-        setEvents(eventsData);
-        setUsers(usersData);
-        setForm((prev) => ({ ...prev, organisateurId: prev.organisateurId || usersData[0]?.id || '' }));
-      })
+    api
+      .getEvents()
+      .then(setEvents)
       .catch(console.error)
       .finally(() => setLoading(false));
   };
@@ -69,7 +65,7 @@ export function AdminEventsPage() {
 
   const openCreate = () => {
     setEditing(null);
-    setForm(emptyForm(users[0]?.id ?? ''));
+    setForm(emptyForm());
     setCreating(true);
   };
 
@@ -83,7 +79,7 @@ export function AdminEventsPage() {
       dateFin: toDatetimeLocal(event.dateFin),
       image: event.image ?? '',
       type: event.type,
-      organisateurId: event.organisateurId,
+      organisateurNom: event.organisateurNom ?? '',
     });
   };
 
@@ -97,7 +93,7 @@ export function AdminEventsPage() {
     setSaving(true);
     try {
       const payload = {
-        organisateurId: form.organisateurId,
+        organisateurNom: form.organisateurNom.trim() || null,
         titre: form.titre,
         description: form.description,
         dateDebut: new Date(form.dateDebut).toISOString(),
@@ -249,11 +245,11 @@ export function AdminEventsPage() {
                 label: t(`events.types.${type}`),
               }))}
             />
-            <Select
+            <Input
               label={t('adminSpace.fields.organizer')}
-              value={form.organisateurId}
-              onChange={(e) => setForm((f) => ({ ...f, organisateurId: e.target.value }))}
-              options={users.map((u) => ({ value: u.id, label: u.nom }))}
+              value={form.organisateurNom}
+              onChange={(e) => setForm((f) => ({ ...f, organisateurNom: e.target.value }))}
+              placeholder={t('acteurs.reviews.authorPlaceholder')}
             />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

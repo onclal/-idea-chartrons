@@ -2,7 +2,6 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Review, ReviewSummary } from '@idea-chartrons/shared';
 import { Button, Input, Textarea } from './ui';
-import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { formatDate } from '../lib/format';
 import { addReview, getAverageRating, getReviewsForMerchant } from '../services/reviewService';
@@ -52,7 +51,6 @@ function Stars({ value, interactive, onSelect, label }: {
 
 export function MerchantReviews({ merchantId, onSummaryChange }: MerchantReviewsProps) {
   const { t, i18n } = useTranslation();
-  const { currentUser } = useAuth();
   const { showToast } = useToast();
   const [reviews, setReviews] = useState<Review[]>(() => getReviewsForMerchant(merchantId));
   const [summary, setSummary] = useState<ReviewSummary>(() => getAverageRating(merchantId));
@@ -76,12 +74,12 @@ export function MerchantReviews({ merchantId, onSummaryChange }: MerchantReviews
     setSummary(nextSummary);
     onSummaryChange?.(nextSummary);
     setRating(5);
-    setAuthorName(currentUser?.nom ?? '');
+    setAuthorName('');
     setComment('');
     setError('');
     // Refresh when the listing changes, not when the parent re-renders.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [merchantId, currentUser?.nom]);
+  }, [merchantId]);
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();

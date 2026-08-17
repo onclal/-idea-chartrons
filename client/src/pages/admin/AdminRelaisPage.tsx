@@ -10,7 +10,6 @@ import {
   type RelaisCreneau,
   type RelaisHorairesPlage,
   type RelaisSettings,
-  type User,
 } from '@idea-chartrons/shared';
 import { AdminDataTable } from '../../components/admin/AdminDataTable';
 import { AdminPageHeader } from '../../components/admin/AdminPageHeader';
@@ -30,7 +29,6 @@ export function AdminRelaisPage() {
   const { showToast } = useToast();
   const [relais, setRelais] = useState<LocalRelais[]>([]);
   const [posts, setPosts] = useState<PostAnnonce[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
   const [creneaux, setCreneaux] = useState<RelaisCreneau[]>([]);
   const [loading, setLoading] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
@@ -56,14 +54,12 @@ export function AdminRelaisPage() {
     Promise.all([
       api.getRelais(),
       api.getPosts(),
-      api.getUsers(),
       api.getAllCreneaux(),
       api.getRelaisSettings(),
     ])
-      .then(([relaisData, postsData, usersData, creneauxData, settingsData]) => {
+      .then(([relaisData, postsData, creneauxData, settingsData]) => {
         setRelais(relaisData);
         setPosts(postsData);
-        setUsers(usersData);
         setCreneaux(creneauxData);
         applySettingsForm(settingsData);
       })
@@ -74,7 +70,6 @@ export function AdminRelaisPage() {
   useEffect(load, []);
 
   const postTitle = (id: string) => posts.find((p) => p.id === id)?.titre ?? id;
-  const userName = (id: string) => users.find((u) => u.id === id)?.nom ?? id;
   const slotLabel = (id: string | null) => {
     if (!id) return '—';
     const slot = creneaux.find((c) => c.id === id);
@@ -263,7 +258,7 @@ export function AdminRelaisPage() {
             render: (item) => (
               <div>
                 <p className="font-medium text-chartrons-olive-dark">{postTitle(item.postId)}</p>
-                <p className="text-xs text-chartrons-warm-gray">{userName(item.userId)}</p>
+                <p className="text-xs text-chartrons-warm-gray">{item.deposantNom ?? '—'}</p>
               </div>
             ),
           },
@@ -302,7 +297,7 @@ export function AdminRelaisPage() {
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
                 <p className="font-semibold text-chartrons-olive-dark">{postTitle(item.postId)}</p>
-                <p className="text-xs text-chartrons-warm-gray">{userName(item.userId)}</p>
+                <p className="text-xs text-chartrons-warm-gray">{item.deposantNom ?? '—'}</p>
               </div>
               <Badge variant={item.statutRetrait === 'Disponible_Au_Local' ? 'local' : 'stone'}>
                 {t(`relais.status.${item.statutRetrait}`)}

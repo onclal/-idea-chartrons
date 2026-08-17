@@ -60,11 +60,17 @@ export function emptySocialLinks(): CommerceSocialLinks {
   return { instagram: null, facebook: null, whatsapp: null, website: null };
 }
 
-export function defaultMerchantEmail(userId: string): string {
-  if (userId === 'user-1') return 'marie.dupont@chartrons.fr';
-  if (userId === 'user-2') return 'thomas@brocante-chartrons.fr';
-  if (userId === 'user-3') return 'sophie.bernard@chartrons.fr';
-  return 'contact@chartrons.fr';
+/** Adresse de contact par défaut d'un commerce, dérivée de son nom (aucun compte requis). */
+export function defaultMerchantEmail(nomCommerce: string): string {
+  const slug = String(nomCommerce ?? '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 32)
+    .replace(/-$/, '');
+  return slug ? `contact@${slug}.chartrons.fr` : 'contact@chartrons.fr';
 }
 
 export function normalizePinCode(value: string | null | undefined): string | null {

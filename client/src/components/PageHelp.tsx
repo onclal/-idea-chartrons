@@ -2,7 +2,16 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, Modal } from './ui';
 
-export type HelpPage = 'home' | 'posts' | 'relais' | 'acteurs' | 'carte' | 'decouvrir' | 'pratique' | 'favoris' | 'profile' | 'pro';
+export type HelpPage =
+  | 'home'
+  | 'posts'
+  | 'relais'
+  | 'acteurs'
+  | 'carte'
+  | 'decouvrir'
+  | 'pratique'
+  | 'favoris'
+  | 'carnet';
 
 interface PageHelpProps {
   page: HelpPage;

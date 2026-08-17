@@ -5,23 +5,23 @@ import { Badge, Card } from './ui';
 import { api, type FideliteHistoryEntry } from '../lib/api';
 
 interface FideliteHistoryProps {
-  userId?: string;
-  userPoints?: number;
+  deviceId: string;
+  carnetPoints?: number;
 }
 
-export function FideliteHistory({ userId = 'user-1', userPoints = 0 }: FideliteHistoryProps) {
+export function FideliteHistory({ deviceId, carnetPoints = 0 }: FideliteHistoryProps) {
   const { t, i18n } = useTranslation();
   const [history, setHistory] = useState<FideliteHistoryEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.getFideliteHistory(userId)
+    api.getFideliteHistory(deviceId)
       .then(setHistory)
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, [userId]);
+  }, [deviceId]);
 
-  const niveau = getFideliteNiveau(userPoints);
+  const niveau = getFideliteNiveau(carnetPoints);
   const locale = i18n.language === 'fr' ? 'fr-FR' : 'en-GB';
 
   return (

@@ -1,18 +1,20 @@
-import { UserRole, type PostAnnonce, type User } from '@idea-chartrons/shared';
+import type { PostAnnonce } from '@idea-chartrons/shared';
 
 export const DEMO_SPONSORED_POST_ID = 'post-5';
 
-export function getSponsoredPostId(posts: PostAnnonce[], users: User[]): string | null {
+/**
+ * Mise en avant sponsorisée : en mode invité il n'existe plus de rôle « commerçant »,
+ * la sélection repose donc sur l'annonce sponsorisée déclarée puis, à défaut, sur la
+ * vente la plus récente.
+ */
+export function getSponsoredPostId(posts: PostAnnonce[]): string | null {
   if (posts.some((post) => post.id === DEMO_SPONSORED_POST_ID)) {
     return DEMO_SPONSORED_POST_ID;
   }
-  const merchantIds = new Set(
-    users.filter((user) => user.role === UserRole.Commercant).map((user) => user.id),
-  );
-  const merchantPosts = posts
-    .filter((post) => merchantIds.has(post.auteurId) && post.type === 'Vente')
+  const ventes = posts
+    .filter((post) => post.type === 'Vente')
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  return merchantPosts[0]?.id ?? null;
+  return ventes[0]?.id ?? null;
 }
 
 export function pinSponsoredPost(posts: PostAnnonce[], sponsoredId: string | null): PostAnnonce[] {

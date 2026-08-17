@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AIConcierge } from '../components/AIConcierge';
 import { Button, Card, Input, Textarea } from '../components/ui';
-import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { api } from '../lib/api';
 import { ADMIN_CONTACT_EMAIL } from '../lib/contact';
@@ -11,11 +10,10 @@ import { downloadWelcomeKit } from '../data/pratique';
 
 export function ConciergeriePage() {
   const { t, i18n } = useTranslation();
-  const { currentUser } = useAuth();
   const { showToast } = useToast();
-  const [name, setName] = useState(currentUser?.nom ?? '');
+  const [name, setName] = useState('');
   const [company, setCompany] = useState('');
-  const [email, setEmail] = useState(currentUser?.email ?? '');
+  const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [listings, setListings] = useState('');
   const [message, setMessage] = useState('');

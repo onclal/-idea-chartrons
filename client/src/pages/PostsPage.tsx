@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { LocalRelaisRetraitStatus, PostType, type LocalRelais, type PostAnnonce, type User } from '@idea-chartrons/shared';
+import { LocalRelaisRetraitStatus, PostType, type LocalRelais, type PostAnnonce } from '@idea-chartrons/shared';
 import { Badge, Button, Card, EmptyState, Loading } from '../components/ui';
 import { PageHelp } from '../components/PageHelp';
 import { PhoneLink } from '../components/PhoneLink';
@@ -10,12 +10,12 @@ import { OwnerPostActions } from '../components/OwnerPostActions';
 import { PostCreateForm } from '../components/PostCreateForm';
 import { DepotSlotModal } from '../components/RelaisSlotPicker';
 import { CheckoutModal } from '../components/CheckoutModal';
-import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { matchesSearch, useSearch } from '../context/SearchContext';
 import { api } from '../lib/api';
 import { bookingErrorMessage } from '../lib/bookingErrors';
 import { getSponsoredPostId, pinSponsoredPost } from '../lib/sponsoredFeed';
+import { ownsPost } from '../lib/guestCarnet';
 
 const FILTER_TYPES = [
   'all',
@@ -30,10 +30,8 @@ type FilterType = (typeof FILTER_TYPES)[number];
 export function PostsPage() {
   const { t } = useTranslation();
   const { query } = useSearch();
-  const { currentUserId } = useAuth();
   const { showToast } = useToast();
   const [posts, setPosts] = useState<PostAnnonce[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
   const [relaisMap, setRelaisMap] = useState<Map<string, LocalRelais>>(new Map());
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<FilterType>('all');
@@ -46,17 +44,16 @@ export function PostsPage() {
 
   const loadPosts = (opts?: { silent?: boolean }) => {
     if (!opts?.silent) setLoading(true);
-    Promise.all([api.getPosts(), api.getRelais(), api.getUsers()])
-      .then(([postsData, relais, usersData]) => {
+    Promise.all([api.getPosts(), api.getRelais()])
+      .then(([postsData, relais]) => {
         setPosts(postsData);
         setRelaisMap(new Map(relais.map((r) => [r.postId, r])));
-        setUsers(usersData);
       })
       .catch(console.error)
       .finally(() => setLoading(false));
   };
 
-  useEffect(loadPosts, [currentUserId]);
+  useEffect(loadPosts, []);
 
   const filteredPosts = useMemo(() => {
     const filtered = posts
@@ -67,10 +64,10 @@ export function PostsPage() {
         return matchesFilter && matchesQuery;
       })
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    return pinSponsoredPost(filtered, getSponsoredPostId(posts, users));
-  }, [posts, filter, query, users]);
+    return pinSponsoredPost(filtered, getSponsoredPostId(posts));
+  }, [posts, filter, query]);
 
-  const sponsoredPostId = getSponsoredPostId(posts, users);
+  const sponsoredPostId = getSponsoredPostId(posts);
 
   const handleDepotConfirm = async (creneauId: string) => {
     if (!depotPostId) return;
@@ -78,7 +75,7 @@ export function PostsPage() {
     try {
       await api.proposeDepotLocal({
         postId: depotPostId,
-        userId: currentUserId,
+        deposantNom: posts.find((post) => post.id === depotPostId)?.auteurNom ?? null,
         creneauDepotId: creneauId,
       });
       setDepotPostId(null);
@@ -164,7 +161,8 @@ export function PostsPage() {
         <div className="space-y-3">
           {filteredPosts.map((post) => {
             const relais = relaisMap.get(post.id);
-            const isOwner = post.auteurId === currentUserId;
+            // Le droit d'édition vient du registre local, pas d'un compte.
+            const isOwner = ownsPost(post.id);
             const isReadyLocal =
               relais?.statutRetrait === LocalRelaisRetraitStatus.DisponibleAuLocal;
             const isSponsored = post.id === sponsoredPostId;
@@ -315,9 +313,7 @@ export function PostsPage() {
       <CheckoutModal
         open={!!checkoutPost}
         post={checkoutPost}
-        sellerName={
-          checkoutPost ? users.find((user) => user.id === checkoutPost.auteurId)?.nom : undefined
-        }
+        sellerName={checkoutPost?.auteurNom ?? undefined}
         onClose={() => setCheckoutPost(null)}
         onConfirm={(_post, _total, orderId) => {
           showToast(t('toast.purchaseConfirmed', { orderId }));

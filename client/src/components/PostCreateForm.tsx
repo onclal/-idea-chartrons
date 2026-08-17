@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PostType, type PostAnnonce } from '@idea-chartrons/shared';
 import { Button, Input, Modal, Textarea } from './ui';
-import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { api } from '../lib/api';
+import { rememberOwnedPost } from '../lib/guestCarnet';
 
 interface PostCreateFormProps {
   open: boolean;
@@ -22,7 +22,6 @@ const POST_TYPES = [
 
 export function PostCreateForm({ open, onClose, onCreated, post = null }: PostCreateFormProps) {
   const { t } = useTranslation();
-  const { currentUserId } = useAuth();
   const { showToast } = useToast();
   const editing = Boolean(post);
   const [titre, setTitre] = useState('');
@@ -30,6 +29,7 @@ export function PostCreateForm({ open, onClose, onCreated, post = null }: PostCr
   const [type, setType] = useState<PostType>(PostType.Don);
   const [prix, setPrix] = useState('');
   const [telephone, setTelephone] = useState('');
+  const [auteurNom, setAuteurNom] = useState('');
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -42,6 +42,7 @@ export function PostCreateForm({ open, onClose, onCreated, post = null }: PostCr
       setType(post.type);
       setPrix(post.prix != null ? String(post.prix) : '');
       setTelephone(post.telephone ?? '');
+      setAuteurNom(post.auteurNom ?? '');
       setPhotoPreview(post.photos[0] ?? null);
       setError(null);
       return;
@@ -51,6 +52,7 @@ export function PostCreateForm({ open, onClose, onCreated, post = null }: PostCr
     setType(PostType.Don);
     setPrix('');
     setTelephone('');
+    setAuteurNom('');
     setPhotoPreview(null);
     setError(null);
   }, [open, post]);
@@ -75,15 +77,15 @@ export function PostCreateForm({ open, onClose, onCreated, post = null }: PostCr
         prix: type === PostType.Vente || type === PostType.PetitBoulot ? Number(prix) || 0 : null,
         photos: photoPreview ? [photoPreview] : [],
         telephone: telephone.trim() || null,
+        auteurNom: auteurNom.trim() || null,
       };
       if (post) {
         await api.updatePost(post.id, payload);
         showToast(t('toast.postUpdated'));
       } else {
-        await api.createPost({
-          ...payload,
-          auteurId: currentUserId,
-        });
+        const created = await api.createPost(payload);
+        // Le droit d'édition reste dans ce navigateur : aucun compte n'est créé.
+        rememberOwnedPost(created.id);
         showToast(t('toast.postPublished'));
       }
       onCreated();
@@ -155,6 +157,15 @@ export function PostCreateForm({ open, onClose, onCreated, post = null }: PostCr
           value={telephone}
           onChange={(e) => setTelephone(e.target.value)}
           placeholder={t('common.phonePlaceholder')}
+        />
+
+        <Input
+          label={t('posts.create.auteurNom')}
+          value={auteurNom}
+          onChange={(e) => setAuteurNom(e.target.value)}
+          maxLength={40}
+          placeholder={t('posts.create.auteurNomPlaceholder')}
+          hint={t('posts.create.auteurNomHint')}
         />
 
         <div className="space-y-2">

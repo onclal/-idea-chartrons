@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { PostStatus, PostType, type PostAnnonce, type User } from '@idea-chartrons/shared';
+import { PostStatus, PostType, type PostAnnonce } from '@idea-chartrons/shared';
 import { AdminDataTable } from '../../components/admin/AdminDataTable';
 import { AdminPageHeader } from '../../components/admin/AdminPageHeader';
 import { AdminPhotoField } from '../../components/admin/AdminPhotoField';
@@ -16,18 +16,18 @@ interface PostForm {
   prix: string;
   statut: PostStatus;
   photo: string;
-  auteurId: string;
+  auteurNom: string;
   telephone: string;
 }
 
-const emptyForm = (auteurId: string): PostForm => ({
+const emptyForm = (): PostForm => ({
   titre: '',
   description: '',
   type: PostType.Don,
   prix: '',
   statut: PostStatus.Disponible,
   photo: '',
-  auteurId,
+  auteurNom: '',
   telephone: '',
 });
 
@@ -35,22 +35,18 @@ export function AdminPostsPage() {
   const { t, i18n } = useTranslation();
   const { showToast } = useToast();
   const [posts, setPosts] = useState<PostAnnonce[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState('');
   const [editing, setEditing] = useState<PostAnnonce | null>(null);
   const [creating, setCreating] = useState(false);
-  const [form, setForm] = useState<PostForm>(emptyForm(''));
+  const [form, setForm] = useState<PostForm>(emptyForm());
   const [saving, setSaving] = useState(false);
 
   const load = () => {
     setLoading(true);
-    Promise.all([api.getPosts(), api.getUsers()])
-      .then(([postsData, usersData]) => {
-        setPosts(postsData);
-        setUsers(usersData);
-        setForm((prev) => ({ ...prev, auteurId: prev.auteurId || usersData[0]?.id || '' }));
-      })
+    api
+      .getPosts()
+      .then(setPosts)
       .catch(console.error)
       .finally(() => setLoading(false));
   };
@@ -64,11 +60,9 @@ export function AdminPostsPage() {
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }, [posts, query]);
 
-  const userName = (id: string) => users.find((u) => u.id === id)?.nom ?? id;
-
   const openCreate = () => {
     setEditing(null);
-    setForm(emptyForm(users[0]?.id ?? ''));
+    setForm(emptyForm());
     setCreating(true);
   };
 
@@ -82,7 +76,7 @@ export function AdminPostsPage() {
       prix: post.prix != null ? String(post.prix) : '',
       statut: post.statut,
       photo: post.photos[0] ?? '',
-      auteurId: post.auteurId,
+      auteurNom: post.auteurNom ?? '',
       telephone: post.telephone ?? '',
     });
   };
@@ -105,7 +99,7 @@ export function AdminPostsPage() {
             ? Number(form.prix) || 0
             : null,
         photos: form.photo ? [form.photo] : [],
-        auteurId: form.auteurId,
+        auteurNom: form.auteurNom.trim() || null,
         statut: form.statut,
         telephone: form.telephone.trim() || null,
       };
@@ -193,7 +187,7 @@ export function AdminPostsPage() {
                 )}
                 <div className="min-w-0">
                   <p className="font-medium text-chartrons-olive-dark truncate max-w-xs">{post.titre}</p>
-                  <p className="text-xs text-chartrons-warm-gray">{userName(post.auteurId)}</p>
+                  <p className="text-xs text-chartrons-warm-gray">{post.auteurNom ?? '—'}</p>
                 </div>
               </div>
             ),
@@ -236,7 +230,7 @@ export function AdminPostsPage() {
               )}
               <div className="min-w-0 flex-1">
                 <p className="font-semibold text-chartrons-olive-dark">{post.titre}</p>
-                <p className="text-xs text-chartrons-warm-gray mt-0.5">{userName(post.auteurId)}</p>
+                <p className="text-xs text-chartrons-warm-gray mt-0.5">{post.auteurNom ?? '—'}</p>
                 <div className="flex flex-wrap gap-1.5 mt-2">
                   <Badge variant="brick">{t(`posts.types.${post.type}`)}</Badge>
                   <Badge variant={post.statut === 'Disponible' ? 'olive' : 'stone'}>
@@ -299,11 +293,11 @@ export function AdminPostsPage() {
               onChange={(e) => setForm((f) => ({ ...f, prix: e.target.value }))}
             />
           )}
-          <Select
+          <Input
             label={t('adminSpace.fields.author')}
-            value={form.auteurId}
-            onChange={(e) => setForm((f) => ({ ...f, auteurId: e.target.value }))}
-            options={users.map((u) => ({ value: u.id, label: u.nom }))}
+            value={form.auteurNom}
+            onChange={(e) => setForm((f) => ({ ...f, auteurNom: e.target.value }))}
+            placeholder={t('acteurs.reviews.authorPlaceholder')}
           />
           <Input
             label={t('common.phone')}

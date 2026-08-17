@@ -1,13 +1,20 @@
-export enum UserRole {
-  Habitant = 'Habitant',
-  Commercant = 'Commerçant',
-  BenevolRelais = 'Bénévol Relais',
-  Admin = 'Admin',
+/** Modération des ardoises du jour soumises par les commerces VIP. */
+export enum ArdoiseStatus {
+  Pending = 'pending',
+  Approved = 'approved',
+  Rejected = 'rejected',
 }
 
-export enum PreferredLanguage {
-  FR = 'fr',
-  EN = 'en',
+export enum CivicReportChannel {
+  Mairie = 'mairie',
+  Police = 'police',
+}
+
+export enum CivicReportStatus {
+  Nouveau = 'nouveau',
+  Valide = 'validé',
+  Transmis = 'transmis',
+  Rejete = 'rejeté',
 }
 
 export enum PostType {

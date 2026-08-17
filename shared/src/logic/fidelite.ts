@@ -1,5 +1,5 @@
 import { ActeurLocalCategory, FideliteNiveau, FideliteRegleMode } from '../types/enums.js';
-import type { ActeurLocal, CarteFideliteScan, User } from '../types/models.js';
+import type { ActeurLocal, CarteFideliteScan } from '../types/models.js';
 
 const BASE_POINTS: Record<ActeurLocalCategory, number> = {
   [ActeurLocalCategory.RestaurationMenus]: 8,
@@ -11,19 +11,17 @@ const BASE_POINTS: Record<ActeurLocalCategory, number> = {
 };
 
 const FIRST_SCAN_BONUS = 5;
-const VERIFIED_USER_BONUS = 2;
 const SCAN_COOLDOWN_MS = 24 * 60 * 60 * 1000;
 
 export interface PointsCalculation {
   base: number;
   firstScanBonus: number;
-  verifiedBonus: number;
   total: number;
 }
 
+/** Points d'un passage, calculés à partir de l'historique de l'appareil uniquement. */
 export function calculateScanPoints(
   acteur: ActeurLocal,
-  user: User,
   previousScans: CarteFideliteScan[],
 ): PointsCalculation {
   const base = BASE_POINTS[acteur.categorie] ?? 5;
@@ -34,19 +32,18 @@ export function calculateScanPoints(
   );
 
   if (hasScannedToday) {
-    return { base: 0, firstScanBonus: 0, verifiedBonus: 0, total: 0 };
+    return { base: 0, firstScanBonus: 0, total: 0 };
   }
 
   const hasScannedBefore = previousScans.some((s) => s.commerceId === acteur.id);
   const firstScanBonus = hasScannedBefore ? 0 : FIRST_SCAN_BONUS;
-  const verifiedBonus = user.badgeVerifie ? VERIFIED_USER_BONUS : 0;
 
-  return {
-    base,
-    firstScanBonus,
-    verifiedBonus,
-    total: base + firstScanBonus + verifiedBonus,
-  };
+  return { base, firstScanBonus, total: base + firstScanBonus };
+}
+
+/** Total de points du carnet : dérivé de l'historique, jamais stocké sur un profil. */
+export function totalCarnetPoints(scans: CarteFideliteScan[]): number {
+  return scans.reduce((sum, scan) => sum + (Number(scan.pointsGagnes) || 0), 0);
 }
 
 export function canScanAgain(
@@ -81,12 +78,26 @@ export function generateQrVitrineCode(nomCommerce: string): string {
   return `QR-VITRINE-${slug || 'COMMERCE'}-${String(Date.now()).slice(-4)}`;
 }
 
-export function generateQrClientCode(userId: string): string {
-  const slug = userId
+export const CARNET_TOKEN_PREFIX = 'QR-CARNET-';
+
+/** Jeton présenté en caisse : identifie un carnet d'appareil, pas une personne. */
+export function generateCarnetToken(deviceId: string): string {
+  const slug = deviceId
     .toUpperCase()
     .replace(/[^A-Z0-9]+/g, '-')
     .replace(/^-|-$/g, '');
-  return `QR-CLIENT-${slug || 'HABITANT'}`;
+  return `${CARNET_TOKEN_PREFIX}${slug || 'INVITE'}`;
+}
+
+/** Extrait l'identifiant d'appareil d'un jeton saisi ou scanné par le commerce. */
+export function parseCarnetToken(token: string): string | null {
+  const compact = String(token ?? '').trim().replace(/\s+/g, '').toUpperCase();
+  if (!compact) return null;
+  const raw = compact.startsWith(CARNET_TOKEN_PREFIX)
+    ? compact.slice(CARNET_TOKEN_PREFIX.length)
+    : compact;
+  const slug = raw.replace(/[^A-Z0-9-]+/g, '');
+  return slug.length >= 4 ? slug : null;
 }
 
 export interface FideliteRegle {
@@ -135,27 +146,12 @@ export function calculateAwardPoints(regle: FideliteRegle, montant?: number): nu
   return points > 0 ? points : 0;
 }
 
-export function findUserByClientToken(users: User[], token: string): User | undefined {
-  const compact = token.trim().replace(/\s+/g, '');
-  if (!compact) return undefined;
-  const upper = compact.toUpperCase();
-  return users.find((user) => {
-    const qr = (user.qrCodeClient || generateQrClientCode(user.id)).toUpperCase();
-    return (
-      user.id === compact ||
-      user.id.toUpperCase() === upper ||
-      qr === upper ||
-      generateQrClientCode(user.id).toUpperCase() === upper
-    );
-  });
-}
-
-export function isVipUnlocked(userPoints: number, acteur: ActeurLocal): boolean {
+export function isVipUnlocked(carnetPoints: number, acteur: ActeurLocal): boolean {
   if (!acteur.offreVip) return false;
-  return userPoints >= acteur.pointsRequisVip;
+  return carnetPoints >= acteur.pointsRequisVip;
 }
 
-export function getVipProgress(userPoints: number, acteur: ActeurLocal): number {
+export function getVipProgress(carnetPoints: number, acteur: ActeurLocal): number {
   if (!acteur.offreVip || acteur.pointsRequisVip === 0) return 100;
-  return Math.min(100, Math.round((userPoints / acteur.pointsRequisVip) * 100));
+  return Math.min(100, Math.round((carnetPoints / acteur.pointsRequisVip) * 100));
 }

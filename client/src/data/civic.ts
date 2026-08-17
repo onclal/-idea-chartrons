@@ -1,3 +1,9 @@
+import {
+  CIVIC_SUBCATEGORIES,
+  REPORT_SUBCATEGORY_LABELS,
+  SAFETY_SUBCATEGORIES,
+  type ReportSubcategoryId,
+} from '@idea-chartrons/shared';
 import type { LocaleText } from '../lib/locale';
 
 export type CivicChannelId = 'mairie' | 'police';
@@ -16,7 +22,8 @@ export interface CivicChannel {
 }
 
 export interface CivicReportCategory {
-  id: string;
+  /** Sous-catégorie unifiée : même vocabulaire que l'admin et le concierge IA. */
+  id: ReportSubcategoryId;
   icon: string;
   channel: CivicChannelId;
   label: LocaleText;
@@ -34,11 +41,11 @@ export const CIVIC_CHANNELS: CivicChannel[] = [
   {
     id: 'mairie',
     icon: '🏛️',
-    kicker: { fr: 'Propreté · Voirie · Déchets', en: 'Cleanliness · Roads · Waste' },
+    kicker: { fr: 'Voirie · Propreté · Cadre de vie', en: 'Roads · Cleanliness · Living space' },
     title: { fr: 'Signalement Mairie / Voirie', en: 'Report to the City / Roads dept.' },
     hint: {
-      fr: 'Dépôt sauvage, tag, nid-de-poule, éclairage en panne, mobilier urbain cassé, bac non collecté : le service Allô Mairie centralise les demandes du quartier.',
-      en: 'Illegal dumping, graffiti, potholes, broken street lighting or urban furniture, uncollected bins: the Allô Mairie service centralises neighborhood requests.',
+      fr: 'Dépôt sauvage, tag, nid-de-poule, éclairage en panne, arbre à élaguer, trottoir infranchissable : le service Allô Mairie centralise les demandes du quartier.',
+      en: 'Illegal dumping, graffiti, potholes, broken street lighting, trees to prune, impassable pavements: the Allô Mairie service centralises neighborhood requests.',
     },
     phone: ALLO_MAIRIE_PHONE,
     phoneLabel: { fr: 'Allô Mairie', en: 'Allô Mairie' },
@@ -55,8 +62,8 @@ export const CIVIC_CHANNELS: CivicChannel[] = [
     kicker: { fr: 'Tranquillité publique', en: 'Public order' },
     title: { fr: 'Police Municipale / Tranquillité', en: 'Municipal Police / Public order' },
     hint: {
-      fr: 'Bruit répété, occupation abusive de l’espace public, stationnement gênant, incivilités : la Police Municipale intervient sur les troubles non urgents du quartier.',
-      en: 'Repeated noise, misuse of public space, obstructive parking, antisocial behaviour: the Municipal Police handle non-urgent neighborhood issues.',
+      fr: 'Bruit répété, occupation abusive de l’espace public, stationnement gênant : la Police Municipale intervient sur les troubles non urgents du quartier.',
+      en: 'Repeated noise, misuse of public space, obstructive parking: the Municipal Police handle non-urgent neighborhood issues.',
     },
     phone: ALLO_MAIRIE_PHONE,
     phoneLabel: { fr: 'Police Municipale via Allô Mairie', en: 'Municipal Police via Allô Mairie' },
@@ -69,105 +76,96 @@ export const CIVIC_CHANNELS: CivicChannel[] = [
   },
 ];
 
+const REPORT_ICONS: Record<ReportSubcategoryId, string> = {
+  voirie_proprete: '🧹',
+  eclairage_public: '💡',
+  espaces_verts_animaux: '🌳',
+  accessibilite_pmr: '♿',
+  nuisances_sonores: '🔊',
+  tranquillite_publique: '👥',
+  stationnement_genant: '🚗',
+};
+
+const REPORT_HINTS: Record<ReportSubcategoryId, LocaleText> = {
+  voirie_proprete: {
+    fr: 'Dépôt sauvage, corbeille débordante, bac non collecté, nid-de-poule, pavé descellé, trottoir dégradé.',
+    en: 'Illegal dumping, overflowing bin, uncollected bin, pothole, loose cobble, damaged pavement.',
+  },
+  eclairage_public: {
+    fr: 'Lampadaire éteint ou clignotant, zone sombre le soir, coffret électrique ouvert.',
+    en: 'Street light out or flickering, dark area at night, open electrical cabinet.',
+  },
+  espaces_verts_animaux: {
+    fr: 'Arbre à élaguer, jardinière abîmée, souillures canines, nuisibles, animal en difficulté.',
+    en: 'Tree to prune, damaged planter, dog fouling, pests, animal in distress.',
+  },
+  accessibilite_pmr: {
+    fr: 'Trottoir infranchissable en fauteuil ou avec une poussette, bateau manquant, obstacle permanent.',
+    en: 'Pavement impassable by wheelchair or stroller, missing kerb ramp, permanent obstacle.',
+  },
+  nuisances_sonores: {
+    fr: 'Terrasse tardive, musique répétée, chantier hors horaires, deux-roues bruyants.',
+    en: 'Late terrace, repeated music, works outside permitted hours, noisy scooters.',
+  },
+  tranquillite_publique: {
+    fr: 'Regroupement gênant, dégradation, occupation abusive de l’espace public.',
+    en: 'Disruptive gathering, vandalism, misuse of public space.',
+  },
+  stationnement_genant: {
+    fr: 'Véhicule sur trottoir, passage piéton, piste cyclable, place PMR ou aire de livraison.',
+    en: 'Vehicle on the pavement, crossing, cycle lane, disabled bay or loading area.',
+  },
+};
+
+const REPORT_TEMPLATES: Record<ReportSubcategoryId, LocaleText> = {
+  voirie_proprete: {
+    fr: 'Signalement voirie & propreté — quartier des Chartrons\nLieu précis : {{lieu}}\nNature : dépôt sauvage / corbeille pleine / bac non collecté / nid-de-poule / trottoir dégradé\nDepuis quand : \nRisque piéton ou cycliste : oui / non\nPhoto disponible : oui / non',
+    en: 'Roads & cleanliness report — Chartrons district\nExact location: {{lieu}}\nIssue: illegal dumping / full bin / uncollected bin / pothole / damaged pavement\nSince when: \nRisk to pedestrians or cyclists: yes / no\nPhoto available: yes / no',
+  },
+  eclairage_public: {
+    fr: 'Signalement éclairage public — quartier des Chartrons\nLieu précis : {{lieu}}\nNature : lampadaire éteint / clignotant / coffret ouvert\nNuméro sur le mât (si visible) : \nZone sombre ou dangereuse le soir : oui / non',
+    en: 'Street lighting report — Chartrons district\nExact location: {{lieu}}\nIssue: light out / flickering / open cabinet\nPole number (if visible): \nDark or unsafe area at night: yes / no',
+  },
+  espaces_verts_animaux: {
+    fr: 'Signalement espaces verts & animaux — quartier des Chartrons\nLieu précis : {{lieu}}\nNature : arbre à élaguer / jardinière abîmée / souillures / nuisibles / animal en difficulté\nDepuis quand : \nPhoto disponible : oui / non',
+    en: 'Parks & animals report — Chartrons district\nExact location: {{lieu}}\nIssue: tree to prune / damaged planter / fouling / pests / animal in distress\nSince when: \nPhoto available: yes / no',
+  },
+  accessibilite_pmr: {
+    fr: 'Signalement accessibilité PMR / poussettes — quartier des Chartrons\nLieu précis : {{lieu}}\nObstacle : bateau manquant / trottoir trop étroit / mobilier gênant / travaux sans cheminement\nPassage impossible en fauteuil ou avec une poussette : oui / non\nItinéraire de contournement existant : oui / non',
+    en: 'Accessibility report (wheelchair / stroller) — Chartrons district\nExact location: {{lieu}}\nObstacle: missing kerb ramp / pavement too narrow / obstructive furniture / works without a path\nImpassable by wheelchair or stroller: yes / no\nAlternative route available: yes / no',
+  },
+  nuisances_sonores: {
+    fr: 'Signalement nuisances sonores — quartier des Chartrons\nLieu précis : {{lieu}}\nType : terrasse / musique / chantier / véhicule\nCréneaux concernés (jours et heures) : \nCaractère répétitif : oui / non',
+    en: 'Noise report — Chartrons district\nExact location: {{lieu}}\nType: terrace / music / building works / vehicle\nTimes concerned (days and hours): \nRepeated: yes / no',
+  },
+  tranquillite_publique: {
+    fr: 'Signalement tranquillité publique — quartier des Chartrons\nLieu précis : {{lieu}}\nSituation observée : \nHoraires habituels : \nSituation urgente : non (si oui, appeler le 17)',
+    en: 'Public order report — Chartrons district\nExact location: {{lieu}}\nObserved situation: \nUsual times: \nUrgent: no (if yes, call 17)',
+  },
+  stationnement_genant: {
+    fr: 'Signalement stationnement gênant — quartier des Chartrons\nLieu précis : {{lieu}}\nSituation : trottoir / passage piéton / piste cyclable / place PMR / aire de livraison\nGêne pour les piétons ou les secours : oui / non\nPlaque relevée (facultatif) : ',
+    en: 'Parking report — Chartrons district\nExact location: {{lieu}}\nSituation: pavement / crossing / cycle lane / disabled bay / loading area\nBlocking pedestrians or emergency access: yes / no\nPlate noted (optional): ',
+  },
+};
+
+function buildCategory(id: ReportSubcategoryId, channel: CivicChannelId): CivicReportCategory {
+  return {
+    id,
+    channel,
+    icon: REPORT_ICONS[id],
+    label: REPORT_SUBCATEGORY_LABELS[id],
+    hint: REPORT_HINTS[id],
+    template: REPORT_TEMPLATES[id],
+  };
+}
+
+/**
+ * Les 7 sous-catégories officielles de signalement, dérivées de la taxonomie partagée :
+ * 4 pour la Mairie, 3 pour la Police Municipale.
+ */
 export const CIVIC_REPORT_CATEGORIES: CivicReportCategory[] = [
-  {
-    id: 'proprete',
-    icon: '🧹',
-    channel: 'mairie',
-    label: { fr: 'Propreté / dépôt sauvage', en: 'Cleanliness / illegal dumping' },
-    hint: {
-      fr: 'Sacs abandonnés, encombrants sur le trottoir, corbeille débordante, souillure.',
-      en: 'Abandoned bags, bulky items on the pavement, overflowing bin, soiling.',
-    },
-    template: {
-      fr: 'Signalement propreté — quartier des Chartrons\nLieu précis : {{lieu}}\nNature : dépôt sauvage / corbeille pleine / souillure\nDepuis quand : \nPhoto disponible : oui / non',
-      en: 'Cleanliness report — Chartrons district\nExact location: {{lieu}}\nIssue: illegal dumping / full bin / soiling\nSince when: \nPhoto available: yes / no',
-    },
-  },
-  {
-    id: 'voirie',
-    icon: '🚧',
-    channel: 'mairie',
-    label: { fr: 'Voirie / trottoir dégradé', en: 'Roads / damaged pavement' },
-    hint: {
-      fr: 'Nid-de-poule, pavé descellé, trottoir dangereux, potelet arraché, grille cassée.',
-      en: 'Pothole, loose cobble, dangerous pavement, broken bollard or grate.',
-    },
-    template: {
-      fr: 'Signalement voirie — quartier des Chartrons\nLieu précis : {{lieu}}\nNature : nid-de-poule / pavé descellé / trottoir dangereux\nRisque piéton ou cycliste : oui / non\nPhoto disponible : oui / non',
-      en: 'Road report — Chartrons district\nExact location: {{lieu}}\nIssue: pothole / loose cobble / dangerous pavement\nRisk to pedestrians or cyclists: yes / no\nPhoto available: yes / no',
-    },
-  },
-  {
-    id: 'eclairage',
-    icon: '💡',
-    channel: 'mairie',
-    label: { fr: 'Éclairage / mobilier urbain', en: 'Street lighting / urban furniture' },
-    hint: {
-      fr: 'Lampadaire éteint, banc cassé, panneau tombé, arbre à élaguer.',
-      en: 'Street light out, broken bench, fallen sign, tree needing pruning.',
-    },
-    template: {
-      fr: 'Signalement éclairage / mobilier — quartier des Chartrons\nLieu précis : {{lieu}}\nNature : lampadaire éteint / banc cassé / panneau tombé\nZone sombre ou dangereuse le soir : oui / non',
-      en: 'Lighting / furniture report — Chartrons district\nExact location: {{lieu}}\nIssue: street light out / broken bench / fallen sign\nDark or unsafe area at night: yes / no',
-    },
-  },
-  {
-    id: 'dechets',
-    icon: '🗑️',
-    channel: 'mairie',
-    label: { fr: 'Bac non collecté / encombrants', en: 'Uncollected bin / bulky waste' },
-    hint: {
-      fr: 'Collecte oubliée, bac endommagé, demande d’enlèvement d’encombrants.',
-      en: 'Missed collection, damaged bin, bulky-waste pickup request.',
-    },
-    template: {
-      fr: 'Signalement déchets — quartier des Chartrons\nAdresse : {{lieu}}\nNature : collecte non effectuée / bac endommagé / encombrants\nDate de la collecte prévue : ',
-      en: 'Waste report — Chartrons district\nAddress: {{lieu}}\nIssue: missed collection / damaged bin / bulky waste\nScheduled collection date: ',
-    },
-  },
-  {
-    id: 'bruit',
-    icon: '🔊',
-    channel: 'police',
-    label: { fr: 'Bruit / nuisance sonore', en: 'Noise nuisance' },
-    hint: {
-      fr: 'Terrasse tardive, musique répétée, chantier hors horaires, deux-roues bruyants.',
-      en: 'Late terrace, repeated music, works outside permitted hours, noisy scooters.',
-    },
-    template: {
-      fr: 'Signalement bruit — quartier des Chartrons\nLieu précis : {{lieu}}\nType : terrasse / musique / chantier / véhicule\nCréneaux concernés (jours et heures) : \nCaractère répétitif : oui / non',
-      en: 'Noise report — Chartrons district\nExact location: {{lieu}}\nType: terrace / music / building works / vehicle\nTimes concerned (days and hours): \nRepeated: yes / no',
-    },
-  },
-  {
-    id: 'stationnement',
-    icon: '🚗',
-    channel: 'police',
-    label: { fr: 'Stationnement gênant', en: 'Obstructive parking' },
-    hint: {
-      fr: 'Véhicule sur trottoir, passage piéton, piste cyclable, place PMR ou aire de livraison.',
-      en: 'Vehicle on the pavement, crossing, cycle lane, disabled bay or loading area.',
-    },
-    template: {
-      fr: 'Signalement stationnement — quartier des Chartrons\nLieu précis : {{lieu}}\nSituation : trottoir / passage piéton / piste cyclable / place PMR\nGêne pour les piétons ou les secours : oui / non',
-      en: 'Parking report — Chartrons district\nExact location: {{lieu}}\nSituation: pavement / crossing / cycle lane / disabled bay\nBlocking pedestrians or emergency access: yes / no',
-    },
-  },
-  {
-    id: 'incivilite',
-    icon: '👥',
-    channel: 'police',
-    label: { fr: 'Incivilité / occupation abusive', en: 'Antisocial behaviour / misuse of space' },
-    hint: {
-      fr: 'Regroupement gênant, dégradation, consommation d’alcool sur la voie publique.',
-      en: 'Disruptive gathering, vandalism, drinking on public property.',
-    },
-    template: {
-      fr: 'Signalement tranquillité — quartier des Chartrons\nLieu précis : {{lieu}}\nSituation observée : \nHoraires habituels : \nSituation urgente : non (si oui, appeler le 17)',
-      en: 'Public order report — Chartrons district\nExact location: {{lieu}}\nObserved situation: \nUsual times: \nUrgent: no (if yes, call 17)',
-    },
-  },
+  ...CIVIC_SUBCATEGORIES.map((id) => buildCategory(id, 'mairie')),
+  ...SAFETY_SUBCATEGORIES.map((id) => buildCategory(id, 'police')),
 ];
 
 export function buildCivicReportText(
