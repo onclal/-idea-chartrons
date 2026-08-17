@@ -94,6 +94,13 @@ export interface CommerceMenuSection {
   items: CommerceMenuItem[];
 }
 
+export interface CommerceSocialLinks {
+  instagram: string | null;
+  facebook: string | null;
+  whatsapp: string | null;
+  website: string | null;
+}
+
 export interface ActeurLocal {
   id: string;
   userId: string;
@@ -116,6 +123,9 @@ export interface ActeurLocal {
   reviewsCount: number | null;
   openingHours: string | null;
   specialite: string | null;
+  pinCode: string | null;
+  merchantEmail: string | null;
+  socialLinks: CommerceSocialLinks;
   createdAt: string;
   updatedAt: string;
 }

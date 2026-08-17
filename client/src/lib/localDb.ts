@@ -6,7 +6,10 @@ import {
   computeTourDeControle,
   createSeedData,
   createUpcomingMarcheChartronsEvents,
+  DEFAULT_MERCHANT_PIN,
+  defaultMerchantEmail,
   defaultRegleForCategory,
+  emptySocialLinks,
   findUserByClientToken,
   generateQrClientCode,
   generateQrVitrineCode,
@@ -18,6 +21,9 @@ import {
   isVipUnlocked,
   normalizeRelaisSettings,
   normalizePlatformSettings,
+  normalizePinCode,
+  normalizeSocialLinks,
+  socialLinksEqual,
   LocalRelaisRetraitStatus,
   normalizeRelaisCreneauType,
   PostStatus,
@@ -151,7 +157,7 @@ class LocalDatabase {
       return { ...user, qrCodeClient: nextQr };
     });
 
-    const acteursLocaux = (data.acteursLocaux ?? []).map((acteur) => {
+    const acteursLocaux: ActeurLocal[] = (data.acteursLocaux ?? []).map((acteur) => {
       const seedMatch = seed.acteursLocaux.find((item) => item.id === acteur.id);
       const mappedLegacy = LEGACY_ACTEUR_CATEGORIES[acteur.categorie];
       const nextCategory = VALID_ACTEUR_CATEGORIES.has(acteur.categorie)
@@ -167,6 +173,17 @@ class LocalDatabase {
       const nextReviews = acteur.reviewsCount ?? seedMatch?.reviewsCount ?? null;
       const nextHours = acteur.openingHours ?? seedMatch?.openingHours ?? null;
       const nextSpecialite = acteur.specialite ?? seedMatch?.specialite ?? null;
+      const nextPin =
+        normalizePinCode(acteur.pinCode) ??
+        normalizePinCode(seedMatch?.pinCode) ??
+        DEFAULT_MERCHANT_PIN;
+      const nextMerchantEmail =
+        acteur.merchantEmail?.trim() ||
+        seedMatch?.merchantEmail ||
+        defaultMerchantEmail(acteur.userId);
+      const nextSocial = acteur.socialLinks
+        ? normalizeSocialLinks(acteur.socialLinks)
+        : normalizeSocialLinks(seedMatch?.socialLinks ?? emptySocialLinks());
       const fallbackRule = seedMatch
         ? { mode: seedMatch.regleFideliteMode, valeur: seedMatch.regleFideliteValeur }
         : defaultRegleForCategory(nextCategory as ActeurLocalCategory);
@@ -184,6 +201,9 @@ class LocalDatabase {
         nextReviews !== acteur.reviewsCount ||
         nextHours !== acteur.openingHours ||
         nextSpecialite !== acteur.specialite ||
+        nextPin !== acteur.pinCode ||
+        nextMerchantEmail !== acteur.merchantEmail ||
+        !socialLinksEqual(nextSocial, acteur.socialLinks) ||
         nextMode !== acteur.regleFideliteMode ||
         nextValeur !== acteur.regleFideliteValeur
       ) {
@@ -202,6 +222,9 @@ class LocalDatabase {
         reviewsCount: nextReviews,
         openingHours: nextHours,
         specialite: nextSpecialite,
+        pinCode: nextPin,
+        merchantEmail: nextMerchantEmail,
+        socialLinks: nextSocial,
         regleFideliteMode: nextMode,
         regleFideliteValeur: nextValeur,
       };
@@ -606,6 +629,9 @@ class LocalDatabase {
       reviewsCount: null,
       openingHours: null,
       specialite: null,
+      pinCode: DEFAULT_MERCHANT_PIN,
+      merchantEmail: this.getById('users', data.userId)?.email ?? defaultMerchantEmail(data.userId),
+      socialLinks: emptySocialLinks(),
       createdAt: now,
       updatedAt: now,
     });

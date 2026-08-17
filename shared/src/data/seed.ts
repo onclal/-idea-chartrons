@@ -6,7 +6,14 @@ import {
   normalizeRelaisCreneauType,
   normalizeRelaisSettings,
 } from '../logic/relais.js';
-import { createCafeMarcheMenu, createDefaultPlatformSettings } from '../logic/commerce.js';
+import {
+  createCafeMarcheMenu,
+  createDefaultPlatformSettings,
+  DEFAULT_MERCHANT_PIN,
+  defaultMerchantEmail,
+  emptySocialLinks,
+  normalizeSocialLinks,
+} from '../logic/commerce.js';
 import { createChartronsPoiActeurs } from './chartronsPois.js';
 import {
   defaultRegleForCategory,
@@ -622,6 +629,17 @@ export function createSeedData(): DatabaseSchema {
           reviewsCount: null,
           openingHours: null,
           specialite: null,
+          pinCode: DEFAULT_MERCHANT_PIN,
+          merchantEmail: defaultMerchantEmail(acteur.userId),
+          socialLinks:
+            acteur.id === 'acteur-2'
+              ? normalizeSocialLinks({
+                  instagram: 'https://www.instagram.com/cafedumarchechartrons/',
+                  facebook: 'https://www.facebook.com/cafedumarchechartrons',
+                  whatsapp: 'https://wa.me/33556481202',
+                  website: 'https://www.cafedumarche-chartrons.fr/',
+                })
+              : emptySocialLinks(),
         };
       }),
       ...createChartronsPoiActeurs(now),

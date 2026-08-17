@@ -1,6 +1,6 @@
 import { ActeurLocalCategory } from '../types/enums.js';
 import type { ActeurLocal } from '../types/models.js';
-import { createCafeMarcheMenu } from '../logic/commerce.js';
+import { createCafeMarcheMenu, DEFAULT_MERCHANT_PIN, defaultMerchantEmail, emptySocialLinks } from '../logic/commerce.js';
 import { defaultRegleForCategory, generateQrVitrineCode } from '../logic/fidelite.js';
 
 export type ChartronsPoiCategory =
@@ -273,6 +273,9 @@ export function chartronsPoiToActeur(poi: ChartronsPoi, now: string): ActeurLoca
     reviewsCount: poi.reviewsCount ?? null,
     openingHours: poi.openingHours ?? null,
     specialite: poi.subcategory,
+    pinCode: DEFAULT_MERCHANT_PIN,
+    merchantEmail: defaultMerchantEmail(ownerForPoi(poi)),
+    socialLinks: emptySocialLinks(),
     createdAt: now,
     updatedAt: now,
   };

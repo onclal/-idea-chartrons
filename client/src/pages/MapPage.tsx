@@ -15,6 +15,7 @@ import { Badge, Button, Card, Loading } from '../components/ui';
 import { PageHelp } from '../components/PageHelp';
 import { AppointmentButton } from '../components/AppointmentButton';
 import { PlaceMeta } from '../components/PlaceMeta';
+import { MerchantSocialSection } from '../components/MerchantSocialSection';
 import { PhoneLink } from '../components/PhoneLink';
 import { FavoriteButton } from '../components/FavoriteButton';
 import { FavoritesDrawer } from '../components/FavoritesDrawer';
@@ -607,6 +608,14 @@ export function MapPage() {
               </div>
               <FavoriteButton place={pinToFavorite(selectedPin)} />
             </div>
+            {selectedActeur && (
+              <MerchantSocialSection
+                acteur={selectedActeur}
+                onUpdated={(updated) =>
+                  setActeurs((list) => list.map((item) => (item.id === updated.id ? updated : item)))
+                }
+              />
+            )}
             {selectedActeur && (
               <div className="mt-3">
                 <AppointmentButton acteur={selectedActeur} />

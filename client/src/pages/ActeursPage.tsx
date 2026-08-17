@@ -14,6 +14,7 @@ import { PageHelp } from '../components/PageHelp';
 import { PhoneLink } from '../components/PhoneLink';
 import { AppointmentButton } from '../components/AppointmentButton';
 import { PlaceMeta } from '../components/PlaceMeta';
+import { MerchantSocialSection } from '../components/MerchantSocialSection';
 import { RestaurantMenu } from '../components/RestaurantMenu';
 import { ContactForm } from '../components/ContactForm';
 import { ActeurCreateForm } from '../components/ActeurCreateForm';
@@ -253,6 +254,12 @@ export function ActeursPage() {
                   <div className="mt-2">
                     <PhoneLink phone={acteur.telephone} />
                   </div>
+                  <MerchantSocialSection
+                    acteur={acteur}
+                    onUpdated={(updated) =>
+                      setActeurs((list) => list.map((item) => (item.id === updated.id ? updated : item)))
+                    }
+                  />
                   <div className="mt-2 space-y-2" onClick={(event) => event.stopPropagation()}>
                     <AppointmentButton acteur={acteur} />
                     <Button

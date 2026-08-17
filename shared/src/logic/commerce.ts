@@ -3,6 +3,7 @@ import type {
   ActeurLocal,
   CommerceMenuItem,
   CommerceMenuSection,
+  CommerceSocialLinks,
   PlatformSettings,
 } from '../types/models.js';
 
@@ -51,6 +52,78 @@ export function sanitizeExternalUrl(value: string | null | undefined): string | 
   } catch {
     return null;
   }
+}
+
+export const DEFAULT_MERCHANT_PIN = '2026';
+
+export function emptySocialLinks(): CommerceSocialLinks {
+  return { instagram: null, facebook: null, whatsapp: null, website: null };
+}
+
+export function defaultMerchantEmail(userId: string): string {
+  if (userId === 'user-1') return 'marie.dupont@chartrons.fr';
+  if (userId === 'user-2') return 'thomas@brocante-chartrons.fr';
+  if (userId === 'user-3') return 'sophie.bernard@chartrons.fr';
+  return 'contact@chartrons.fr';
+}
+
+export function normalizePinCode(value: string | null | undefined): string | null {
+  const digits = String(value ?? '').replace(/\D/g, '').slice(0, 4);
+  return digits.length === 4 ? digits : null;
+}
+
+export function pinCodesMatch(stored: string | null | undefined, input: string): boolean {
+  const expected = normalizePinCode(stored);
+  const given = normalizePinCode(input);
+  return Boolean(expected && given && expected === given);
+}
+
+export function emailsMatch(stored: string | null | undefined, input: string): boolean {
+  const expected = String(stored ?? '').trim().toLowerCase();
+  const given = input.trim().toLowerCase();
+  return Boolean(expected && given && expected === given);
+}
+
+function coerceHttpUrl(value: string): string {
+  const trimmed = value.trim();
+  if (!trimmed) return '';
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  if (trimmed.startsWith('//')) return `https:${trimmed}`;
+  return `https://${trimmed}`;
+}
+
+export function normalizeWhatsAppLink(value: string | null | undefined): string | null {
+  const trimmed = String(value ?? '').trim();
+  if (!trimmed) return null;
+  if (!/^https?:\/\//i.test(trimmed)) {
+    const digits = trimmed.replace(/\D/g, '');
+    if (digits.length >= 8 && digits.length <= 15) {
+      return `https://wa.me/${digits}`;
+    }
+  }
+  return sanitizeExternalUrl(coerceHttpUrl(trimmed));
+}
+
+export function normalizeSocialUrl(value: string | null | undefined): string | null {
+  const trimmed = String(value ?? '').trim();
+  if (!trimmed) return null;
+  return sanitizeExternalUrl(coerceHttpUrl(trimmed));
+}
+
+export function normalizeSocialLinks(
+  input?: Partial<CommerceSocialLinks> | null,
+): CommerceSocialLinks {
+  return {
+    instagram: normalizeSocialUrl(input?.instagram),
+    facebook: normalizeSocialUrl(input?.facebook),
+    whatsapp: normalizeWhatsAppLink(input?.whatsapp),
+    website: normalizeSocialUrl(input?.website),
+  };
+}
+
+export function hasSocialLinks(links?: CommerceSocialLinks | null): boolean {
+  if (!links) return false;
+  return Boolean(links.instagram || links.facebook || links.whatsapp || links.website);
 }
 
 export function normalizeMenuItem(item: Partial<CommerceMenuItem> | null | undefined, index = 0): CommerceMenuItem {
@@ -164,4 +237,18 @@ export function acteurHasMenu(acteur: Pick<ActeurLocal, 'categorie' | 'menu'>): 
 
 export function acteurHasAppointment(acteur: Pick<ActeurLocal, 'appointmentUrl'>): boolean {
   return Boolean(sanitizeExternalUrl(acteur.appointmentUrl));
+}
+
+export function socialLinksEqual(
+  a?: CommerceSocialLinks | null,
+  b?: CommerceSocialLinks | null,
+): boolean {
+  const left = normalizeSocialLinks(a);
+  const right = normalizeSocialLinks(b);
+  return (
+    left.instagram === right.instagram &&
+    left.facebook === right.facebook &&
+    left.whatsapp === right.whatsapp &&
+    left.website === right.website
+  );
 }
