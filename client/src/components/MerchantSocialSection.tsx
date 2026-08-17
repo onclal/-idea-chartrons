@@ -23,9 +23,9 @@ export function MerchantSocialSection({ acteur, onUpdated }: MerchantSocialSecti
         <>
           <Button
             type="button"
-            variant="ghost"
-            size="sm"
-            className="w-full border border-chartrons-beige text-chartrons-olive-dark"
+            variant="secondary"
+            size="md"
+            className="w-full cursor-pointer font-semibold text-chartrons-olive-dark bg-white border-chartrons-sand hover:bg-chartrons-beige hover:border-chartrons-olive/40 hover:text-chartrons-green-dark"
             onClick={() => setOpen(true)}
           >
             {t('acteurs.owner.cta')}

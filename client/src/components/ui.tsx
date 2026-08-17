@@ -10,7 +10,7 @@ export function Card({ children, className = '', onClick }: CardProps) {
   return (
     <div
       onClick={onClick}
-      className={`bg-white/90 backdrop-blur-sm rounded-2xl shadow-card border border-chartrons-beige/80 p-4 ${
+      className={`bg-white rounded-2xl shadow-card border border-chartrons-beige p-4 ${
         onClick
           ? 'cursor-pointer hover:shadow-card-hover transition-all duration-200 active:scale-[0.98]'
           : ''
@@ -130,7 +130,7 @@ export function Button({
     bordeaux: 'bg-chartrons-bordeaux text-white hover:bg-chartrons-bordeaux-light shadow-sm',
     secondary: 'bg-white text-chartrons-olive-dark border border-chartrons-beige hover:bg-chartrons-stone shadow-sm',
     gold: 'bg-chartrons-brass text-chartrons-olive-dark hover:bg-chartrons-brass/90 shadow-sm',
-    ghost: 'bg-transparent text-chartrons-olive hover:bg-chartrons-olive/5',
+    ghost: 'bg-white text-chartrons-olive-dark border border-chartrons-beige hover:bg-chartrons-beige hover:border-chartrons-olive/30',
   };
   const sizes = {
     sm: 'px-3 py-2 text-xs min-h-[36px]',
@@ -140,7 +140,7 @@ export function Button({
 
   return (
     <button
-      className={`inline-flex items-center justify-center gap-2 rounded-xl font-medium transition-all duration-150 active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 ${variants[variant]} ${sizes[size]} ${className}`}
+      className={`inline-flex items-center justify-center gap-2 rounded-xl font-medium cursor-pointer transition-all duration-150 active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 ${variants[variant]} ${sizes[size]} ${className}`}
       {...props}
     >
       {children}
@@ -157,7 +157,7 @@ export function Input({ label, className = '', id, ...props }: InputProps) {
   return (
     <div className="space-y-1.5">
       {label && (
-        <label htmlFor={inputId} className="block text-xs font-semibold text-chartrons-warm-gray uppercase tracking-wide">
+        <label htmlFor={inputId} className="block text-xs font-semibold text-chartrons-olive-dark uppercase tracking-wide">
           {label}
         </label>
       )}
@@ -179,7 +179,7 @@ export function Textarea({ label, className = '', id, ...props }: TextareaProps)
   return (
     <div className="space-y-1.5">
       {label && (
-        <label htmlFor={inputId} className="block text-xs font-semibold text-chartrons-warm-gray uppercase tracking-wide">
+        <label htmlFor={inputId} className="block text-xs font-semibold text-chartrons-olive-dark uppercase tracking-wide">
           {label}
         </label>
       )}
@@ -202,7 +202,7 @@ export function Select({ label, className = '', id, options, ...props }: SelectP
   return (
     <div className="space-y-1.5">
       {label && (
-        <label htmlFor={selectId} className="block text-xs font-semibold text-chartrons-warm-gray uppercase tracking-wide">
+        <label htmlFor={selectId} className="block text-xs font-semibold text-chartrons-olive-dark uppercase tracking-wide">
           {label}
         </label>
       )}
@@ -236,19 +236,19 @@ export function Modal({ open, onClose, title, children, size = 'md' }: ModalProp
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div className="absolute inset-0 bg-chartrons-olive-dark/50 backdrop-blur-sm" onClick={onClose} />
-      <div className={`relative w-full ${width} max-h-[92dvh] overflow-y-auto bg-chartrons-stone rounded-t-3xl sm:rounded-3xl shadow-card-hover mx-auto animate-slide-down`}>
-        <div className="sticky top-0 bg-chartrons-stone/95 backdrop-blur-md px-5 py-4 border-b border-chartrons-beige flex items-center justify-between">
-          <h3 className="text-lg font-bold text-chartrons-bordeaux">{title}</h3>
+      <div className="absolute inset-0 bg-chartrons-olive-dark/20" onClick={onClose} />
+      <div className={`relative w-full ${width} max-h-[92dvh] overflow-y-auto bg-white rounded-t-3xl sm:rounded-3xl shadow-card-hover border border-chartrons-beige mx-auto animate-slide-down`}>
+        <div className="sticky top-0 bg-white px-5 py-4 border-b border-chartrons-beige flex items-center justify-between">
+          <h3 className="text-lg font-bold text-chartrons-olive-dark">{title}</h3>
           <button
             onClick={onClose}
-            className="touch-target w-10 h-10 rounded-full bg-chartrons-beige flex items-center justify-center text-chartrons-warm-gray hover:bg-chartrons-sand transition-colors"
+            className="touch-target w-10 h-10 rounded-full bg-chartrons-beige/80 flex items-center justify-center text-chartrons-olive-dark cursor-pointer hover:bg-chartrons-sand transition-colors"
             aria-label="Close"
           >
             ✕
           </button>
         </div>
-        <div className="p-5 pb-8">{children}</div>
+        <div className="p-5 pb-8 text-chartrons-olive-dark">{children}</div>
       </div>
     </div>
   );

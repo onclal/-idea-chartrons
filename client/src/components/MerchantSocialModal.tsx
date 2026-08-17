@@ -168,7 +168,7 @@ export function MerchantSocialModal({ open, onClose, acteur, onSaved }: Merchant
     <Modal open={open} onClose={onClose} title={title}>
       {step === 'pin' && (
         <form onSubmit={handlePinSubmit} className="space-y-4">
-          <p className="text-sm text-chartrons-warm-gray">{t('acteurs.owner.pinHint', { name: acteur.nomCommerce })}</p>
+          <p className="text-sm text-chartrons-olive-dark/80">{t('acteurs.owner.pinHint', { name: acteur.nomCommerce })}</p>
           <Input
             label={t('acteurs.owner.pinLabel')}
             value={pin}
@@ -183,13 +183,13 @@ export function MerchantSocialModal({ open, onClose, acteur, onSaved }: Merchant
             className="tracking-[0.6em] text-center text-xl font-semibold"
           />
           {pinError ? <p className="text-sm text-chartrons-brick">{pinError}</p> : null}
-          <p className="text-xs text-chartrons-warm-gray">{t('acteurs.owner.demoHint')}</p>
+          <p className="text-xs text-chartrons-olive-dark/70">{t('acteurs.owner.demoHint')}</p>
           <Button type="submit" variant="bordeaux" className="w-full">
             {t('acteurs.owner.unlock')}
           </Button>
           <button
             type="button"
-            className="w-full text-sm text-chartrons-bordeaux underline underline-offset-2"
+            className="w-full text-sm font-semibold text-chartrons-green cursor-pointer underline underline-offset-2 hover:text-chartrons-green-light"
             onClick={() => {
               setStep('forgot');
               setEmailVerified(false);
@@ -205,7 +205,7 @@ export function MerchantSocialModal({ open, onClose, acteur, onSaved }: Merchant
       {step === 'forgot' && (
         <div className="space-y-5">
           <form onSubmit={handleEmailCheck} className="space-y-4">
-            <p className="text-sm text-chartrons-warm-gray">{t('acteurs.owner.forgotHint')}</p>
+            <p className="text-sm text-chartrons-olive-dark/80">{t('acteurs.owner.forgotHint')}</p>
             <Input
               label={t('acteurs.owner.emailLabel')}
               type="email"
@@ -230,7 +230,7 @@ export function MerchantSocialModal({ open, onClose, acteur, onSaved }: Merchant
           </form>
 
           <form onSubmit={handleResetPin} className="space-y-4 pt-2 border-t border-chartrons-beige">
-            <p className="text-sm text-chartrons-warm-gray">{t('acteurs.owner.newPinHint')}</p>
+            <p className="text-sm text-chartrons-olive-dark/80">{t('acteurs.owner.newPinHint')}</p>
             <Input
               label={t('acteurs.owner.newPin')}
               value={newPin}
@@ -255,7 +255,7 @@ export function MerchantSocialModal({ open, onClose, acteur, onSaved }: Merchant
             </Button>
             <button
               type="button"
-              className="w-full text-sm text-chartrons-warm-gray underline underline-offset-2"
+              className="w-full text-sm font-medium text-chartrons-olive-dark cursor-pointer underline underline-offset-2 hover:text-chartrons-green"
               onClick={() => setStep('pin')}
             >
               {t('acteurs.owner.backToPin')}
@@ -266,7 +266,7 @@ export function MerchantSocialModal({ open, onClose, acteur, onSaved }: Merchant
 
       {step === 'edit' && (
         <form onSubmit={handleSaveLinks} className="space-y-4">
-          <p className="text-sm text-chartrons-warm-gray">{t('acteurs.owner.editHint')}</p>
+          <p className="text-sm text-chartrons-olive-dark/80">{t('acteurs.owner.editHint')}</p>
           <Input
             label={t('acteurs.social.instagram')}
             value={instagram}

@@ -565,7 +565,7 @@ export function MapPage() {
       )}
 
       {selectedPin ? (
-        <Card className="!p-0 overflow-hidden">
+        <Card className="!p-0 overflow-hidden bg-white text-chartrons-olive-dark">
           {selectedPin.imageUrl && (
             <img src={selectedPin.imageUrl} alt="" className="w-full h-40 object-cover" />
           )}

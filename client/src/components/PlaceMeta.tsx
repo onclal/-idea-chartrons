@@ -18,12 +18,12 @@ export function PlaceMeta({ rating, reviewsCount, openingHours, specialite }: Pl
         <p className="text-xs font-medium text-chartrons-olive-dark">{specialite}</p>
       ) : null}
       {hasRating ? (
-        <p className="text-xs text-chartrons-brass font-semibold">
+        <p className="text-xs text-chartrons-olive-dark font-semibold">
           ★ {t('acteurs.rating', { rating: rating.toFixed(1), count: reviewsCount ?? 0 })}
         </p>
       ) : null}
       {openingHours ? (
-        <p className="text-xs text-chartrons-warm-gray">
+        <p className="text-xs text-chartrons-olive-dark/75">
           🕒 {t('acteurs.hours')} : {openingHours}
         </p>
       ) : null}

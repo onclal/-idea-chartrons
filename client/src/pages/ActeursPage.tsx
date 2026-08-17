@@ -214,7 +214,7 @@ export function ActeursPage() {
             return (
               <Card
                 key={acteur.id}
-                className="!p-0 overflow-hidden cursor-pointer"
+                className="!p-0 overflow-hidden cursor-pointer bg-white text-chartrons-olive-dark"
                 onClick={() => setExpandedId(isExpanded ? null : acteur.id)}
               >
                 {acteur.photos[0] && (
@@ -237,14 +237,14 @@ export function ActeursPage() {
                     <span className="text-chartrons-warm-gray text-sm">{isExpanded ? '▲' : '▼'}</span>
                   </div>
 
-                  <p className="text-sm text-chartrons-warm-gray mt-2">{acteur.description}</p>
+                  <p className="text-sm text-chartrons-olive-dark/80 mt-2">{acteur.description}</p>
                   <PlaceMeta
                     rating={acteur.rating}
                     reviewsCount={acteur.reviewsCount}
                     openingHours={acteur.openingHours}
                     specialite={acteur.specialite}
                   />
-                  <p className="text-xs text-chartrons-warm-gray/70 mt-2">📍 {acteur.adresse}</p>
+                  <p className="text-xs text-chartrons-olive-dark/70 mt-2">📍 {acteur.adresse}</p>
                   <div className="mt-2">
                     <PhoneLink phone={acteur.telephone} />
                   </div>
