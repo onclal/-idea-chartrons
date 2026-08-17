@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { AgendaEvenement, LocalRelais, PostAnnonce, TourDeControleStats } from '@idea-chartrons/shared';
 import { AdminPageHeader } from '../../components/admin/AdminPageHeader';
-import { Badge, Button, Card, Loading } from '../../components/ui';
+import { Badge, Button, Card, Input, Loading } from '../../components/ui';
 import { useToast } from '../../context/ToastContext';
 import { api } from '../../lib/api';
 import type { ContactMessage } from '../../lib/contact';
@@ -27,6 +27,8 @@ export function AdminDashboardPage() {
   const [relais, setRelais] = useState<LocalRelais[]>([]);
   const [messages, setMessages] = useState<ContactMessage[]>([]);
   const [stats, setStats] = useState<TourDeControleStats | null>(null);
+  const [transactionFee, setTransactionFee] = useState('1');
+  const [savingFee, setSavingFee] = useState(false);
 
   const load = () => {
     setLoading(true);
@@ -36,13 +38,15 @@ export function AdminDashboardPage() {
       api.getRelais(),
       api.getContactMessages(),
       api.getTourDeControle(),
+      api.getPlatformSettings(),
     ])
-      .then(([postsData, eventsData, relaisData, inbox, tour]) => {
+      .then(([postsData, eventsData, relaisData, inbox, tour, platform]) => {
         setPosts(postsData);
         setEvents(eventsData);
         setRelais(relaisData);
         setMessages(inbox);
         setStats(tour);
+        setTransactionFee(String(platform.transactionFee));
       })
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -61,6 +65,24 @@ export function AdminDashboardPage() {
       showToast(err instanceof Error ? err.message : t('common.error'), 'error');
     } finally {
       setResetting(false);
+    }
+  };
+
+  const handleSaveFee = async () => {
+    const nextFee = Number(String(transactionFee).replace(',', '.'));
+    if (!Number.isFinite(nextFee) || nextFee < 0) {
+      showToast(t('adminSpace.fees.invalid'), 'error');
+      return;
+    }
+    setSavingFee(true);
+    try {
+      const saved = await api.updatePlatformSettings({ transactionFee: nextFee });
+      setTransactionFee(String(saved.transactionFee));
+      showToast(t('toast.transactionFeeSaved'));
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : t('common.error'), 'error');
+    } finally {
+      setSavingFee(false);
     }
   };
 
@@ -251,6 +273,35 @@ export function AdminDashboardPage() {
           ))}
         </div>
       </section>
+
+      <Card className="!p-4 lg:!p-5 space-y-3">
+        <div>
+          <h2 className="font-semibold text-chartrons-bordeaux">{t('adminSpace.fees.title')}</h2>
+          <p className="text-sm text-chartrons-warm-gray mt-1">{t('adminSpace.fees.hint')}</p>
+        </div>
+        <div className="flex flex-col sm:flex-row sm:items-end gap-3">
+          <div className="flex-1">
+            <Input
+              type="number"
+              min={0}
+              step="0.10"
+              inputMode="decimal"
+              label={t('adminSpace.fees.amount')}
+              value={transactionFee}
+              onChange={(event) => setTransactionFee(event.target.value)}
+            />
+          </div>
+          <Button
+            type="button"
+            variant="bordeaux"
+            className="w-full sm:w-auto"
+            disabled={savingFee}
+            onClick={handleSaveFee}
+          >
+            {savingFee ? t('common.loading') : t('adminSpace.fees.save')}
+          </Button>
+        </div>
+      </Card>
 
       <section className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6">
         <Card className="!p-4 lg:!p-5">

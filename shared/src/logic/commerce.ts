@@ -1,7 +1,37 @@
 import { ActeurLocalCategory } from '../types/enums.js';
-import type { ActeurLocal, CommerceMenuItem, CommerceMenuSection } from '../types/models.js';
+import type {
+  ActeurLocal,
+  CommerceMenuItem,
+  CommerceMenuSection,
+  PlatformSettings,
+} from '../types/models.js';
 
+export const DEFAULT_TRANSACTION_FEE_EUR = 1;
+export const PLATFORM_SETTINGS_ID = 'default';
 export const DEFAULT_MENU_SECTION_TITLES = ['Entrées', 'Plats', 'Desserts', 'Boissons'] as const;
+
+export function createDefaultPlatformSettings(): PlatformSettings {
+  return {
+    id: PLATFORM_SETTINGS_ID,
+    transactionFee: DEFAULT_TRANSACTION_FEE_EUR,
+  };
+}
+
+export function normalizePlatformSettings(input?: Partial<PlatformSettings> | null): PlatformSettings {
+  const fee = Number(input?.transactionFee);
+  return {
+    id: PLATFORM_SETTINGS_ID,
+    transactionFee:
+      Number.isFinite(fee) && fee >= 0 ? Math.round(fee * 100) / 100 : DEFAULT_TRANSACTION_FEE_EUR,
+    updatedAt: input?.updatedAt,
+  };
+}
+
+export function computeCheckoutTotal(itemPrice: number, transactionFee = DEFAULT_TRANSACTION_FEE_EUR) {
+  const price = Number.isFinite(itemPrice) && itemPrice > 0 ? itemPrice : 0;
+  const fee = Number.isFinite(transactionFee) && transactionFee >= 0 ? transactionFee : DEFAULT_TRANSACTION_FEE_EUR;
+  return { itemPrice: price, transactionFee: fee, total: price + fee };
+}
 
 export function isRestaurantCategory(categorie: ActeurLocalCategory | string): boolean {
   return categorie === ActeurLocalCategory.RestaurationMenus;

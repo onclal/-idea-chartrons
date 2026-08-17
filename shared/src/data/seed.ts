@@ -6,7 +6,7 @@ import {
   normalizeRelaisCreneauType,
   normalizeRelaisSettings,
 } from '../logic/relais.js';
-import { createCafeMarcheMenu } from '../logic/commerce.js';
+import { createCafeMarcheMenu, createDefaultPlatformSettings } from '../logic/commerce.js';
 import {
   defaultRegleForCategory,
   generateQrClientCode,
@@ -302,6 +302,7 @@ export function createSeedData(): DatabaseSchema {
       },
     ],
     relaisSettings: [createDefaultRelaisSettings()],
+    platformSettings: [createDefaultPlatformSettings()],
     relaisCreneaux: generateRelaisCreneaux(),
     localRelais: [
       {

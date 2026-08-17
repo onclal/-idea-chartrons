@@ -51,6 +51,12 @@ export interface RelaisSettings {
   updatedAt?: string;
 }
 
+export interface PlatformSettings {
+  id: string;
+  transactionFee: number;
+  updatedAt?: string;
+}
+
 export interface RelaisCreneau {
   id: string;
   date: string;
@@ -148,6 +154,7 @@ export interface DatabaseSchema {
   localRelais: LocalRelais[];
   relaisCreneaux: RelaisCreneau[];
   relaisSettings: RelaisSettings[];
+  platformSettings: PlatformSettings[];
   acteursLocaux: ActeurLocal[];
   agendaEvenements: AgendaEvenement[];
   cartesFideliteScans: CarteFideliteScan[];

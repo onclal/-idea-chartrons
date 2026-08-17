@@ -13,6 +13,7 @@ import type {
   RelaisCreneau,
   RelaisCreneauType,
   RelaisSettings,
+  PlatformSettings,
   User,
   UserRole,
 } from '@idea-chartrons/shared';
@@ -146,6 +147,9 @@ export const api = {
     withDelay(() => localDb.getCreneaux(type)),
   getAllCreneaux: () => withDelay((): RelaisCreneau[] => localDb.getAllCreneaux()),
   getRelaisSettings: () => withDelay((): RelaisSettings => localDb.getRelaisSettings()),
+  getPlatformSettings: () => withDelay((): PlatformSettings => localDb.getPlatformSettings()),
+  updatePlatformSettings: (patch: Partial<Omit<PlatformSettings, 'id'>>) =>
+    withDelay(() => localDb.updatePlatformSettings(patch)),
   updateRelaisSettings: (patch: Partial<Omit<RelaisSettings, 'id'>>) =>
     withDelay(() => localDb.updateRelaisSettings(patch)),
   setCreneauBlocked: (creneauId: string, blocked: boolean) =>

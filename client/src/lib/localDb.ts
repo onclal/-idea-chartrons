@@ -17,6 +17,7 @@ import {
   isCreneauBookable,
   isVipUnlocked,
   normalizeRelaisSettings,
+  normalizePlatformSettings,
   LocalRelaisRetraitStatus,
   normalizeRelaisCreneauType,
   PostStatus,
@@ -34,6 +35,7 @@ import {
   type LocalRelais,
   type RelaisCreneau,
   type RelaisSettings,
+  type PlatformSettings,
   type User,
   type UserRole,
 } from '@idea-chartrons/shared';
@@ -91,6 +93,10 @@ function compactSchema(data: DatabaseSchema, aggressive = false): DatabaseSchema
 
 function resolveRelaisSettings(data: DatabaseSchema): RelaisSettings {
   return normalizeRelaisSettings(data.relaisSettings?.[0]);
+}
+
+function resolvePlatformSettings(data: DatabaseSchema): PlatformSettings {
+  return normalizePlatformSettings(data.platformSettings?.[0]);
 }
 
 function syncSlots(data: DatabaseSchema, from = new Date()): RelaisCreneau[] {
@@ -251,6 +257,8 @@ class LocalDatabase {
     const localRelais = data.localRelais ?? [];
     const relaisSettings = [resolveRelaisSettings(data)];
     if (!data.relaisSettings?.[0]) changed = true;
+    const platformSettings = [resolvePlatformSettings(data)];
+    if (!data.platformSettings?.[0]) changed = true;
     const relaisCreneaux = syncRelaisCreneauxWindow(
       data.relaisCreneaux ?? [],
       localRelais,
@@ -279,11 +287,12 @@ class LocalDatabase {
       postsAnnonces,
       relaisCreneaux,
       relaisSettings,
+      platformSettings,
       localRelais,
       privilegeConsommations,
     };
     if (changed) this.persist(migrated);
-    return changed ? migrated : { ...data, relaisCreneaux };
+    return changed ? migrated : { ...data, relaisCreneaux, platformSettings };
   }
 
   private persist(data: DatabaseSchema = this.data): void {
@@ -679,6 +688,17 @@ class LocalDatabase {
 
   getRelaisSettings(): RelaisSettings {
     return resolveRelaisSettings(this.data);
+  }
+
+  getPlatformSettings(): PlatformSettings {
+    return resolvePlatformSettings(this.data);
+  }
+
+  updatePlatformSettings(patch: Partial<Omit<PlatformSettings, 'id'>>): PlatformSettings {
+    const next = normalizePlatformSettings({ ...this.getPlatformSettings(), ...patch });
+    this.data = { ...this.data, platformSettings: [next] };
+    this.persist();
+    return this.getPlatformSettings();
   }
 
   updateRelaisSettings(patch: Partial<Omit<RelaisSettings, 'id'>>): RelaisSettings {

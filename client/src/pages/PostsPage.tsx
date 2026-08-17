@@ -15,7 +15,6 @@ import { useToast } from '../context/ToastContext';
 import { matchesSearch, useSearch } from '../context/SearchContext';
 import { api } from '../lib/api';
 import { bookingErrorMessage } from '../lib/bookingErrors';
-import { formatEuro } from '../lib/format';
 import { getSponsoredPostId, pinSponsoredPost } from '../lib/sponsoredFeed';
 
 const FILTER_TYPES = [
@@ -29,7 +28,7 @@ const FILTER_TYPES = [
 type FilterType = (typeof FILTER_TYPES)[number];
 
 export function PostsPage() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { query } = useSearch();
   const { currentUserId } = useAuth();
   const { showToast } = useToast();
@@ -250,7 +249,7 @@ export function PostsPage() {
                           className="w-full"
                           onClick={() => setCheckoutPost(post)}
                         >
-                          {t('posts.buyOnline')}
+                          🔒 {t('posts.buyOnline')}
                         </Button>
                       )}
                     {post.statut !== 'Dépôt_Local' && post.statut !== 'Clôturé' && (
@@ -316,9 +315,12 @@ export function PostsPage() {
       <CheckoutModal
         open={!!checkoutPost}
         post={checkoutPost}
+        sellerName={
+          checkoutPost ? users.find((user) => user.id === checkoutPost.auteurId)?.nom : undefined
+        }
         onClose={() => setCheckoutPost(null)}
-        onConfirm={(_post, total) => {
-          showToast(t('toast.purchaseConfirmed', { total: formatEuro(total, i18n.language) }));
+        onConfirm={(_post, _total, orderId) => {
+          showToast(t('toast.purchaseConfirmed', { orderId }));
         }}
       />
 
