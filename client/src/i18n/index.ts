@@ -227,6 +227,8 @@ const resources = {
         appointment: {
           cta: 'Prendre rendez-vous',
         },
+        rating: '{{rating}} · {{count}} avis',
+        hours: 'Horaires',
       },
       map: {
         title: 'Carte interactive',
@@ -1463,6 +1465,8 @@ const resources = {
         appointment: {
           cta: 'Book an appointment',
         },
+        rating: '{{rating}} · {{count}} reviews',
+        hours: 'Opening hours',
       },
       map: {
         title: 'Interactive map',

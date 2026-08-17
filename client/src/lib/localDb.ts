@@ -163,6 +163,10 @@ class LocalDatabase {
       const nextTel = acteur.telephone ?? seedMatch?.telephone ?? null;
       const nextMenu = acteur.menu ?? seedMatch?.menu ?? null;
       const nextAppointment = acteur.appointmentUrl ?? seedMatch?.appointmentUrl ?? null;
+      const nextRating = acteur.rating ?? seedMatch?.rating ?? null;
+      const nextReviews = acteur.reviewsCount ?? seedMatch?.reviewsCount ?? null;
+      const nextHours = acteur.openingHours ?? seedMatch?.openingHours ?? null;
+      const nextSpecialite = acteur.specialite ?? seedMatch?.specialite ?? null;
       const fallbackRule = seedMatch
         ? { mode: seedMatch.regleFideliteMode, valeur: seedMatch.regleFideliteValeur }
         : defaultRegleForCategory(nextCategory as ActeurLocalCategory);
@@ -176,6 +180,10 @@ class LocalDatabase {
         nextTel !== acteur.telephone ||
         nextMenu !== acteur.menu ||
         nextAppointment !== acteur.appointmentUrl ||
+        nextRating !== acteur.rating ||
+        nextReviews !== acteur.reviewsCount ||
+        nextHours !== acteur.openingHours ||
+        nextSpecialite !== acteur.specialite ||
         nextMode !== acteur.regleFideliteMode ||
         nextValeur !== acteur.regleFideliteValeur
       ) {
@@ -190,6 +198,10 @@ class LocalDatabase {
         telephone: nextTel,
         menu: nextMenu,
         appointmentUrl: nextAppointment,
+        rating: nextRating,
+        reviewsCount: nextReviews,
+        openingHours: nextHours,
+        specialite: nextSpecialite,
         regleFideliteMode: nextMode,
         regleFideliteValeur: nextValeur,
       };
@@ -590,6 +602,10 @@ class LocalDatabase {
       regleFideliteValeur: rule.valeur,
       menu: data.menu ?? null,
       appointmentUrl: data.appointmentUrl?.trim() || null,
+      rating: null,
+      reviewsCount: null,
+      openingHours: null,
+      specialite: null,
       createdAt: now,
       updatedAt: now,
     });

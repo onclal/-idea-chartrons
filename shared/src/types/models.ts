@@ -112,6 +112,10 @@ export interface ActeurLocal {
   regleFideliteValeur: number;
   menu: CommerceMenuSection[] | null;
   appointmentUrl: string | null;
+  rating: number | null;
+  reviewsCount: number | null;
+  openingHours: string | null;
+  specialite: string | null;
   createdAt: string;
   updatedAt: string;
 }

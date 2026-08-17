@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import {
   ActeurLocalCategory,
   CHARTRONS_MAP_CENTER,
+  culturePlacePois,
   hasCoordinates,
   LOCAL_RELAIS_PHONE,
   STATIC_MAP_POIS,
@@ -12,6 +13,8 @@ import {
 } from '@idea-chartrons/shared';
 import { Badge, Button, Card, Loading } from '../components/ui';
 import { PageHelp } from '../components/PageHelp';
+import { AppointmentButton } from '../components/AppointmentButton';
+import { PlaceMeta } from '../components/PlaceMeta';
 import { PhoneLink } from '../components/PhoneLink';
 import { FavoriteButton } from '../components/FavoriteButton';
 import { FavoritesDrawer } from '../components/FavoritesDrawer';
@@ -158,12 +161,18 @@ export function MapPage() {
       id: acteur.id,
       kind: acteurKind(acteur),
       title: acteur.nomCommerce,
-      subtitle: t(`acteurs.categories.${acteur.categorie}`),
+      subtitle: acteur.specialite || t(`acteurs.categories.${acteur.categorie}`),
       adresse: acteur.adresse,
       latitude: acteur.latitude,
       longitude: acteur.longitude,
-      href: acteurHref(),
+      href: acteur.categorie === ActeurLocalCategory.TourismeConciergerie ? undefined : acteurHref(),
       telephone: acteur.telephone,
+      imageUrl: acteur.photos[0],
+      rating: acteur.rating,
+      reviewsCount: acteur.reviewsCount,
+      openingHours: acteur.openingHours,
+      specialite: acteur.specialite,
+      appointmentUrl: acteur.appointmentUrl,
     }));
 
     const fromEvents: MapPin[] = events.filter(hasCoordinates).map((event) => ({
@@ -189,7 +198,22 @@ export function MapPage() {
       telephone: poi.telephone ?? (poi.kind === 'relais' ? LOCAL_RELAIS_PHONE : null),
     }));
 
-    return [...fromActeurs, ...fromEvents, ...fromPois];
+    const fromCulture: MapPin[] = culturePlacePois().map((poi) => ({
+      id: poi.id,
+      kind: poi.kind,
+      title: poi.title,
+      subtitle: poi.subtitle,
+      adresse: poi.adresse,
+      latitude: poi.latitude,
+      longitude: poi.longitude,
+      telephone: poi.telephone,
+      imageUrl: poi.imageUrl,
+      rating: poi.rating,
+      reviewsCount: poi.reviewsCount,
+      openingHours: poi.openingHours,
+    }));
+
+    return [...fromActeurs, ...fromEvents, ...fromPois, ...fromCulture];
   }, [acteurs, events, t]);
 
   const favoriteIds = useMemo(() => favorites.map((place) => place.id), [favorites]);
@@ -235,6 +259,11 @@ export function MapPage() {
     const fromFav = orderedFavorites.find((place) => place.id === selectedId);
     return fromFav ? favoriteToPin(fromFav) : null;
   }, [allPins, orderedFavorites, selectedId]);
+
+  const selectedActeur = useMemo(
+    () => acteurs.find((acteur) => acteur.id === selectedPin?.id) ?? null,
+    [acteurs, selectedPin],
+  );
 
   const visiblePins = useMemo(() => {
     const source = showRoute
@@ -550,34 +579,54 @@ export function MapPage() {
       )}
 
       {selectedPin ? (
-        <Card className="!p-4">
-          <div className="flex items-start justify-between gap-2">
-            <div className="min-w-0">
-              <h3 className="font-semibold text-chartrons-olive-dark">{selectedPin.title}</h3>
-              <div className="mt-1.5">
-                <Badge variant="olive">{selectedPin.subtitle}</Badge>
+        <Card className="!p-0 overflow-hidden">
+          {selectedPin.imageUrl && (
+            <img src={selectedPin.imageUrl} alt="" className="w-full h-40 object-cover" />
+          )}
+          <div className="p-4">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <h3 className="font-semibold text-chartrons-olive-dark">{selectedPin.title}</h3>
+                <div className="mt-1.5">
+                  <Badge variant="olive">{selectedPin.subtitle}</Badge>
+                </div>
+                <PlaceMeta
+                  rating={selectedPin.rating}
+                  reviewsCount={selectedPin.reviewsCount}
+                  openingHours={selectedPin.openingHours}
+                  specialite={
+                    selectedPin.specialite && selectedPin.specialite !== selectedPin.subtitle
+                      ? selectedPin.specialite
+                      : null
+                  }
+                />
+                <p className="text-xs text-chartrons-warm-gray mt-2">📍 {selectedPin.adresse}</p>
+                <div className="mt-1">
+                  <PhoneLink phone={selectedPin.telephone} />
+                </div>
               </div>
-              <p className="text-xs text-chartrons-warm-gray mt-2">📍 {selectedPin.adresse}</p>
-              <div className="mt-1">
-                <PhoneLink phone={selectedPin.telephone} />
-              </div>
+              <FavoriteButton place={pinToFavorite(selectedPin)} />
             </div>
-            <FavoriteButton place={pinToFavorite(selectedPin)} />
-          </div>
-          <div className="flex flex-wrap gap-2 mt-3">
-            <DirectionsButton latitude={selectedPin.latitude} longitude={selectedPin.longitude} />
-            <ShareButton
-              title={selectedPin.title}
-              text={placeShareText(selectedPin)}
-              url={appUrl(selectedSharePath)}
-            />
-            {selectedPin.href && (
-              <Link to={selectedPin.href} className="flex-1">
-                <Button type="button" size="sm" variant="secondary" className="w-full">
-                  {t('map.seeMore')}
-                </Button>
-              </Link>
+            {selectedActeur && (
+              <div className="mt-3">
+                <AppointmentButton acteur={selectedActeur} />
+              </div>
             )}
+            <div className="flex flex-wrap gap-2 mt-3">
+              <DirectionsButton latitude={selectedPin.latitude} longitude={selectedPin.longitude} />
+              <ShareButton
+                title={selectedPin.title}
+                text={placeShareText(selectedPin)}
+                url={appUrl(selectedSharePath)}
+              />
+              {selectedPin.href && (
+                <Link to={selectedPin.href} className="flex-1">
+                  <Button type="button" size="sm" variant="secondary" className="w-full">
+                    {t('map.seeMore')}
+                  </Button>
+                </Link>
+              )}
+            </div>
           </div>
         </Card>
       ) : (

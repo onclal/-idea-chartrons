@@ -6,7 +6,6 @@ import {
   DIRECTORY_CATEGORIES,
   hasQrVitrine,
   isRestaurantCategory,
-  isServiceCategory,
   type ActeurLocal,
   type User,
 } from '@idea-chartrons/shared';
@@ -14,6 +13,7 @@ import { Badge, Button, Card, EmptyState, Loading, Select } from '../components/
 import { PageHelp } from '../components/PageHelp';
 import { PhoneLink } from '../components/PhoneLink';
 import { AppointmentButton } from '../components/AppointmentButton';
+import { PlaceMeta } from '../components/PlaceMeta';
 import { RestaurantMenu } from '../components/RestaurantMenu';
 import { ContactForm } from '../components/ContactForm';
 import { ActeurCreateForm } from '../components/ActeurCreateForm';
@@ -74,7 +74,8 @@ export function ActeursPage() {
           matchesSearch(a.nomCommerce, query) ||
           matchesSearch(a.description, query) ||
           matchesSearch(a.adresse, query) ||
-          matchesSearch(a.telephone ?? '', query);
+          matchesSearch(a.telephone ?? '', query) ||
+          matchesSearch(a.specialite ?? '', query);
         return matchesCategory && matchesQuery;
       }),
     [directoryActeurs, query, categoryFilter],
@@ -242,12 +243,18 @@ export function ActeursPage() {
                   </div>
 
                   <p className="text-sm text-chartrons-warm-gray mt-2">{acteur.description}</p>
+                  <PlaceMeta
+                    rating={acteur.rating}
+                    reviewsCount={acteur.reviewsCount}
+                    openingHours={acteur.openingHours}
+                    specialite={acteur.specialite}
+                  />
                   <p className="text-xs text-chartrons-warm-gray/70 mt-2">📍 {acteur.adresse}</p>
                   <div className="mt-2">
                     <PhoneLink phone={acteur.telephone} />
                   </div>
                   <div className="mt-2 space-y-2" onClick={(event) => event.stopPropagation()}>
-                    {isServiceCategory(acteur.categorie) && <AppointmentButton acteur={acteur} />}
+                    <AppointmentButton acteur={acteur} />
                     <Button
                       variant="ghost"
                       size="md"

@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { MapContainer, Marker, Polyline, Popup, TileLayer, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { CHARTRONS_MAP_CENTER } from '@idea-chartrons/shared';
+import { CHARTRONS_BOUNDING_BOX, CHARTRONS_MAP_CENTER } from '@idea-chartrons/shared';
 import { toTelHref } from '../lib/phone';
 
 export type MapPinKind = 'commerce' | 'sante' | 'tourisme' | 'relais' | 'marche' | 'event';
@@ -17,6 +17,12 @@ export interface MapPin {
   longitude: number;
   href?: string;
   telephone?: string | null;
+  imageUrl?: string;
+  rating?: number | null;
+  reviewsCount?: number | null;
+  openingHours?: string | null;
+  specialite?: string | null;
+  appointmentUrl?: string | null;
 }
 
 const PIN_STYLE: Record<MapPinKind, { color: string; emoji: string }> = {
@@ -149,6 +155,12 @@ export function NeighborhoodMap({
     <MapContainer
       center={[CHARTRONS_MAP_CENTER.latitude, CHARTRONS_MAP_CENTER.longitude]}
       zoom={15}
+      minZoom={14}
+      maxBounds={[
+        [CHARTRONS_BOUNDING_BOX.sw.lat, CHARTRONS_BOUNDING_BOX.sw.lng],
+        [CHARTRONS_BOUNDING_BOX.ne.lat, CHARTRONS_BOUNDING_BOX.ne.lng],
+      ]}
+      maxBoundsViscosity={0.8}
       scrollWheelZoom
       className="h-full w-full rounded-2xl"
       attributionControl

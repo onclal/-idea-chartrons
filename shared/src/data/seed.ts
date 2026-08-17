@@ -7,6 +7,7 @@ import {
   normalizeRelaisSettings,
 } from '../logic/relais.js';
 import { createCafeMarcheMenu, createDefaultPlatformSettings } from '../logic/commerce.js';
+import { createChartronsPoiActeurs } from './chartronsPois.js';
 import {
   defaultRegleForCategory,
   generateQrClientCode,
@@ -600,24 +601,31 @@ export function createSeedData(): DatabaseSchema {
 
   return {
     ...seed,
-    acteursLocaux: seed.acteursLocaux.map((acteur): ActeurLocal => {
-      const rule =
-        acteur.id === 'acteur-2'
-          ? { mode: FideliteRegleMode.Visite, valeur: 5 }
-          : defaultRegleForCategory(acteur.categorie);
-      return {
-        ...acteur,
-        regleFideliteMode: rule.mode,
-        regleFideliteValeur: rule.valeur,
-        menu: acteur.id === 'acteur-2' ? createCafeMarcheMenu() : null,
-        appointmentUrl:
-          acteur.id === 'acteur-5'
-            ? 'https://www.doctolib.fr/'
-            : acteur.id === 'acteur-10'
-              ? 'https://www.planity.com/'
-              : null,
-      };
-    }),
+    acteursLocaux: [
+      ...seed.acteursLocaux.map((acteur): ActeurLocal => {
+        const rule =
+          acteur.id === 'acteur-2'
+            ? { mode: FideliteRegleMode.Visite, valeur: 5 }
+            : defaultRegleForCategory(acteur.categorie);
+        return {
+          ...acteur,
+          regleFideliteMode: rule.mode,
+          regleFideliteValeur: rule.valeur,
+          menu: acteur.id === 'acteur-2' ? createCafeMarcheMenu() : null,
+          appointmentUrl:
+            acteur.id === 'acteur-5'
+              ? 'https://www.doctolib.fr/'
+              : acteur.id === 'acteur-10'
+                ? 'https://www.planity.com/'
+                : null,
+          rating: null,
+          reviewsCount: null,
+          openingHours: null,
+          specialite: null,
+        };
+      }),
+      ...createChartronsPoiActeurs(now),
+    ],
     relaisCreneaux: syncRelaisCreneauxWindow(
       seed.relaisCreneaux,
       seed.localRelais,

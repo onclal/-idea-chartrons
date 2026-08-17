@@ -162,6 +162,6 @@ export function acteurHasMenu(acteur: Pick<ActeurLocal, 'categorie' | 'menu'>): 
   return isRestaurantCategory(acteur.categorie) && normalizeMenu(acteur.menu).some((section) => section.items.length > 0);
 }
 
-export function acteurHasAppointment(acteur: Pick<ActeurLocal, 'categorie' | 'appointmentUrl'>): boolean {
-  return isServiceCategory(acteur.categorie) && Boolean(sanitizeExternalUrl(acteur.appointmentUrl));
+export function acteurHasAppointment(acteur: Pick<ActeurLocal, 'appointmentUrl'>): boolean {
+  return Boolean(sanitizeExternalUrl(acteur.appointmentUrl));
 }
