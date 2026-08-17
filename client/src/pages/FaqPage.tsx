@@ -1,127 +1,162 @@
 import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ContactForm } from '../components/ContactForm';
 import { Button } from '../components/ui';
-
-const FAQ_TABS = ['relais', 'posts', 'fidelite', 'association', 'technique'] as const;
-type FaqTab = (typeof FAQ_TABS)[number];
-
-interface FaqItem {
-  q: string;
-  a: string;
-}
-
-interface FaqGroup {
-  label: string;
-  items: FaqItem[];
-}
+import { FAQ_AUDIENCES, FAQ_PAGE, type FaqAudienceId } from '../data/faq';
+import { loc } from '../lib/locale';
 
 export function FaqPage() {
-  const { t } = useTranslation();
-  const [tab, setTab] = useState<FaqTab>('relais');
-  const [openKey, setOpenKey] = useState('0-0');
+  const { t, i18n } = useTranslation();
+  const lang = i18n.language;
+  const [tab, setTab] = useState<FaqAudienceId>('habitants');
+  const [openId, setOpenId] = useState<string>(FAQ_AUDIENCES[0].items[0].id);
   const [contactOpen, setContactOpen] = useState(false);
 
-  const groups = useMemo(() => {
-    const grouped = t(`faq.sections.${tab}.groups`, { returnObjects: true });
-    if (Array.isArray(grouped) && grouped.length > 0) {
-      return grouped as FaqGroup[];
-    }
-    const raw = t(`faq.sections.${tab}.items`, { returnObjects: true });
-    const items = Array.isArray(raw) ? (raw as FaqItem[]) : [];
-    return items.length > 0 ? [{ label: '', items }] : [];
-  }, [t, tab]);
+  const audience = useMemo(
+    () => FAQ_AUDIENCES.find((section) => section.id === tab) ?? FAQ_AUDIENCES[0],
+    [tab],
+  );
 
-  const handleTab = (next: FaqTab) => {
+  const handleTab = (next: FaqAudienceId) => {
     setTab(next);
-    setOpenKey('0-0');
+    const nextAudience = FAQ_AUDIENCES.find((section) => section.id === next);
+    setOpenId(nextAudience?.items[0]?.id ?? '');
   };
+
+  const isMerchantTab = audience.id === 'commercants';
 
   return (
     <div className="animate-fade-in space-y-5">
       <header>
         <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-chartrons-brass mb-2">
-          {t('faq.kicker')}
+          {loc(lang, FAQ_PAGE.kicker)}
         </p>
-        <h1 className="text-2xl sm:text-3xl font-bold text-chartrons-bordeaux leading-tight">
-          {t('faq.title')}
+        <h1 className="text-2xl sm:text-3xl font-bold text-chartrons-green-dark leading-tight">
+          {loc(lang, FAQ_PAGE.title)}
         </h1>
-        <p className="text-sm text-chartrons-warm-gray mt-2 leading-relaxed">{t('faq.subtitle')}</p>
+        <p className="text-sm text-chartrons-warm-gray mt-2 leading-relaxed">
+          {loc(lang, FAQ_PAGE.subtitle)}
+        </p>
       </header>
 
       <div
-        className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 -mx-1 px-1"
+        className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-1 rounded-2xl bg-chartrons-beige/60 border border-chartrons-beige"
         role="tablist"
-        aria-label={t('faq.title')}
+        aria-label={loc(lang, FAQ_PAGE.title)}
       >
-        {FAQ_TABS.map((key) => {
-          const active = tab === key;
+        {FAQ_AUDIENCES.map((section) => {
+          const active = tab === section.id;
           return (
             <button
-              key={key}
+              key={section.id}
               type="button"
               role="tab"
               aria-selected={active}
-              onClick={() => handleTab(key)}
-              className={`shrink-0 touch-target px-3.5 py-2.5 rounded-full text-xs font-semibold border transition-all ${
+              onClick={() => handleTab(section.id)}
+              className={`flex items-center justify-center gap-2 min-h-[52px] px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
                 active
-                  ? 'bg-chartrons-bordeaux text-white border-chartrons-bordeaux shadow-sm'
-                  : 'bg-white text-chartrons-olive-dark border-chartrons-beige'
+                  ? section.id === 'commercants'
+                    ? 'bg-chartrons-green text-white shadow-card'
+                    : 'bg-chartrons-green-dark text-white shadow-card'
+                  : 'bg-transparent text-chartrons-olive-dark hover:bg-white/80'
               }`}
             >
-              {t(`faq.sections.${key}.label`)}
+              <span aria-hidden>{section.icon}</span>
+              {loc(lang, section.label)}
             </button>
           );
         })}
       </div>
 
-      <div className="space-y-5" role="tabpanel">
-        {groups.map((group, groupIndex) => (
-          <div key={`${tab}-${group.label || groupIndex}`} className="space-y-2">
-            {group.label ? (
-              <h2 className="text-sm font-bold uppercase tracking-wide text-chartrons-olive px-1">
-                {group.label}
-              </h2>
-            ) : null}
-            {group.items.map((item, index) => {
-              const key = `${groupIndex}-${index}`;
-              const open = openKey === key;
-              return (
-                <div
-                  key={item.q}
-                  className="rounded-2xl border border-chartrons-beige bg-white/90 shadow-card overflow-hidden"
+      <section
+        className={`rounded-2xl border p-4 sm:p-5 ${
+          isMerchantTab
+            ? 'border-chartrons-brass/40 bg-gradient-to-br from-chartrons-brass/12 to-white'
+            : 'border-chartrons-green/20 bg-gradient-to-br from-chartrons-green/8 to-white'
+        }`}
+        role="tabpanel"
+        aria-labelledby={`faq-audience-${audience.id}`}
+      >
+        <p
+          id={`faq-audience-${audience.id}`}
+          className="text-[11px] font-semibold uppercase tracking-[0.16em] text-chartrons-green"
+        >
+          <span aria-hidden className="mr-1.5">
+            {audience.icon}
+          </span>
+          {loc(lang, audience.kicker)}
+        </p>
+        <p className="text-sm text-chartrons-olive-dark mt-2 leading-relaxed">
+          {loc(lang, audience.intro)}
+        </p>
+      </section>
+
+      <div className="space-y-2">
+        {audience.items.map((item) => {
+          const open = openId === item.id;
+          const panelId = `faq-panel-${item.id}`;
+          const buttonId = `faq-button-${item.id}`;
+          return (
+            <div
+              key={item.id}
+              className={`rounded-2xl border bg-white/95 shadow-card overflow-hidden transition-colors ${
+                open ? 'border-chartrons-green/35' : 'border-chartrons-beige'
+              }`}
+            >
+              <button
+                id={buttonId}
+                type="button"
+                onClick={() => setOpenId(open ? '' : item.id)}
+                className="w-full flex items-center gap-3 px-4 py-3.5 min-h-[52px] text-left"
+                aria-expanded={open}
+                aria-controls={panelId}
+              >
+                <span className="flex-1 text-sm font-semibold text-chartrons-olive-dark leading-snug">
+                  {loc(lang, item.q)}
+                </span>
+                <span
+                  className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-lg font-bold transition-colors ${
+                    open
+                      ? 'bg-chartrons-green text-white'
+                      : 'bg-chartrons-beige text-chartrons-green'
+                  }`}
+                  aria-hidden
                 >
-                  <button
-                    type="button"
-                    onClick={() => setOpenKey(open ? '' : key)}
-                    className="w-full flex items-center gap-3 px-4 py-3.5 min-h-[52px] text-left"
-                    aria-expanded={open}
-                  >
-                    <span className="flex-1 text-sm font-semibold text-chartrons-olive-dark leading-snug">
-                      {item.q}
-                    </span>
-                    <span
-                      className="shrink-0 w-8 h-8 rounded-full bg-chartrons-beige text-chartrons-bordeaux flex items-center justify-center text-lg font-bold"
-                      aria-hidden
-                    >
-                      {open ? '−' : '+'}
-                    </span>
-                  </button>
-                  {open && (
-                    <div className="px-4 pb-4 pt-0">
-                      <p className="text-sm text-chartrons-warm-gray leading-relaxed whitespace-pre-line">
-                        {item.a}
-                      </p>
-                    </div>
-                  )}
+                  {open ? '−' : '+'}
+                </span>
+              </button>
+              <div
+                id={panelId}
+                role="region"
+                aria-labelledby={buttonId}
+                className={`grid transition-[grid-template-rows] duration-200 ease-out ${
+                  open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+                }`}
+              >
+                <div className="overflow-hidden">
+                  <p className="px-4 pb-4 text-sm text-chartrons-warm-gray leading-relaxed">
+                    {loc(lang, item.a)}
+                  </p>
                 </div>
-              );
-            })}
-          </div>
-        ))}
+              </div>
+            </div>
+          );
+        })}
       </div>
 
-      <div className="rounded-2xl bg-gradient-to-br from-chartrons-bordeaux to-chartrons-olive-dark p-4 sm:p-5 text-white">
+      <Link
+        to={audience.cta.to}
+        className={`flex items-center justify-center min-h-[52px] px-4 rounded-2xl text-sm font-semibold shadow-card transition-colors ${
+          isMerchantTab
+            ? 'bg-chartrons-brass text-chartrons-green-dark hover:bg-chartrons-gold'
+            : 'bg-chartrons-green text-white hover:bg-chartrons-green-light'
+        }`}
+      >
+        {loc(lang, audience.cta.label)}
+      </Link>
+
+      <div className="rounded-2xl bg-gradient-to-br from-chartrons-green to-chartrons-green-dark p-4 sm:p-5 text-white">
         <p className="font-semibold">{t('faq.stillStuck')}</p>
         <p className="text-sm text-white/80 mt-1 leading-relaxed">{t('faq.stillStuckHint')}</p>
         <Button

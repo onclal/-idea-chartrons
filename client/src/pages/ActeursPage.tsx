@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   DIRECTORY_CATEGORIES,
@@ -32,7 +32,8 @@ export function ActeursPage() {
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('all');
-  const [showCreate, setShowCreate] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [showCreate, setShowCreate] = useState(searchParams.get('referencer') === '1');
   const [generatingQrId, setGeneratingQrId] = useState<string | null>(null);
   const [contactContext, setContactContext] = useState<string | null>(null);
 
@@ -51,6 +52,19 @@ export function ActeursPage() {
   useEffect(() => {
     loadActeurs();
   }, [currentUserId]);
+
+  useEffect(() => {
+    if (searchParams.get('referencer') === '1') setShowCreate(true);
+  }, [searchParams]);
+
+  const closeCreateForm = () => {
+    setShowCreate(false);
+    if (searchParams.has('referencer')) {
+      const next = new URLSearchParams(searchParams);
+      next.delete('referencer');
+      setSearchParams(next, { replace: true });
+    }
+  };
 
   const filteredActeurs = useMemo(
     () =>
@@ -227,7 +241,7 @@ export function ActeursPage() {
 
       <ActeurCreateForm
         open={showCreate}
-        onClose={() => setShowCreate(false)}
+        onClose={closeCreateForm}
         onCreated={loadActeurs}
       />
 

@@ -208,7 +208,7 @@ const resources = {
           Tourisme_Conciergeries: 'Tourisme & Conciergeries',
         },
         create: {
-          button: 'Inscrire mon activité',
+          button: 'Référencer mon commerce',
           title: 'Rejoindre l’annuaire',
           hint: 'Commerçants, artisans et professionnels apparaissent dans l’annuaire avec ou sans QR code vitrine. Le QR reste optionnel : générez-le plus tard pour activer la fidélité.',
           nom: 'Nom de l’activité',
@@ -866,147 +866,10 @@ const resources = {
       },
       faq: {
         kicker: 'Aide & questions',
-        title: 'FAQ complète',
-        subtitle: 'Les réponses aux questions les plus fréquentes sur le Local Relais, les annonces, les points fidélité, la vie associative et l’application.',
+        title: 'FAQ IDÉA CHARTRONS',
+        subtitle: 'Habitants, visiteurs et commerçants : avis, Click & Collect VIP, ardoise du jour et formule Pro.',
         stillStuck: 'Vous ne trouvez pas votre réponse ?',
         stillStuckHint: 'Écrivez-nous : un bénévol de l’association vous répondra.',
-        sections: {
-          relais: {
-            label: 'Utilisation du Local Relais',
-            items: [
-              {
-                q: 'Où se trouve le Local Relais ?',
-                a: 'Le local physique est situé 26 place Jean Jaques Rabaud. Il est ouvert du lundi au vendredi de 10h à 19h, et le samedi de 10h à 13h.',
-              },
-              {
-                q: 'Comment déposer un objet ?',
-                a: 'Publiez d’abord une annonce, puis choisissez « Proposer au Dépôt Local ». Réservez un créneau, apportez l’objet au local pendant les horaires d’ouverture, et confirmez le dépôt auprès du bénévol présent.',
-              },
-              {
-                q: 'À quoi sert le QR code ?',
-                a: 'Après le dépôt, un QR code de validation est généré. Il identifie l’objet. La personne qui retire doit le présenter au local pour récupérer l’annonce en toute sécurité.',
-              },
-              {
-                q: 'Comment retirer un objet ?',
-                a: 'Lorsque le statut passe à « Disponible au local », réservez un créneau de retrait. Présentez-vous avec le QR code pendant votre créneau : le bénévol vérifie le code et vous remet l’objet.',
-              },
-            ],
-          },
-          posts: {
-            label: 'Comment poster une annonce',
-            items: [
-              {
-                q: 'Quels sont les différents modes d\'achat sur IDÉA Chartrons ?',
-                a: 'Sur les annonces de vente, vous avez trois choix :\n\n1. Remise en mains propres directe — 100 % gratuit, vous organisez l’échange avec le voisin.\n2. Dépôt au Local Relais — +1,00 € pour les frais de garde et de conciergerie.\n3. Paiement en ligne sécurisé — +1,00 € pour la garantie acheteur et les frais de transaction.',
-              },
-              {
-                q: 'Quels sont les tarifs pour les commerçants et la mise en avant ?',
-                a: 'L’Espace Pro est actuellement offert pendant la phase de lancement (Offre Commerçant Pionnier). Aucun abonnement n’est dû pour le moment. La visibilité se fait via les annonces « À la une » / sponsorisées, affichées en tête du fil avec le badge ✨ À LA UNE.',
-              },
-              {
-                q: 'Qui peut publier une annonce ?',
-                a: 'Tous les habitants, commerçants et bénévoles du quartier peuvent publier un don, une vente, un service ou un petit boulot. L’esprit est l’entraide locale, pas la revente professionnelle.',
-              },
-              {
-                q: 'Comment créer une annonce ?',
-                a: 'Ouvrez la page Annonces, appuyez sur « Publier », renseignez un titre, une description, le type, éventuellement un prix et une photo, puis validez. Votre annonce apparaît immédiatement dans le fil du quartier.',
-              },
-              {
-                q: 'Dois-je forcément passer par le Local Relais ?',
-                a: 'Non. Le dépôt local est optionnel. Il est utile si vous préférez éviter un rendez-vous à domicile. Sinon, vous organisez l’échange comme vous le souhaitez avec le voisin intéressé.',
-              },
-              {
-                q: 'Comment poser une question sur une annonce ?',
-                a: 'Chaque fiche d’annonce propose le bouton « Poser une question ». Le formulaire envoie un message à l’association, qui fait le lien avec l’auteur si besoin.',
-              },
-              {
-                q: 'Comment modifier ou supprimer mon annonce ?',
-                a: 'Si vous êtes l’auteur, les boutons « Modifier » et « Supprimer mon annonce » remplacent « Poser une question ». Dans Profil, le bloc « Mes annonces publiées » recense toutes vos publications avec une suppression directe (confirmation demandée).',
-              },
-            ],
-          },
-          fidelite: {
-            label: 'Points & Fidélité',
-            groups: [
-              {
-                label: 'Pour les habitants',
-                items: [
-                  {
-                    q: 'Comment cumuler des points ?',
-                    a: 'En participant à la vie du quartier (annonces, local relais) ou en effectuant vos achats chez nos commerçants partenaires en présentant votre QR Code lors du passage en caisse.',
-                  },
-                  {
-                    q: 'Est-ce que je dois paramétrer quelque chose ?',
-                    a: 'Non, zéro configuration. Votre QR Code unique est disponible dans votre espace « Mon Profil ». Il suffit de le montrer au commerçant.',
-                  },
-                  {
-                    q: 'Comment transformer mes points en cadeaux ?',
-                    a: 'Dès que vous atteignez un palier (ex. 50 ou 100 points), débloquez votre Coupon Privilège dans l’application et présentez-le au commerçant pour obtenir votre réduction ou produit offert.',
-                  },
-                ],
-              },
-              {
-                label: 'Pour les commerçants',
-                items: [
-                  {
-                    q: 'Comment attribuer des points à mes clients ?',
-                    a: 'Rendez-vous dans votre Espace Pro, flashez le QR Code du client et validez le montant ou la visite. Le client ne peut jamais s’attribuer de points lui-même.',
-                  },
-                  {
-                    q: 'Mon activité n’est pas adaptée à « 1 € = 1 point », comment faire ?',
-                    a: 'Vous êtes 100 % libre ! Depuis votre Espace Pro, choisissez votre règle : au chiffre d’affaires (ex. 1 € = 1 pt), au passage en caisse (ex. 5 pts par visite pour un café) ou au forfait (ex. 50 pts pour une prestation/service).',
-                  },
-                  {
-                    q: 'Est-ce lié à un organisme de chèques cadeaux ?',
-                    a: 'Non, aucun organisme externe ni frais bancaires. C’est un programme de fidélité 100 % local et autonome, propre au quartier des Chartrons.',
-                  },
-                ],
-              },
-            ],
-          },
-          association: {
-            label: 'Vie de l’association',
-            items: [
-              {
-                q: 'Qu’est-ce qu’IDÉA CHARTRONS ?',
-                a: 'C’est l’association de quartier qui anime le village numérique des Chartrons : entraide entre voisins, Local Relais, mise en valeur des commerces et agenda local.',
-              },
-              {
-                q: 'Comment devenir bénévol Relais ?',
-                a: 'Contactez l’association via le formulaire. Les bénévoles accueillent les dépôts et retraits au local, vérifient les QR codes et font avancer les statuts.',
-              },
-              {
-                q: 'Les professionnels de l’annuaire, c’est quoi ?',
-                a: 'Commerçants, artisans, professions de santé et services de proximité peuvent publier une fiche, avec ou sans QR vitrine. Le QR est optionnel : il sert uniquement à activer la fidélité.',
-              },
-              {
-                q: 'Comment soutenir le projet ?',
-                a: 'Utilisez la plateforme, parlez-en à vos voisins, inscrivez votre activité dans l’annuaire, ou écrivez-nous pour donner un coup de main au local.',
-              },
-            ],
-          },
-          technique: {
-            label: 'Problèmes techniques',
-            items: [
-              {
-                q: 'L’application ne se met pas à jour.',
-                a: 'IDÉA CHARTRONS peut fonctionner hors-ligne (PWA). Fermez l’onglet, rouvrez le site, ou actualisez la page. Sur mobile, vous pouvez aussi supprimer le raccourci et le réinstaller.',
-              },
-              {
-                q: 'Je ne vois plus mes annonces ou mes points.',
-                a: 'Les données de démo sont stockées dans votre navigateur. Un nettoyage du cache ou un autre appareil affiche les données initiales. Depuis le profil (ou l’admin), vous pouvez réinitialiser les données de démo.',
-              },
-              {
-                q: 'Le scan fidélité ne fonctionne pas.',
-                a: 'Un même commerce ne peut être scanné qu’une fois par jour. Vérifiez que vous avez choisi le bon commerce et que le QR vitrine correspond. Réessayez le lendemain si besoin.',
-              },
-              {
-                q: 'Je n’arrive pas à me connecter à l’espace admin.',
-                a: 'L’adresse est /admin. Le mot de passe provisoire est celui communiqué par l’association. En cas d’oubli, utilisez « Contacter l’association » depuis le site public.',
-              },
-            ],
-          },
-        },
       },
       proSpace: {
         title: 'Espace Pro',
@@ -1531,7 +1394,7 @@ const resources = {
           Tourisme_Conciergeries: 'Tourism & Concierge',
         },
         create: {
-          button: 'List my activity',
+          button: 'List my business',
           title: 'Join the directory',
           hint: 'Shopkeepers, craftspeople and professionals appear in the directory with or without a shopfront QR code. The QR stays optional: generate it later to enable loyalty.',
           nom: 'Activity name',
@@ -2189,147 +2052,10 @@ const resources = {
       },
       faq: {
         kicker: 'Help & questions',
-        title: 'Full FAQ',
-        subtitle: 'Answers to the most common questions about the Local Hub, listings, loyalty points, association life and the app.',
+        title: 'IDÉA CHARTRONS FAQ',
+        subtitle: 'Residents, visitors and merchants: reviews, VIP Click & Collect, daily specials and the Pro plan.',
         stillStuck: 'Still looking for an answer?',
         stillStuckHint: 'Write to us — a volunteer from the association will get back to you.',
-        sections: {
-          relais: {
-            label: 'Using the Local Hub',
-            items: [
-              {
-                q: 'Where is the Local Hub?',
-                a: 'The physical hub is at 26 place Jean Jaques Rabaud. It is open Monday to Friday, 10am–7pm, and Saturday 10am–1pm.',
-              },
-              {
-                q: 'How do I drop off an item?',
-                a: 'First publish a listing, then choose “Propose Local Drop-off”. Book a slot, bring the item during opening hours, and confirm the drop-off with the volunteer on site.',
-              },
-              {
-                q: 'What is the QR code for?',
-                a: 'After drop-off, a validation QR code is generated. It identifies the item. The person picking it up must show it at the hub to collect the listing safely.',
-              },
-              {
-                q: 'How do I pick up an item?',
-                a: 'When the status is “Available at hub”, book a pickup slot. Arrive with the QR code during your slot: the volunteer checks the code and hands over the item.',
-              },
-            ],
-          },
-          posts: {
-            label: 'How to post a listing',
-            items: [
-              {
-                q: 'What are the different ways to buy on IDÉA Chartrons?',
-                a: 'On sale listings, you have three options:\n\n1. Direct hand-to-hand pickup — 100% free, you arrange the exchange with the neighbor.\n2. Drop-off at the Local Hub — +€1.00 for storage and concierge fees.\n3. Secure online payment — +€1.00 for buyer protection and transaction fees.',
-              },
-              {
-                q: 'What are the fees for shopkeepers and featured listings?',
-                a: 'Pro Space is currently free during the launch phase (Pioneer Shopkeeper Offer). No subscription is due for now. Visibility comes from featured / sponsored listings, shown at the top of the feed with the ✨ FEATURED badge.',
-              },
-              {
-                q: 'Who can post a listing?',
-                a: 'Residents, shopkeepers and volunteers in the neighborhood can post a giveaway, a sale, a service or a small job. The spirit is local mutual aid, not professional resale.',
-              },
-              {
-                q: 'How do I create a listing?',
-                a: 'Open Listings, tap “Post”, add a title, description, type, optional price and photo, then confirm. Your listing appears immediately in the neighborhood feed.',
-              },
-              {
-                q: 'Do I have to use the Local Hub?',
-                a: 'No. Local drop-off is optional. It is useful if you prefer not to meet at home. Otherwise, you can arrange the exchange however you like with the interested neighbor.',
-              },
-              {
-                q: 'How do I ask a question about a listing?',
-                a: 'Each listing card has an “Ask a question” button. The form sends a message to the association, which can then connect you with the author if needed.',
-              },
-              {
-                q: 'How do I edit or delete my listing?',
-                a: 'On your own listing, “Edit” and “Delete my listing” replace “Ask a question”. In Profile, “My published listings” lists all your posts with a direct delete option (a confirmation is still asked).',
-              },
-            ],
-          },
-          fidelite: {
-            label: 'Points & Loyalty',
-            groups: [
-              {
-                label: 'For residents',
-                items: [
-                  {
-                    q: 'How do I earn points?',
-                    a: 'By taking part in neighborhood life (listings, Local Hub) or by shopping at partner businesses and showing your QR code at the till.',
-                  },
-                  {
-                    q: 'Do I need to set anything up?',
-                    a: 'No — zero setup. Your unique QR code is in “My Profile”. Just show it to the shopkeeper.',
-                  },
-                  {
-                    q: 'How do I turn points into rewards?',
-                    a: 'When you reach a threshold (e.g. 50 or 100 points), unlock your Privilege Coupon in the app and show it at the shop for a discount or a free item.',
-                  },
-                ],
-              },
-              {
-                label: 'For shopkeepers',
-                items: [
-                  {
-                    q: 'How do I award points to my customers?',
-                    a: 'Go to your Pro Space, scan the customer’s QR code and confirm the amount or the visit. Customers can never award points to themselves.',
-                  },
-                  {
-                    q: 'My activity does not fit “€1 = 1 point”. What can I do?',
-                    a: 'You are fully free to choose. In your Pro Space, pick your rule: turnover (e.g. €1 = 1 pt), per visit (e.g. 5 pts at a café) or a flat rate (e.g. 50 pts for a service).',
-                  },
-                  {
-                    q: 'Is this tied to a gift-voucher scheme?',
-                    a: 'No. No external scheme and no bank fees. It is a 100% local, autonomous loyalty programme for the Chartrons district.',
-                  },
-                ],
-              },
-            ],
-          },
-          association: {
-            label: 'Association life',
-            items: [
-              {
-                q: 'What is IDÉA CHARTRONS?',
-                a: 'It is the neighborhood association behind the Chartrons digital village: neighbor-to-neighbor help, the Local Hub, local shops and the district calendar.',
-              },
-              {
-                q: 'How do I become a hub volunteer?',
-                a: 'Contact the association through the form. Volunteers welcome drop-offs and pickups, check QR codes and update statuses.',
-              },
-              {
-                q: 'What is the neighborhood directory?',
-                a: 'Shopkeepers, craftspeople, health professionals and nearby services can publish a listing, with or without a shopfront QR code. The QR is optional: it only enables loyalty.',
-              },
-              {
-                q: 'How can I support the project?',
-                a: 'Use the platform, tell your neighbors, list your activity in the directory, or write to us if you can help at the hub.',
-              },
-            ],
-          },
-          technique: {
-            label: 'Technical issues',
-            items: [
-              {
-                q: 'The app is not updating.',
-                a: 'IDÉA CHARTRONS can work offline (PWA). Close the tab, reopen the site, or refresh the page. On mobile you can also remove the shortcut and add it again.',
-              },
-              {
-                q: 'I cannot see my listings or points.',
-                a: 'Demo data is stored in your browser. Clearing the cache or using another device shows the initial data. From your profile (or admin), you can reset demo data.',
-              },
-              {
-                q: 'Loyalty scan does not work.',
-                a: 'The same shop can only be scanned once per day. Check that you selected the right shop and that the shopfront QR matches. Try again tomorrow if needed.',
-              },
-              {
-                q: 'I cannot sign in to the admin space.',
-                a: 'The address is /admin. The temporary password is the one shared by the association. If you forgot it, use “Contact the association” from the public site.',
-              },
-            ],
-          },
-        },
       },
       proSpace: {
         title: 'Pro space',
