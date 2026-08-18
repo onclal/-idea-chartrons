@@ -98,6 +98,17 @@ export const FAQ_AUDIENCES: FaqAudience[] = [
         },
       },
       {
+        id: 'anti-gaspi',
+        q: {
+          fr: 'C’est quoi la rubrique Anti-Gaspi, et pourquoi payer en ligne ?',
+          en: 'What is the Anti-Waste section, and why pay online?',
+        },
+        a: {
+          fr: 'Anti-Gaspi est un espace dédié aux commerces du quartier pour écouler invendus, surplus et produits à date courte — séparé du fil d’entraide entre voisins. Payer en ligne (CB) bloque l’offre : cela évite les réservations non honorées. Vous pouvez aussi appeler le commerce pour un retrait. Les tarifs étudiants (sacs surprise, viennoiseries de fin de journée) y sont clairement identifiés. Les offres expirées disparaissent automatiquement.',
+          en: 'Anti-Waste is a dedicated space for neighborhood shops to sell unsold items, surplus and short-date products — kept apart from the neighbor-to-neighbor feed. Paying online (card) locks the offer, which prevents no-shows. You can also call the shop to reserve a pickup. Student-friendly deals (surprise bags, end-of-day pastries) are clearly labelled. Expired offers disappear automatically.',
+        },
+      },
+      {
         id: 'reviews',
         q: {
           fr: 'Comment laisser un avis sur un commerce ?',
@@ -153,8 +164,8 @@ export const FAQ_AUDIENCES: FaqAudience[] = [
           en: 'Is there a commission on Click & Collect sales?',
         },
         a: {
-          fr: 'Aucune. IDÉA CHARTRONS ne prend 0 % de commission sur vos ventes. Les échanges et paiements se font directement entre vous et vos clients. Seule l’adhésion Premium Pro rémunère l’association.',
-          en: 'None. IDÉA CHARTRONS takes 0% commission on your sales. Exchanges and payments happen directly between you and your customers. Only the Premium Pro membership funds the association.',
+          fr: 'Aucune sur le Click & Collect habituel : les échanges se font directement entre vous et vos clients. Seule l’adhésion Premium Pro rémunère l’association. Exception : les paiements CB de la rubrique Anti-Gaspi incluent une petite commission plateforme (5 %), destinée à sécuriser le créneau et à financer l’outil.',
+          en: 'None on regular Click & Collect: exchanges happen directly between you and your customers. Only the Premium Pro membership funds the association. Exception: card payments in the Anti-Waste section include a small platform commission (5%), which secures the slot and funds the tool.',
         },
       },
       {
@@ -166,6 +177,17 @@ export const FAQ_AUDIENCES: FaqAudience[] = [
         a: {
           fr: 'Oui. Le concierge puise uniquement dans l’annuaire des Chartrons. Les fiches Premium Pro sont priorisées dans le Top 5. Une fiche complète (catégorie, adresse, horaires, téléphone, qualifications) reste visible pour tous ; le lien site web et le Click & Collect ne s’affichent que pour Premium Pro.',
           en: 'Yes. The concierge only draws on the Chartrons directory. Premium Pro listings are prioritized in the Top 5. A complete listing (category, address, hours, phone, qualifications) stays visible for everyone; the website link and Click & Collect only appear for Premium Pro.',
+        },
+      },
+      {
+        id: 'anti-gaspi-merchant',
+        q: {
+          fr: 'Comment publier un invendu dans Anti-Gaspi ?',
+          en: 'How do I post leftover stock in Anti-Waste?',
+        },
+        a: {
+          fr: 'Ouvrez la rubrique Anti-Gaspi (bouton dédié, distinct des annonces habitants), indiquez le produit, le prix, un téléphone de retrait et une date/heure de fin obligatoires. L’offre disparaît toute seule à l’échéance. Le paiement CB bloque l’article pour le client ; l’appel téléphone reste possible pour un retrait local. Une commission de 5 % s’applique uniquement sur les paiements en ligne de cette rubrique.',
+          en: 'Open the Anti-Waste section (a dedicated button, separate from resident listings), then add the product, price, a pickup phone number and a mandatory end date/time. The offer disappears on expiry. Card payment locks the item for the customer; a phone call remains available for local pickup. A 5% commission applies only to online payments in this section.',
         },
       },
     ],

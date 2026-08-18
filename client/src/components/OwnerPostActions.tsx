@@ -7,7 +7,7 @@ import { api } from '../lib/api';
 
 interface OwnerPostActionsProps {
   post: PostAnnonce;
-  onEdit: () => void;
+  onEdit?: () => void;
   onDeleted: () => void;
   layout?: 'stack' | 'row';
 }
@@ -38,15 +38,17 @@ export function OwnerPostActions({
 
   return (
     <div className={layout === 'row' ? 'flex gap-2' : 'space-y-2'}>
-      <Button
-        type="button"
-        variant="secondary"
-        size="md"
-        className={layout === 'row' ? 'flex-1' : 'w-full'}
-        onClick={onEdit}
-      >
-        {t('posts.edit.button')}
-      </Button>
+      {onEdit && (
+        <Button
+          type="button"
+          variant="secondary"
+          size="md"
+          className={layout === 'row' ? 'flex-1' : 'w-full'}
+          onClick={onEdit}
+        >
+          {t('posts.edit.button')}
+        </Button>
+      )}
       <Button
         type="button"
         variant="ghost"

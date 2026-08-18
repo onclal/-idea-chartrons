@@ -5,6 +5,7 @@ import { Button, Modal } from './ui';
 export type HelpPage =
   | 'home'
   | 'posts'
+  | 'antigaspi'
   | 'relais'
   | 'acteurs'
   | 'carte'

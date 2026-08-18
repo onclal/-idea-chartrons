@@ -32,6 +32,12 @@ export interface PostAnnonce {
   telephone: string | null;
   createdAt: string;
   updatedAt: string;
+  /** Commerce lié (offres Anti-Gaspi). Optionnel — les annonces habitants n’en ont pas. */
+  acteurId?: string | null;
+  /** Nom du commerce affiché sur une offre Anti-Gaspi. */
+  commerceNom?: string | null;
+  /** Fin de validité ISO. Obligatoire pour Anti_Gaspi ; ignoré ailleurs. */
+  expiresAt?: string | null;
 }
 
 export interface RelaisHorairesPlage {
@@ -50,6 +56,8 @@ export interface RelaisSettings {
 export interface PlatformSettings {
   id: string;
   transactionFee: number;
+  /** Commission plateforme (0–1) sur les paiements CB Anti-Gaspi. */
+  antiGaspiCommissionRate?: number;
   updatedAt?: string;
 }
 

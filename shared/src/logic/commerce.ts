@@ -8,6 +8,7 @@ import type {
   CommerceSocialLinks,
   PlatformSettings,
 } from '../types/models.js';
+import { ANTI_GASPI_COMMISSION_RATE } from './antiGaspi.js';
 
 export const DEFAULT_TRANSACTION_FEE_EUR = 1;
 export const PREMIUM_PRO_MONTHLY_EUR = 29;
@@ -25,15 +26,21 @@ export function createDefaultPlatformSettings(): PlatformSettings {
   return {
     id: PLATFORM_SETTINGS_ID,
     transactionFee: DEFAULT_TRANSACTION_FEE_EUR,
+    antiGaspiCommissionRate: ANTI_GASPI_COMMISSION_RATE,
   };
 }
 
 export function normalizePlatformSettings(input?: Partial<PlatformSettings> | null): PlatformSettings {
   const fee = Number(input?.transactionFee);
+  const commission = Number(input?.antiGaspiCommissionRate);
   return {
     id: PLATFORM_SETTINGS_ID,
     transactionFee:
       Number.isFinite(fee) && fee >= 0 ? Math.round(fee * 100) / 100 : DEFAULT_TRANSACTION_FEE_EUR,
+    antiGaspiCommissionRate:
+      Number.isFinite(commission) && commission >= 0 && commission <= 1
+        ? Math.round(commission * 1000) / 1000
+        : ANTI_GASPI_COMMISSION_RATE,
     updatedAt: input?.updatedAt,
   };
 }

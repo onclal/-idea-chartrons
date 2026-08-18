@@ -554,6 +554,7 @@ export interface ConciergeQueryAnalysis {
   askedWebsite: boolean;
   askedRecipe: boolean;
   askedPosts: boolean;
+  askedAntiGaspi: boolean;
   askedDelivery: boolean;
   askedAccessible: boolean;
   followUp: boolean;
@@ -627,6 +628,11 @@ const POST_HINTS = [
   'nounou', 'poussette', 'bebe', 'bébé', 'jardin', 'jardinage', 'plantes', 'arrosage',
   'giveaway', 'mutual', 'babysit', 'stroller', 'gardening',
 ];
+const ANTI_GASPI_HINTS = [
+  'gaspi', 'anti-gaspi', 'antigaspi', 'anti gaspillage', 'gaspillage', 'invendu', 'invendus',
+  'surplus', 'dlc', 'anti-waste', 'antiwaste', 'food waste', 'unsold', 'short date',
+  'too good to go', 'reste du jour', 'sac surprise',
+];
 const RECIPE_HINTS = ['recette', 'recipe', 'ingredient', 'ingredients', 'canele', 'canelé', 'preparer', 'cook', 'cooking'];
 const DELIVERY_HINTS = [
   'livraison', 'livrer', 'livré', 'livree', 'a domicile', 'delivery', 'deliver', 'deliveroo',
@@ -659,7 +665,7 @@ function lastSubstantiveUserMessage(history: ConciergeHistoryTurn[] | undefined,
     const turn = history[index];
     if (turn.role !== 'user' || !turn.content.trim()) continue;
     const hay = normalizeConciergeText(turn.content);
-    if (containsAny(hay, FOLLOW_UP_HINTS) && !containsAny(hay, RECIPE_HINTS) && !containsAny(hay, POST_HINTS)) {
+    if (containsAny(hay, FOLLOW_UP_HINTS) && !containsAny(hay, RECIPE_HINTS) && !containsAny(hay, POST_HINTS) && !containsAny(hay, ANTI_GASPI_HINTS)) {
       continue;
     }
     return turn.content;
@@ -677,7 +683,8 @@ export function analyzeConciergeQuery(
   const askedOpen = containsAny(normalized, OPEN_HINTS);
   const askedWebsite = containsAny(normalized, WEBSITE_HINTS);
   const askedRecipe = containsAny(normalized, RECIPE_HINTS);
-  const askedPosts = containsAny(normalized, POST_HINTS);
+  const askedAntiGaspi = containsAny(normalized, ANTI_GASPI_HINTS);
+  const askedPosts = containsAny(normalized, POST_HINTS) && !askedAntiGaspi;
   const askedDelivery = containsAny(normalized, DELIVERY_HINTS);
   const askedAccessible = containsAny(normalized, ACCESSIBLE_HINTS);
   const focusOrdinal = parseFocusOrdinal(normalized);
@@ -704,6 +711,7 @@ export function analyzeConciergeQuery(
       subcategoryIds.length === 0 &&
       !askedRecipe &&
       !askedPosts &&
+      !askedAntiGaspi &&
       tokens.length <= 10);
 
   const memoryQuery = followUp ? lastSubstantiveUserMessage(history, query) : query;
@@ -725,8 +733,9 @@ export function analyzeConciergeQuery(
     askedHours,
     askedOpen,
     askedWebsite,
-    askedRecipe,
-    askedPosts,
+    askedRecipe: rankingSource?.askedRecipe || askedRecipe,
+    askedPosts: rankingSource?.askedPosts || askedPosts,
+    askedAntiGaspi: rankingSource?.askedAntiGaspi || askedAntiGaspi,
     askedDelivery,
     askedAccessible,
     followUp,
@@ -737,6 +746,7 @@ export function analyzeConciergeQuery(
       followUp ||
       askedRecipe ||
       askedPosts ||
+      askedAntiGaspi ||
       askedWebsite ||
       askedDelivery ||
       askedAccessible ||
@@ -1148,7 +1158,16 @@ export function buildConciergeContext(
     });
   }
 
-  if (analysis.askedPosts && extras.posts && extras.posts.length > 0) {
+  if (analysis.askedAntiGaspi && extras.posts && extras.posts.length > 0) {
+    lines.push('Offres Anti-Gaspi encore valides (commerces, non expirées) :');
+    for (const post of extras.posts.slice(0, CONCIERGE_SPOKEN_RESULTS)) {
+      const price = post.prix != null ? `${post.prix} euros` : 'prix à confirmer';
+      const shop = post.commerceNom || post.auteurNom || 'commerce local';
+      lines.push(
+        `- ${post.titre} chez ${shop}, ${price}${post.telephone ? `, ${post.telephone}` : ''}. Payer en ligne pour bloquer, ou appeler pour réserver.`,
+      );
+    }
+  } else if (analysis.askedPosts && extras.posts && extras.posts.length > 0) {
     lines.push('Annonces habitants réellement liées à la question :');
     for (const post of extras.posts.slice(0, CONCIERGE_SPOKEN_RESULTS)) {
       const price = post.prix != null ? `${post.prix} euros` : 'gratuit';
@@ -1191,6 +1210,7 @@ export function buildConciergeSystemPrompt(): string {
     `- Cite au plus ${CONCIERGE_SPOKEN_RESULTS} adresses, uniquement parmi les notes internes. N’invente rien.`,
     '- Priorise les partenaires Premium Pro, puis la livraison si on la demande, puis les lieux accessibles ou adaptés aux seniors si on la demande.',
     '- Une question food, sandwich ou restaurant n’autorise aucune annonce habitant (vélo, poussette, jardinage…).',
+    '- Anti-Gaspi / invendus / surplus : cite uniquement les offres commerçants encore valides (non expirées). Explique qu’on peut payer en ligne (CB) pour bloquer, ou appeler le commerce pour réserver un retrait. Jamais d’offre périmée.',
     '- Si le site d’une fiche gratuite est demandé, donne le téléphone, jamais l’URL.',
     '- Hors quartier : une phrase pour le dire, puis une piste locale.',
     '- Urgence vitale : 15, 17, 18 ou 112. Propreté / voirie : Allô Mairie. Bruit : Police municipale.',
@@ -1410,6 +1430,18 @@ export function buildLocalConciergeReply(
     const bullets = basket.stops
       .slice(0, CONCIERGE_SPOKEN_RESULTS)
       .map((stop) => `- ${stop.name}, ${stop.address}.`);
+    return formatAudioReadyReply([lead, ...bullets].join('\n'));
+  }
+
+  if (analysis.askedAntiGaspi && extras.posts && extras.posts.length > 0) {
+    const lead = fr
+      ? 'Voici les invendus encore valides du quartier. Payez en ligne pour bloquer, ou appelez le commerce pour réserver le retrait.'
+      : 'Here are the still-valid surplus offers nearby. Pay online to lock one in, or call the shop to reserve pickup.';
+    const bullets = extras.posts.slice(0, CONCIERGE_SPOKEN_RESULTS).map((post) => {
+      const price = post.prix != null ? `${post.prix} euros` : fr ? 'prix à confirmer' : 'price on request';
+      const shop = post.commerceNom || post.auteurNom || (fr ? 'commerce local' : 'local shop');
+      return `- ${post.titre}, ${shop}, ${price}.`;
+    });
     return formatAudioReadyReply([lead, ...bullets].join('\n'));
   }
 

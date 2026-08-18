@@ -1,7 +1,7 @@
 import { PostType } from './enums.js';
 
 /** Types d’annonces riveraines, sans compte obligatoire. */
-export const NEIGHBORHOOD_POST_KINDS = ['don', 'petit_boulot', 'entraide', 'vente', 'offre_pro'] as const;
+export const NEIGHBORHOOD_POST_KINDS = ['don', 'petit_boulot', 'entraide', 'vente', 'offre_pro', 'anti_gaspi'] as const;
 export type NeighborhoodPostKind = (typeof NEIGHBORHOOD_POST_KINDS)[number];
 
 export const NEIGHBORHOOD_POST_KIND_LABELS: Record<NeighborhoodPostKind, { fr: string; en: string }> = {
@@ -10,6 +10,7 @@ export const NEIGHBORHOOD_POST_KIND_LABELS: Record<NeighborhoodPostKind, { fr: s
   entraide: { fr: 'Entraide', en: 'Mutual aid' },
   vente: { fr: 'Vente', en: 'For sale' },
   offre_pro: { fr: 'Offre pro', en: 'Pro offer' },
+  anti_gaspi: { fr: 'Anti-Gaspi', en: 'Anti-waste' },
 };
 
 export type PostVerificationChannel = 'email' | 'sms';
@@ -58,6 +59,7 @@ const KIND_TO_POST_TYPE: Record<NeighborhoodPostKind, PostType> = {
   entraide: PostType.ServiceAide,
   vente: PostType.Vente,
   offre_pro: PostType.OffrePro,
+  anti_gaspi: PostType.AntiGaspi,
 };
 
 const POST_TYPE_TO_KIND: Record<PostType, NeighborhoodPostKind> = {
@@ -66,6 +68,7 @@ const POST_TYPE_TO_KIND: Record<PostType, NeighborhoodPostKind> = {
   [PostType.ServiceAide]: 'entraide',
   [PostType.Vente]: 'vente',
   [PostType.OffrePro]: 'offre_pro',
+  [PostType.AntiGaspi]: 'anti_gaspi',
 };
 
 export function isNeighborhoodPostKind(value: string): value is NeighborhoodPostKind {

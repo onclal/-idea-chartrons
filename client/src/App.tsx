@@ -12,6 +12,7 @@ import { AdminDashboard } from './components/AdminDashboard';
 import { AdminLayout } from './components/admin/AdminLayout';
 import { HomePage } from './pages/HomePage';
 import { PostsPage } from './pages/PostsPage';
+import { AntiGaspiPage } from './pages/AntiGaspiPage';
 import { RelaisPage } from './pages/RelaisPage';
 import { ActeursPage } from './pages/ActeursPage';
 import { MapPage } from './pages/MapPage';
@@ -52,6 +53,7 @@ export function App() {
               <Route element={<Layout />}>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/posts" element={<PostsPage />} />
+                <Route path="/anti-gaspi" element={<AntiGaspiPage />} />
                 <Route path="/relais" element={<RelaisPage />} />
                 <Route path="/acteurs" element={<ActeursPage />} />
                 <Route path="/carte" element={<MapPage />} />

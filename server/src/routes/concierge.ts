@@ -1,4 +1,5 @@
 import {
+  archiveExpiredAntiGaspiOffers,
   buildConciergeSystemPrompt,
   buildPostEnhanceSystemPrompt,
   conciergePhrasebookLang,
@@ -222,7 +223,7 @@ router.post('/', async (req, res) => {
 
   const lang = resolveLang(body.lang, message, body.uiLang);
   const history = parseHistory(body.history);
-  const posts = store.getAll('postsAnnonces');
+  const { posts } = archiveExpiredAntiGaspiOffers(store.getAll('postsAnnonces'));
   const engine = runConciergeEngine({
     message,
     history,

@@ -7,6 +7,7 @@ export * from './types/post.js';
 export * from './types/admin.js';
 export * from './logic/relais.js';
 export * from './logic/fidelite.js';
+export * from './logic/antiGaspi.js';
 export * from './logic/commerce.js';
 export * from './logic/postEnhance.js';
 export * from './logic/tourDeControle.js';

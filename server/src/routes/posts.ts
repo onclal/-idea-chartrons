@@ -44,6 +44,9 @@ router.post('/', (req, res) => {
     statut: PostStatus.EnAttente,
     photos: photos ?? [],
     telephone: telephone?.trim() || null,
+    acteurId: null,
+    commerceNom: null,
+    expiresAt: null,
     createdAt: now,
     updatedAt: now,
   });

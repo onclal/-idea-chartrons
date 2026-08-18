@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { LOCAL_RELAIS_PHONE, STATIC_MAP_POIS, type ActeurLocal, type AgendaEvenement, type PostAnnonce } from '@idea-chartrons/shared';
+import { LOCAL_RELAIS_PHONE, STATIC_MAP_POIS, isActiveAntiGaspiOffer, isResidentFeedPost, type ActeurLocal, type AgendaEvenement, type PostAnnonce } from '@idea-chartrons/shared';
 import { Badge, Card, EmptyState, Loading } from '../components/ui';
 import { PhoneLink } from '../components/PhoneLink';
 import { matchesSearch, useSearch } from '../context/SearchContext';
@@ -40,9 +40,25 @@ export function SearchPage() {
       q
         ? posts.filter(
             (post) =>
-              matchesSearch(post.titre, q) ||
-              matchesSearch(post.description, q) ||
-              matchesSearch(post.telephone ?? '', q),
+              isResidentFeedPost(post) &&
+              (matchesSearch(post.titre, q) ||
+                matchesSearch(post.description, q) ||
+                matchesSearch(post.telephone ?? '', q)),
+          )
+        : [],
+    [posts, q],
+  );
+
+  const matchedAntiGaspi = useMemo(
+    () =>
+      q
+        ? posts.filter(
+            (post) =>
+              isActiveAntiGaspiOffer(post) &&
+              (matchesSearch(post.titre, q) ||
+                matchesSearch(post.description, q) ||
+                matchesSearch(post.commerceNom ?? '', q) ||
+                matchesSearch(post.auteurNom ?? '', q)),
           )
         : [],
     [posts, q],
@@ -88,7 +104,11 @@ export function SearchPage() {
   );
 
   const total =
-    matchedPosts.length + matchedActeurs.length + matchedEvents.length + matchedPois.length;
+    matchedPosts.length +
+    matchedAntiGaspi.length +
+    matchedActeurs.length +
+    matchedEvents.length +
+    matchedPois.length;
 
   if (loading) return <Loading message={t('common.loading')} />;
 
@@ -124,6 +144,27 @@ export function SearchPage() {
                     <div className="mt-2 flex flex-wrap items-center gap-2">
                       <Badge variant="brick">{t(`posts.types.${post.type}`)}</Badge>
                       <PhoneLink phone={post.telephone} />
+                    </div>
+                  </Card>
+                </Link>
+              ))}
+            </section>
+          )}
+
+          {matchedAntiGaspi.length > 0 && (
+            <section className="space-y-2">
+              <h3 className="text-sm font-bold uppercase tracking-wide text-chartrons-olive">
+                {t('antigaspi.title')}
+              </h3>
+              {matchedAntiGaspi.map((post) => (
+                <Link key={post.id} to="/anti-gaspi">
+                  <Card className="!p-4 hover:shadow-card-hover">
+                    <p className="font-semibold text-chartrons-olive-dark">{post.titre}</p>
+                    <p className="text-xs text-chartrons-warm-gray mt-1 line-clamp-2">{post.description}</p>
+                    <div className="mt-2">
+                      <Badge variant="olive" icon="♻️">
+                        {t('antigaspi.badge')}
+                      </Badge>
                     </div>
                   </Card>
                 </Link>

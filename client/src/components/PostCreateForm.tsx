@@ -21,7 +21,6 @@ const POST_TYPES = [
   PostType.Vente,
   PostType.ServiceAide,
   PostType.PetitBoulot,
-  PostType.OffrePro,
 ] as const;
 
 export function PostCreateForm({ open, onClose, onCreated, post = null }: PostCreateFormProps) {

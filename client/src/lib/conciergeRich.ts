@@ -1,5 +1,5 @@
 import type { ConciergeRecommendation, PostAnnonce } from '@idea-chartrons/shared';
-import { matchesSearchQuery } from '@idea-chartrons/shared';
+import { isResidentFeedPost, matchesSearchQuery } from '@idea-chartrons/shared';
 
 const RECIPE_HINTS = [
   'recette',
@@ -44,9 +44,10 @@ export function filterMatchingPosts(posts: PostAnnonce[], query: string): PostAn
   return posts
     .filter(
       (post) =>
-        matchesSearchQuery(post.titre, query) ||
-        matchesSearchQuery(post.description, query) ||
-        matchesSearchQuery(post.type, query),
+        isResidentFeedPost(post) &&
+        (matchesSearchQuery(post.titre, query) ||
+          matchesSearchQuery(post.description, query) ||
+          matchesSearchQuery(post.type, query)),
     )
     .slice(0, 4);
 }

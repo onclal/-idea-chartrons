@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { LocalRelaisRetraitStatus, PostStatus, PostType, type LocalRelais, type PostAnnonce } from '@idea-chartrons/shared';
+import { LocalRelaisRetraitStatus, PostStatus, PostType, isResidentFeedPost, type LocalRelais, type PostAnnonce } from '@idea-chartrons/shared';
 import { Badge, Button, Card, EmptyState, Loading } from '../components/ui';
 import { PageHelp } from '../components/PageHelp';
 import { PhoneLink } from '../components/PhoneLink';
@@ -14,7 +15,6 @@ import { useToast } from '../context/ToastContext';
 import { matchesSearch, useSearch } from '../context/SearchContext';
 import { api } from '../lib/api';
 import { bookingErrorMessage } from '../lib/bookingErrors';
-import { getSponsoredPostId, pinSponsoredPost } from '../lib/sponsoredFeed';
 import { ownsPost } from '../lib/guestCarnet';
 
 const FILTER_TYPES = [
@@ -23,7 +23,6 @@ const FILTER_TYPES = [
   PostType.Vente,
   PostType.ServiceAide,
   PostType.PetitBoulot,
-  PostType.OffrePro,
 ] as const;
 
 type FilterType = (typeof FILTER_TYPES)[number];
@@ -59,6 +58,7 @@ export function PostsPage() {
   const filteredPosts = useMemo(() => {
     const filtered = posts
       .filter((post) => {
+        if (!isResidentFeedPost(post)) return false;
         if (post.statut === PostStatus.EnAttente && !ownsPost(post.id)) return false;
         const matchesFilter = filter === 'all' || post.type === filter;
         const matchesQuery =
@@ -66,10 +66,10 @@ export function PostsPage() {
         return matchesFilter && matchesQuery;
       })
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    return pinSponsoredPost(filtered, getSponsoredPostId(posts));
+    return filtered;
   }, [posts, filter, query]);
 
-  const sponsoredPostId = getSponsoredPostId(posts);
+  const sponsoredPostId = null;
 
   const handleDepotConfirm = async (creneauId: string) => {
     if (!depotPostId) return;
@@ -131,6 +131,18 @@ export function PostsPage() {
           + {t('posts.create.button')}
         </Button>
       </div>
+
+      <Link
+        to="/anti-gaspi"
+        className="flex items-center gap-3 rounded-2xl border border-chartrons-green/25 bg-gradient-to-r from-chartrons-green/10 to-chartrons-beige/60 p-3 shadow-card"
+      >
+        <span className="text-2xl" aria-hidden>♻️</span>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold text-chartrons-green">{t('antigaspi.title')}</p>
+          <p className="text-xs text-chartrons-warm-gray leading-relaxed">{t('posts.antiGaspiHint')}</p>
+        </div>
+        <span className="text-chartrons-green font-bold">→</span>
+      </Link>
 
       <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
         {FILTER_TYPES.map((ft) => (

@@ -28,6 +28,7 @@ import {
   normalizePlatformSettings,
   normalizePinCode,
   normalizeSocialLinks,
+  archiveExpiredAntiGaspiOffers,
   withoutRetiredStockPhotos,
   SEED_CATALOG_VERSION,
   socialLinksEqual,
@@ -391,6 +392,13 @@ class LocalDatabase {
       }
     }
 
+    const archivedPosts = archiveExpiredAntiGaspiOffers(postsAnnonces);
+    if (archivedPosts.changed) {
+      postsAnnonces.length = 0;
+      postsAnnonces.push(...archivedPosts.posts);
+      changed = true;
+    }
+
     const marcheCutoff = Date.now() - 2 * 86400000;
     const prunedEvents = agendaEvenements.filter((event) => {
       if (!event.id.startsWith('event-marche-chartrons-')) return true;
@@ -610,7 +618,12 @@ class LocalDatabase {
   // ── Posts ──
 
   getPosts(): PostAnnonce[] {
-    return this.getAll('postsAnnonces');
+    const archived = archiveExpiredAntiGaspiOffers(this.getAll('postsAnnonces'));
+    if (archived.changed) {
+      this.data.postsAnnonces = archived.posts;
+      this.persist(this.data);
+    }
+    return archived.posts;
   }
 
   createPost(data: {
@@ -622,6 +635,9 @@ class LocalDatabase {
     auteurNom?: string | null;
     statut?: PostStatus;
     telephone?: string | null;
+    acteurId?: string | null;
+    commerceNom?: string | null;
+    expiresAt?: string | null;
   }): PostAnnonce {
     const now = new Date().toISOString();
     return this.create('postsAnnonces', {
@@ -634,6 +650,9 @@ class LocalDatabase {
       statut: data.statut ?? PostStatus.EnAttente,
       photos: data.photos,
       telephone: data.telephone?.trim() || null,
+      acteurId: data.acteurId?.trim() || null,
+      commerceNom: data.commerceNom?.trim() || null,
+      expiresAt: data.expiresAt ?? null,
       createdAt: now,
       updatedAt: now,
     });

@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { PostStatus, PostType, type PostAnnonce } from '@idea-chartrons/shared';
+import { PostStatus, PostType, defaultAntiGaspiExpiry, type PostAnnonce } from '@idea-chartrons/shared';
 import { AdminDataTable } from '../../components/admin/AdminDataTable';
 import { AdminPageHeader } from '../../components/admin/AdminPageHeader';
 import { AdminPhotoField } from '../../components/admin/AdminPhotoField';
 import { Badge, Button, Card, EmptyState, Input, Loading, Modal, Select, Textarea } from '../../components/ui';
 import { useToast } from '../../context/ToastContext';
 import { api } from '../../lib/api';
-import { formatDateTime } from '../../lib/format';
+import { formatDateTime, toDatetimeLocal } from '../../lib/format';
 
 interface PostForm {
   titre: string;
@@ -18,6 +18,7 @@ interface PostForm {
   photo: string;
   auteurNom: string;
   telephone: string;
+  expiresAt: string;
 }
 
 const emptyForm = (): PostForm => ({
@@ -29,6 +30,7 @@ const emptyForm = (): PostForm => ({
   photo: '',
   auteurNom: '',
   telephone: '',
+  expiresAt: toDatetimeLocal(defaultAntiGaspiExpiry()),
 });
 
 export function AdminPostsPage() {
@@ -82,6 +84,7 @@ export function AdminPostsPage() {
       photo: post.photos[0] ?? '',
       auteurNom: post.auteurNom ?? '',
       telephone: post.telephone ?? '',
+      expiresAt: post.expiresAt ? toDatetimeLocal(post.expiresAt) : toDatetimeLocal(defaultAntiGaspiExpiry()),
     });
   };
 
@@ -99,13 +102,21 @@ export function AdminPostsPage() {
         description: form.description,
         type: form.type,
         prix:
-          form.type === PostType.Vente || form.type === PostType.PetitBoulot || form.type === PostType.OffrePro
+          form.type === PostType.Vente ||
+          form.type === PostType.PetitBoulot ||
+          form.type === PostType.OffrePro ||
+          form.type === PostType.AntiGaspi
             ? Number(form.prix) || 0
             : null,
         photos: form.photo ? [form.photo] : [],
         auteurNom: form.auteurNom.trim() || null,
         statut: form.statut,
         telephone: form.telephone.trim() || null,
+        commerceNom: form.type === PostType.AntiGaspi ? form.auteurNom.trim() || null : null,
+        expiresAt:
+          form.type === PostType.AntiGaspi && form.expiresAt
+            ? new Date(form.expiresAt).toISOString()
+            : null,
       };
       if (editing) {
         await api.updatePost(editing.id, payload);
@@ -315,13 +326,25 @@ export function AdminPostsPage() {
               }))}
             />
           </div>
-          {(form.type === PostType.Vente || form.type === PostType.PetitBoulot || form.type === PostType.OffrePro) && (
+          {(form.type === PostType.Vente ||
+            form.type === PostType.PetitBoulot ||
+            form.type === PostType.OffrePro ||
+            form.type === PostType.AntiGaspi) && (
             <Input
               label={t('posts.create.prix')}
               type="number"
               min="0"
               value={form.prix}
               onChange={(e) => setForm((f) => ({ ...f, prix: e.target.value }))}
+            />
+          )}
+          {form.type === PostType.AntiGaspi && (
+            <Input
+              label={t('antigaspi.create.expires')}
+              type="datetime-local"
+              value={form.expiresAt}
+              onChange={(e) => setForm((f) => ({ ...f, expiresAt: e.target.value }))}
+              required
             />
           )}
           <Input

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 const categories = [
   { path: '/posts', key: 'posts' },
+  { path: '/anti-gaspi', key: 'antigaspi' },
   { path: '/acteurs', key: 'acteurs' },
   { path: '/carte', key: 'carte' },
   { path: '/decouvrir', key: 'decouvrir' },

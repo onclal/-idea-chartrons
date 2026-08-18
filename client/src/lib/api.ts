@@ -75,6 +75,9 @@ export const api = {
     auteurNom?: string | null;
     statut?: PostStatus;
     telephone?: string | null;
+    acteurId?: string | null;
+    commerceNom?: string | null;
+    expiresAt?: string | null;
   }) => withDelay(() => localDb.createPost(data)),
   updatePost: (postId: string, patch: Partial<Omit<PostAnnonce, 'id' | 'createdAt'>>) =>
     withDelay(() => localDb.updatePost(postId, patch)),

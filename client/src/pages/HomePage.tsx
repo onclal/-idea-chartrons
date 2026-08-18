@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { EventType, getFideliteNiveau } from '@idea-chartrons/shared';
+import { EventType, getFideliteNiveau, isResidentFeedPost } from '@idea-chartrons/shared';
 import type { AgendaEvenement, LocalRelais, PostAnnonce } from '@idea-chartrons/shared';
 import { Badge, Card, Loading } from '../components/ui';
 import { PageHelp } from '../components/PageHelp';
@@ -45,7 +45,7 @@ export function HomePage() {
     ])
       .then(([postsData, acteurs, events, relais, points]) => {
         setStats({
-          posts: postsData.filter((p) => p.statut === 'Disponible').length,
+          posts: postsData.filter((p) => p.statut === 'Disponible' && isResidentFeedPost(p)).length,
           acteurs: acteurs.length,
           events: events.filter((e) => new Date(e.dateFin) >= new Date()).length,
         });
@@ -75,6 +75,7 @@ export function HomePage() {
 
   const ctaLinks = [
     { to: '/posts', label: t('home.cta.posts'), icon: '📋', gradient: 'from-chartrons-bordeaux to-chartrons-brick' },
+    { to: '/anti-gaspi', label: t('home.cta.antigaspi'), icon: '♻️', gradient: 'from-chartrons-olive to-chartrons-green-light' },
     { to: '/decouvrir', label: t('home.cta.decouvrir'), icon: '🚶', gradient: 'from-chartrons-olive to-chartrons-olive-light' },
     { to: '/pratique', label: t('home.cta.pratique'), icon: 'ℹ️', gradient: 'from-chartrons-brass to-chartrons-olive' },
     { to: '/conciergerie', label: t('home.cta.conciergerie'), icon: '🔑', gradient: 'from-chartrons-brass to-chartrons-olive' },

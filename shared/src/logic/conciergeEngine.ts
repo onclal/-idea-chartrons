@@ -1,5 +1,6 @@
 import { PostStatus } from '../types/enums.js';
 import type { PostAnnonce } from '../types/models.js';
+import { isActiveAntiGaspiOffer, isResidentFeedPost } from './antiGaspi.js';
 import {
   analyzeConciergeQuery,
   buildConciergeContext,
@@ -46,6 +47,16 @@ const POST_TYPE_HINTS: Record<string, string[]> = {
   Service_Aide: ['entraide', 'aide', 'bricolage', 'garde', 'nounou', 'baby-sitting', 'babysitting', 'babysit'],
   Petit_Boulot: ['boulot', 'job', 'jardin', 'jardinage', 'plantes', 'arrosage', 'gardening'],
   Offre_Pro: ['offre pro', 'pro', 'prestation'],
+  Anti_Gaspi: [
+    'gaspi',
+    'anti-gaspi',
+    'antigaspi',
+    'gaspillage',
+    'invendu',
+    'surplus',
+    'anti-waste',
+    'unsold',
+  ],
 };
 
 const GENERIC_POST_TOKENS = new Set([
@@ -107,11 +118,42 @@ const COMMERCE_INTENT_IDS = new Set([
   'hair',
 ]);
 
-export function rankConciergePosts(posts: PostAnnonce[], analysis: ConciergeQueryAnalysis, limit = CONCIERGE_SPOKEN_RESULTS): PostAnnonce[] {
-  const available = posts.filter((post) => post.statut === PostStatus.Disponible || post.statut === PostStatus.DepotLocal);
+export function rankConciergePosts(
+  posts: PostAnnonce[],
+  analysis: ConciergeQueryAnalysis,
+  limit = CONCIERGE_SPOKEN_RESULTS,
+  now = Date.now(),
+): PostAnnonce[] {
+  const cap = Math.max(1, Math.min(limit, CONCIERGE_SPOKEN_RESULTS));
+
+  if (analysis.askedAntiGaspi) {
+    const active = posts.filter((post) => isActiveAntiGaspiOffer(post, now));
+    const hay = analysis.normalized || normalizeConciergeText(analysis.raw);
+    const distinctive = distinctivePostTokens(analysis);
+    if (distinctive.length === 0) return active.slice(0, cap);
+    const scored = active
+      .map((post) => {
+        const blob = normalizeConciergeText(
+          `${post.titre} ${post.description} ${post.commerceNom ?? ''} ${post.auteurNom ?? ''}`,
+        );
+        let score = 8;
+        for (const token of distinctive) {
+          if (blob.includes(token)) score += 20;
+        }
+        if (hay && blob) score += 4;
+        return { post, score };
+      })
+      .sort((a, b) => b.score - a.score);
+    return scored.slice(0, cap).map((entry) => entry.post);
+  }
+
+  const available = posts.filter(
+    (post) =>
+      isResidentFeedPost(post) &&
+      (post.statut === PostStatus.Disponible || post.statut === PostStatus.DepotLocal),
+  );
   const hay = analysis.normalized || normalizeConciergeText(analysis.raw);
   const distinctive = distinctivePostTokens(analysis);
-  const cap = Math.max(1, Math.min(limit, CONCIERGE_SPOKEN_RESULTS));
 
   if (!analysis.askedPosts && analysis.intentIds.some((id) => COMMERCE_INTENT_IDS.has(id))) {
     return [];
@@ -186,7 +228,12 @@ export function runConciergeEngine(input: ConciergeEngineInput): ConciergeEngine
     }).filter((item): item is ConciergeRecommendation => Boolean(item));
   }
 
-  const posts = rankConciergePosts(input.posts ?? [], analysis, CONCIERGE_SPOKEN_RESULTS);
+  const posts = rankConciergePosts(
+    input.posts ?? [],
+    analysis,
+    CONCIERGE_SPOKEN_RESULTS,
+    now.getTime(),
+  );
   const heritage = analysis.askedHistory || analysis.streets.length > 0 ? heritageForQuery(analysis) : [];
   const context = buildConciergeContext(analysis, {
     posts: posts.length > 0 ? posts : undefined,

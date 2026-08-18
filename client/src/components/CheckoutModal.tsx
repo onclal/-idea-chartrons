@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { DEFAULT_TRANSACTION_FEE_EUR, computeCheckoutTotal } from '@idea-chartrons/shared';
+import { DEFAULT_TRANSACTION_FEE_EUR, computeCheckoutTotal, computeAntiGaspiCheckout, ANTI_GASPI_COMMISSION_RATE } from '@idea-chartrons/shared';
 import { Button, Input, Modal } from './ui';
 import { api } from '../lib/api';
 import { formatEuro } from '../lib/format';
 
-export type CheckoutKind = 'post' | 'booking' | 'membership';
+export type CheckoutKind = 'post' | 'booking' | 'membership' | 'anti_gaspi';
 
 export interface CheckoutItem {
   id: string;
@@ -44,9 +44,14 @@ export function CheckoutModal({
   const [paying, setPaying] = useState(false);
   const [orderId, setOrderId] = useState<string | null>(null);
   const [transactionFee, setTransactionFee] = useState(DEFAULT_TRANSACTION_FEE_EUR);
+  const [commissionRate, setCommissionRate] = useState(ANTI_GASPI_COMMISSION_RATE);
 
   const price = item?.price ?? 0;
-  const { total } = computeCheckoutTotal(price, transactionFee);
+  const isAntiGaspi = item?.kind === 'anti_gaspi';
+  const antiGaspi = computeAntiGaspiCheckout(price, commissionRate);
+  const protection = computeCheckoutTotal(price, transactionFee);
+  const total = isAntiGaspi ? antiGaspi.total : protection.total;
+  const extraFee = isAntiGaspi ? antiGaspi.commission : protection.transactionFee;
   const locale = i18n.language;
   const canPay =
     cardName.trim().length > 1 &&
@@ -64,8 +69,14 @@ export function CheckoutModal({
     setCardCvc('123');
     api
       .getPlatformSettings()
-      .then((settings) => setTransactionFee(settings.transactionFee))
-      .catch(() => setTransactionFee(DEFAULT_TRANSACTION_FEE_EUR));
+      .then((settings) => {
+        setTransactionFee(settings.transactionFee);
+        setCommissionRate(settings.antiGaspiCommissionRate ?? ANTI_GASPI_COMMISSION_RATE);
+      })
+      .catch(() => {
+        setTransactionFee(DEFAULT_TRANSACTION_FEE_EUR);
+        setCommissionRate(ANTI_GASPI_COMMISSION_RATE);
+      });
   }, [open, item?.id]);
 
   const handleClose = () => {
@@ -111,7 +122,9 @@ export function CheckoutModal({
         </div>
       ) : item ? (
         <div className="space-y-4">
-          <p className="text-sm text-chartrons-olive-dark leading-relaxed">{t('checkout.secureHint')}</p>
+          <p className="text-sm text-chartrons-olive-dark leading-relaxed">
+            {isAntiGaspi ? t('checkout.antiGaspiHint') : t('checkout.secureHint')}
+          </p>
 
           <div className="flex gap-3 rounded-xl border border-chartrons-beige bg-white p-3">
             {item.imageUrl ? (
@@ -142,8 +155,10 @@ export function CheckoutModal({
                 <dd className="font-medium text-chartrons-olive-dark">{formatEuro(price, locale)}</dd>
               </div>
               <div className="flex items-center justify-between gap-3 text-sm">
-                <dt className="text-chartrons-warm-gray">{t('checkout.protection')}</dt>
-                <dd className="font-medium text-chartrons-olive-dark">+{formatEuro(transactionFee, locale)}</dd>
+                <dt className="text-chartrons-warm-gray">
+                  {isAntiGaspi ? t('checkout.commission') : t('checkout.protection')}
+                </dt>
+                <dd className="font-medium text-chartrons-olive-dark">+{formatEuro(extraFee, locale)}</dd>
               </div>
               <div className="flex items-center justify-between gap-3 text-sm pt-1.5 border-t border-chartrons-beige">
                 <dt className="font-semibold text-chartrons-olive-dark">{t('checkout.total')}</dt>

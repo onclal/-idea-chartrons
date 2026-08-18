@@ -23,6 +23,7 @@ export enum PostType {
   ServiceAide = 'Service_Aide',
   PetitBoulot = 'Petit_Boulot',
   OffrePro = 'Offre_Pro',
+  AntiGaspi = 'Anti_Gaspi',
 }
 
 export enum PostStatus {
