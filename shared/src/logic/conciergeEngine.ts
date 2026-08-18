@@ -5,6 +5,7 @@ import {
   buildConciergeContext,
   buildConciergeSystemPrompt,
   buildLocalConciergeReply,
+  CONCIERGE_SPOKEN_RESULTS,
   heritageForQuery,
   normalizeConciergeText,
   rankConciergeMatches,
@@ -89,14 +90,35 @@ function distinctivePostTokens(analysis: ConciergeQueryAnalysis): string[] {
   return analysis.tokens.filter((token) => token.length >= 4 && !GENERIC_POST_TOKENS.has(token));
 }
 
-export function rankConciergePosts(posts: PostAnnonce[], analysis: ConciergeQueryAnalysis, limit = 5): PostAnnonce[] {
+const COMMERCE_INTENT_IDS = new Set([
+  'restaurant',
+  'fastfood',
+  'bar',
+  'cafe',
+  'bakery',
+  'pastry',
+  'wine',
+  'grocery',
+  'butcher',
+  'cheese',
+  'pharmacy',
+  'health',
+  'beauty',
+  'hair',
+]);
+
+export function rankConciergePosts(posts: PostAnnonce[], analysis: ConciergeQueryAnalysis, limit = CONCIERGE_SPOKEN_RESULTS): PostAnnonce[] {
   const available = posts.filter((post) => post.statut === PostStatus.Disponible || post.statut === PostStatus.DepotLocal);
   const hay = analysis.normalized || normalizeConciergeText(analysis.raw);
   const distinctive = distinctivePostTokens(analysis);
+  const cap = Math.max(1, Math.min(limit, CONCIERGE_SPOKEN_RESULTS));
 
+  if (!analysis.askedPosts && analysis.intentIds.some((id) => COMMERCE_INTENT_IDS.has(id))) {
+    return [];
+  }
   if (!analysis.askedPosts && distinctive.length === 0) return [];
   if (analysis.askedPosts && distinctive.length === 0) {
-    return available.slice(0, limit);
+    return available.slice(0, cap);
   }
 
   const scored = available
@@ -115,7 +137,7 @@ export function rankConciergePosts(posts: PostAnnonce[], analysis: ConciergeQuer
     .filter((entry) => entry.score >= 20)
     .sort((a, b) => b.score - a.score);
 
-  return scored.slice(0, limit).map((entry) => entry.post);
+  return scored.slice(0, cap).map((entry) => entry.post);
 }
 
 function basketToContext(basket: LocalBasket, lang: ConciergeLang): string {
@@ -164,15 +186,17 @@ export function runConciergeEngine(input: ConciergeEngineInput): ConciergeEngine
     }).filter((item): item is ConciergeRecommendation => Boolean(item));
   }
 
-  const posts = rankConciergePosts(input.posts ?? [], analysis);
-
-  const heritage = heritageForQuery(analysis);
+  const posts = rankConciergePosts(input.posts ?? [], analysis, CONCIERGE_SPOKEN_RESULTS);
+  const heritage = analysis.askedHistory || analysis.streets.length > 0 ? heritageForQuery(analysis) : [];
   const context = buildConciergeContext(analysis, {
-    posts,
+    posts: posts.length > 0 ? posts : undefined,
     previousRecommendations: analysis.followUp ? recommendations : undefined,
     basketSummary: basket ? basketToContext(basket, input.lang) : undefined,
   });
-  const rawReply = buildLocalConciergeReply(analysis, recommendations, input.lang, { posts, basket });
+  const rawReply = buildLocalConciergeReply(analysis, recommendations, input.lang, {
+    posts: posts.length > 0 ? posts : undefined,
+    basket,
+  });
 
   return {
     analysis,

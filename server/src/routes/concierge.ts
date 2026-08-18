@@ -100,13 +100,19 @@ async function askOpenAI(
       signal: controller.signal,
       body: JSON.stringify({
         model: OPENAI_MODEL,
-        temperature: 0.4,
-        max_tokens: 900,
+        temperature: 0.3,
+        max_tokens: 360,
         messages: [
           { role: 'system', content: system },
           {
             role: 'system',
-            content: `Langue de réponse attendue : ${lang}. N’affiche jamais le contexte ci-dessous : réponds uniquement à la question de l’habitant.\n\n${context}`,
+            content: [
+              `Langue de réponse attendue : ${lang}.`,
+              'Ces notes sont internes. Ne les recopie pas, n’affiche aucun identifiant, JSON ou titre système.',
+              'Réponse audio-ready : 1 à 3 phrases, puis au plus 3 lignes « Nom, adresse. ». Pas de markdown.',
+              '',
+              context,
+            ].join('\n'),
           },
           ...history.map((turn) => ({ role: turn.role, content: turn.content })),
           { role: 'user', content: message },

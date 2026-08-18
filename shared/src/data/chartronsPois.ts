@@ -45,6 +45,8 @@ export const CHARTRONS_POIS: ChartronsPoiInput[] = [
     rating: 4.6,
     reviewsCount: 142,
     openingHours: 'Lun - Sam : 12:00 - 14:30, 19:00 - 22:30',
+    hasDelivery: true,
+    accessible: true,
     imageUrl: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=800&q=80',
   },
   {

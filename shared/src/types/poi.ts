@@ -87,6 +87,10 @@ export interface ChartronsPoi {
   qualifications: string[];
   reputation: PoiReputation;
   catalog: PoiCatalog;
+  /** Livraison à domicile ou en partenariat (flag `has_delivery`). */
+  hasDelivery?: boolean;
+  /** Accès PMR / accueil senior. */
+  accessible?: boolean;
 }
 
 /** Forme stockée (OSM / fiches curées) : les champs d’annuaire peuvent être inférés. */

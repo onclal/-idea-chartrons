@@ -136,6 +136,21 @@ function emptySocial(links?: PoiSocialLinks): PoiSocialLinks {
   };
 }
 
+function inferHasDelivery(poi: ChartronsPoiInput): boolean {
+  if (poi.hasDelivery != null) return poi.hasDelivery;
+  const hay = haystackOf({ ...poi, name: poi.name });
+  const blob = `${hay} ${normalizeSearchText(poi.description ?? '')}`;
+  return /livraison|delivery|deliveroo|uber ?eats|a domicile|click.?collect|emporter|takeaway|take away/.test(blob);
+}
+
+function inferAccessible(poi: ChartronsPoiInput): boolean {
+  if (poi.accessible != null) return poi.accessible;
+  const hay = haystackOf({ ...poi, name: poi.name });
+  const blob = `${hay} ${normalizeSearchText(poi.description ?? '')}`;
+  if (/pmr|fauteuil|wheelchair|accessib|senior|personne agee|rampe|malvoyant/.test(blob)) return true;
+  return /pharmacie|medecin|docteur|hopital|optique|laboratoire|maison de quartier/.test(hay);
+}
+
 export function defaultPoiTier(poi: ChartronsPoiInput): MerchantTier {
   if (poi.tier) return poi.tier;
   return poi.id === 'poi-rest-001' ? 'premium_pro' : 'free';
@@ -153,6 +168,8 @@ export function hydrateChartronsPoi(poi: ChartronsPoiInput): ChartronsPoi {
     qualifications: poi.qualifications ?? [],
     reputation: poi.reputation ?? emptyReputation(poi),
     catalog: poi.catalog ?? emptyCatalog(poi.hasMenu),
+    hasDelivery: inferHasDelivery(poi),
+    accessible: inferAccessible(poi),
   };
 }
 
