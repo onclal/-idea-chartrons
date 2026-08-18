@@ -35,6 +35,13 @@ export const CHARTRONS_POIS: ChartronsPoiInput[] = [
     socialLinks: { instagram: 'https://www.instagram.com/bistrodeschartrons/' },
     websiteUrl: 'https://www.bistrodeschartrons.fr/',
     qualifications: ['Maître Restaurateur'],
+    catalog: {
+      items: [
+        { name: 'Plat du jour', price: 18, ingredients: ['viande', 'salade'] },
+        { name: 'Canelés maison', price: 3, ingredients: ['canele', 'vanille'] },
+      ],
+      menus: ['Carte'],
+    },
     rating: 4.6,
     reviewsCount: 142,
     openingHours: 'Lun - Sam : 12:00 - 14:30, 19:00 - 22:30',
@@ -50,6 +57,18 @@ export const CHARTRONS_POIS: ChartronsPoiInput[] = [
     coordinates: { lat: 44.854, lng: -0.5735 },
     description: 'Pains au levain naturel, viennoiseries artisanales et pâtisseries fines.',
     isMerchant: true,
+    phone: '05 56 81 20 14',
+    email: 'bonjour@amourdupain.fr',
+    socialLinks: { instagram: 'https://www.instagram.com/amourdupain.chartrons/' },
+    qualifications: ['Maître artisan boulanger'],
+    catalog: {
+      items: [
+        { name: 'Baguette tradition', price: 1.2, ingredients: ['pain', 'farine'] },
+        { name: 'Farine T55 1 kg', price: 2.4, ingredients: ['farine'] },
+        { name: 'Beurre doux 250 g', price: 3.2, ingredients: ['beurre'] },
+        { name: 'Canelés', price: 2.5, ingredients: ['canele', 'sucre'] },
+      ],
+    },
     rating: 4.8,
     reviewsCount: 310,
     openingHours: 'Mar - Dim : 07:00 - 19:30',
@@ -66,6 +85,15 @@ export const CHARTRONS_POIS: ChartronsPoiInput[] = [
     description: 'Sélection rigoureuse de vins de Bordeaux, vins bio et spiritueux.',
     isMerchant: true,
     phone: '05 56 44 33 22',
+    email: 'cave@chartrons.vin',
+    socialLinks: { instagram: 'https://www.instagram.com/lacavedeschartrons/' },
+    qualifications: ['Sommelier certifié'],
+    catalog: {
+      items: [
+        { name: 'Bordeaux rouge', price: 12, ingredients: ['vin', 'wine'] },
+        { name: 'Rhum agricole 20 cl', price: 8.5, ingredients: ['rhum', 'rum'] },
+      ],
+    },
     rating: 4.9,
     reviewsCount: 85,
     openingHours: 'Mar - Sam : 10:00 - 20:00',

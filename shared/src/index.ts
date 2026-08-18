@@ -10,6 +10,8 @@ export * from './logic/fidelite.js';
 export * from './logic/commerce.js';
 export * from './logic/tourDeControle.js';
 export * from './logic/concierge.js';
+export * from './logic/conciergeRecipes.js';
+export * from './logic/conciergeEngine.js';
 export * from './logic/search.js';
 export * from './logic/poi.js';
 export * from './data/seed.js';

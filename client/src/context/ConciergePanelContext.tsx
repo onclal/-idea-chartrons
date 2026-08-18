@@ -13,14 +13,7 @@ import {
   type ConciergeLangChoice,
   type ConciergeMessage,
 } from '../lib/concierge';
-import {
-  extractChecklist,
-  filterMatchingPosts,
-  hasRichConciergeContent,
-  isPostQuery,
-  isRecipeQuery,
-} from '../lib/conciergeRich';
-import { api } from '../lib/api';
+import { hasRichConciergeContent } from '../lib/conciergeRich';
 
 function createMessage(
   role: ConciergeMessage['role'],
@@ -69,11 +62,7 @@ export function ConciergePanelProvider({ children }: { children: ReactNode }) {
     [messages],
   );
 
-  const checklist = useMemo(() => {
-    const lastUser = [...messages].reverse().find((message) => message.role === 'user');
-    if (!lastUser || !isRecipeQuery(lastUser.content) || !lastAssistant) return [];
-    return extractChecklist(lastAssistant.content);
-  }, [lastAssistant, messages]);
+  const checklist = lastAssistant?.checklist ?? [];
 
   const ask = useCallback(
     async (question: string) => {
@@ -86,15 +75,7 @@ export function ConciergePanelProvider({ children }: { children: ReactNode }) {
       setOpen(true);
       setCollapsed(false);
 
-      let posts: PostAnnonce[] = [];
-      if (isPostQuery(trimmed) || isRecipeQuery(trimmed)) {
-        try {
-          posts = filterMatchingPosts(await api.getPosts(), trimmed);
-        } catch {
-          posts = [];
-        }
-      }
-      setMatchingPosts(posts);
+      setMatchingPosts([]);
 
       try {
         const answer = await askConcierge({
@@ -108,14 +89,19 @@ export function ConciergePanelProvider({ children }: { children: ReactNode }) {
           lang: answer.lang,
           recommendations: answer.recommendations,
           heritage: answer.heritage,
+          posts: answer.posts,
+          basket: answer.basket,
+          checklist: answer.checklist,
         });
+        setMatchingPosts(answer.posts);
         setMessages((current) => [...current, next]);
         if (
           hasRichConciergeContent({
             recommendations: answer.recommendations,
             heritageCount: answer.heritage.length,
-            checklist: isRecipeQuery(trimmed) ? extractChecklist(answer.reply) : [],
-            posts,
+            checklist: answer.checklist,
+            posts: answer.posts,
+            basket: Boolean(answer.basket),
           })
         ) {
           setOpen(true);

@@ -28,7 +28,13 @@ export function ConciergeRichResults({
 
   const unitLabel = (unit: BudgetUnit) => t(`conciergerie.ai.units.${unit}`);
   const rationaleLabel = (rationale: ConciergeRationale) => {
-    if (rationale.kind === 'keyword' || rationale.kind === 'intent' || rationale.kind === 'street') {
+    if (
+      rationale.kind === 'keyword' ||
+      rationale.kind === 'intent' ||
+      rationale.kind === 'street' ||
+      rationale.kind === 'qualification' ||
+      rationale.kind === 'catalog'
+    ) {
       return t(`conciergerie.ai.rationale.${rationale.kind}`, { value: rationale.value ?? '' });
     }
     if (rationale.kind === 'rating') {
@@ -136,7 +142,16 @@ function ConciergeRecommendationCard({
         <div className="min-w-0 flex-1">
           <p className="font-semibold text-chartrons-olive-dark leading-snug">{item.name}</p>
           <p className="text-xs text-chartrons-warm-gray mt-0.5">{item.specialty}</p>
+          {item.justification && (
+            <p className="text-xs text-chartrons-green-dark mt-1 leading-snug">{item.justification}</p>
+          )}
           <p className="text-xs text-chartrons-warm-gray mt-1">📍 {item.address}</p>
+          {item.openNow === true && (
+            <p className="text-[11px] font-semibold text-chartrons-green mt-1">{t('conciergerie.ai.openNow')}</p>
+          )}
+          {item.openNow === false && (
+            <p className="text-[11px] text-chartrons-warm-gray mt-1">{t('conciergerie.ai.closedNow')}</p>
+          )}
         </div>
         {item.rating != null && (
           <Badge variant="gold" icon="★">
@@ -160,6 +175,20 @@ function ConciergeRecommendationCard({
           💶 {t('conciergerie.ai.budget')} : {budget}
         </p>
       )}
+      {item.websiteGated && (
+        <p className="text-xs text-chartrons-warm-gray leading-relaxed">{t('conciergerie.ai.websiteGated')}</p>
+      )}
+      {(item.email || item.instagram) && (
+        <p className="text-xs text-chartrons-olive-dark">
+          {item.email ? `✉️ ${item.email}` : ''}
+          {item.email && item.instagram ? ' · ' : ''}
+          {item.instagram ? (
+            <a href={item.instagram} target="_blank" rel="noopener noreferrer" className="font-semibold text-chartrons-bordeaux">
+              Instagram
+            </a>
+          ) : null}
+        </p>
+      )}
 
       <div className="flex flex-wrap gap-2">
         {item.website && (
@@ -171,6 +200,21 @@ function ConciergeRecommendationCard({
           >
             {t('acteurs.social.website')}
           </a>
+        )}
+        {item.action === 'book_table' && (
+          <span className="flex-1 min-w-[110px] inline-flex items-center justify-center min-h-[40px] px-3 rounded-xl bg-chartrons-bordeaux text-white text-xs font-semibold">
+            {t('conciergerie.ai.actionTable')}
+          </span>
+        )}
+        {item.action === 'book_appointment' && (
+          <span className="flex-1 min-w-[110px] inline-flex items-center justify-center min-h-[40px] px-3 rounded-xl bg-chartrons-bordeaux text-white text-xs font-semibold">
+            {t('conciergerie.ai.actionAppointment')}
+          </span>
+        )}
+        {item.action === 'click_collect' && (
+          <span className="flex-1 min-w-[110px] inline-flex items-center justify-center min-h-[40px] px-3 rounded-xl bg-chartrons-green text-white text-xs font-semibold">
+            {t('conciergerie.ai.actionCollect')}
+          </span>
         )}
         {whatsapp && (
           <a

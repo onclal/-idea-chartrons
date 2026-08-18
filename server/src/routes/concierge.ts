@@ -1,18 +1,15 @@
 import {
-  analyzeConciergeQuery,
-  buildConciergeContext,
   buildConciergeSystemPrompt,
-  buildLocalConciergeReply,
   conciergePhrasebookLang,
   CONCIERGE_LANGUAGES,
   CONCIERGE_MAX_RESULTS,
   detectConciergeLang,
-  heritageForQuery,
   isConciergeLang,
-  rankConciergeMatches,
+  runConciergeEngine,
   type ConciergeLang,
 } from '@idea-chartrons/shared';
 import { Router } from 'express';
+import { store } from '../data/store.js';
 
 /** Surchargeable pour un proxy ou un déploiement Azure OpenAI. */
 const OPENAI_URL = process.env.OPENAI_API_URL ?? 'https://api.openai.com/v1/chat/completions';
@@ -100,7 +97,7 @@ async function askOpenAI(
       body: JSON.stringify({
         model: OPENAI_MODEL,
         temperature: 0.4,
-        max_tokens: 700,
+        max_tokens: 900,
         messages: [
           { role: 'system', content: system },
           {
@@ -158,36 +155,37 @@ router.post('/', async (req, res) => {
   }
 
   const lang = resolveLang(body.lang, message, body.uiLang);
-  const analysis = analyzeConciergeQuery(message);
-  const recommendations = rankConciergeMatches(analysis);
-  const heritage = heritageForQuery(analysis);
+  const history = parseHistory(body.history);
+  const posts = store.getAll('postsAnnonces');
+  const engine = runConciergeEngine({
+    message,
+    history,
+    posts,
+    lang,
+  });
   const apiKey = process.env.OPENAI_API_KEY;
 
   const instructions = parseInstructions(body.instructions);
   const systemPrompt = instructions
-    ? `${buildConciergeSystemPrompt()}\n\nCONSIGNES DE L’ÉQUIPE IDÉA CHARTRONS :\n${instructions}`
-    : buildConciergeSystemPrompt();
+    ? `${engine.systemPrompt || buildConciergeSystemPrompt()}\n\nCONSIGNES DE L’ÉQUIPE IDÉA CHARTRONS :\n${instructions}`
+    : engine.systemPrompt;
 
   let reply: string | null = null;
   if (apiKey) {
-    reply = await askOpenAI(
-      apiKey,
-      systemPrompt,
-      buildConciergeContext(analysis),
-      parseHistory(body.history),
-      message,
-      lang,
-    );
+    reply = await askOpenAI(apiKey, systemPrompt, engine.context, history, message, lang);
   }
 
   res.json({
-    reply: reply ?? buildLocalConciergeReply(analysis, recommendations, lang),
+    reply: reply ?? engine.reply,
     source: reply ? 'openai' : 'local',
     model: reply ? OPENAI_MODEL : null,
     lang,
-    isLocalQuery: analysis.isLocal,
-    recommendations,
-    heritage,
+    isLocalQuery: engine.analysis.isLocal,
+    recommendations: engine.recommendations,
+    heritage: engine.heritage,
+    posts: engine.posts,
+    basket: engine.basket,
+    checklist: engine.checklist,
   });
 });
 

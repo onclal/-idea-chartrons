@@ -131,6 +131,34 @@ export function AISidePanel() {
             />
           )}
 
+          {!pending && lastAssistant?.basket && (
+            <section className="space-y-2">
+              <h4 className="text-sm font-bold text-chartrons-bordeaux">{t('conciergePanel.basket')}</h4>
+              <Card className="!p-3 space-y-2">
+                <p className="font-semibold text-sm text-chartrons-olive-dark">{lastAssistant.basket.title}</p>
+                <p className="text-xs text-chartrons-warm-gray leading-relaxed">{lastAssistant.basket.summary}</p>
+                <ol className="space-y-2 list-decimal list-inside">
+                  {lastAssistant.basket.stops.map((stop) => (
+                    <li key={stop.poiId} className="text-xs text-chartrons-olive-dark">
+                      <span className="font-semibold">{stop.name}</span>
+                      <span className="text-chartrons-warm-gray"> — {stop.address}</span>
+                      <ul className="mt-1 ml-4 list-disc">
+                        {stop.lines.map((line) => (
+                          <li key={line.ingredientId}>
+                            {line.name} ({line.quantity}) · {line.price.toFixed(2)} €
+                          </li>
+                        ))}
+                      </ul>
+                    </li>
+                  ))}
+                </ol>
+                <p className="text-sm font-semibold text-chartrons-green">
+                  {t('conciergePanel.basketTotal', { total: lastAssistant.basket.totalEstimate.toFixed(2) })}
+                </p>
+              </Card>
+            </section>
+          )}
+
           {!pending && checklist.length > 0 && (
             <section className="space-y-2">
               <h4 className="text-sm font-bold text-chartrons-bordeaux">{t('conciergePanel.checklist')}</h4>
