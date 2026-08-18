@@ -23,6 +23,7 @@ const FILTER_TYPES = [
   PostType.Vente,
   PostType.ServiceAide,
   PostType.PetitBoulot,
+  PostType.OffrePro,
 ] as const;
 
 type FilterType = (typeof FILTER_TYPES)[number];

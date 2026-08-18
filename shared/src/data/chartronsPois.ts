@@ -1,52 +1,22 @@
 import { ActeurLocalCategory, ArdoiseStatus } from '../types/enums.js';
 import type { ActeurLocal } from '../types/models.js';
+import type { ChartronsPoi, ChartronsPoiInput } from '../types/poi.js';
 import {
   createCafeMarcheMenu,
   DEFAULT_MERCHANT_PIN,
-  defaultMerchantEmail,
   emptySocialLinks,
   sanitizeExternalUrl,
 } from '../logic/commerce.js';
+import { hydrateChartronsPoi, poiPublicWebsite } from '../logic/poi.js';
 import { defaultRegleForCategory, generateQrVitrineCode } from '../logic/fidelite.js';
 import { OSM_CHARTRONS_POIS } from './osmChartronsPois.js';
-import type { ChartronsSubcategory } from './taxonomy.js';
-
-export type ChartronsPoiCategory =
-  | 'bouche_restauration'
-  | 'mode_deco_antiquites'
-  | 'sante_bien_etre'
-  | 'patrimoine_culture'
-  | 'services_artisanat';
-
-export interface ChartronsPoi {
-  id: string;
-  name: string;
-  category: ChartronsPoiCategory;
-  /** Sous-catégorie unifiée et typée : seule taxonomie autorisée pour filtrer/router. */
-  subcategory: ChartronsSubcategory;
-  /** Spécialité fine affichée à l'écran (« Boulangerie », « Coiffeur & Barbier »…). */
-  specialty: string;
-  address: string;
-  coordinates: { lat: number; lng: number };
-  description: string;
-  isMerchant: boolean;
-  hasMenu?: boolean;
-  hasBooking?: boolean;
-  bookingUrl?: string;
-  phone?: string;
-  website?: string;
-  imageUrl?: string;
-  rating?: number;
-  reviewsCount?: number;
-  openingHours?: string;
-}
 
 export const CHARTRONS_BOUNDING_BOX = {
   sw: { lat: 44.848, lng: -0.578 },
   ne: { lat: 44.862, lng: -0.565 },
 } as const;
 
-export const CHARTRONS_POIS: ChartronsPoi[] = [
+export const CHARTRONS_POIS: ChartronsPoiInput[] = [
   {
     id: 'poi-rest-001',
     name: 'Bistro des Chartrons',
@@ -57,8 +27,14 @@ export const CHARTRONS_POIS: ChartronsPoi[] = [
     coordinates: { lat: 44.8525, lng: -0.571 },
     description: 'Cuisine traditionnelle de saison et produits locaux au cœur de la Rue Notre-Dame.',
     isMerchant: true,
+    businessType: 'restaurant',
+    tier: 'premium_pro',
     hasMenu: true,
     phone: '05 56 00 11 22',
+    email: 'contact@bistrodeschartrons.fr',
+    socialLinks: { instagram: 'https://www.instagram.com/bistrodeschartrons/' },
+    websiteUrl: 'https://www.bistrodeschartrons.fr/',
+    qualifications: ['Maître Restaurateur'],
     rating: 4.6,
     reviewsCount: 142,
     openingHours: 'Lun - Sam : 12:00 - 14:30, 19:00 - 22:30',
@@ -231,6 +207,8 @@ export const CHARTRONS_POIS: ChartronsPoi[] = [
     coordinates: { lat: 44.8552, lng: -0.572 },
     description: 'Réparation rapide, entretien et vente de vélos urbains et électriques.',
     isMerchant: true,
+    businessType: 'service_rdv',
+    qualifications: ['Réparateur cycles', 'Maître artisan'],
     phone: '05 56 81 99 88',
     rating: 4.8,
     reviewsCount: 92,
@@ -305,6 +283,8 @@ function categoryToActeur(poi: ChartronsPoi): ActeurLocalCategory {
 export function chartronsPoiToActeur(poi: ChartronsPoi, now: string): ActeurLocal {
   const categorie = categoryToActeur(poi);
   const rule = defaultRegleForCategory(categorie);
+  const premium = poi.tier === 'premium_pro';
+  const website = premium ? sanitizeExternalUrl(poiPublicWebsite(poi)) : null;
   return {
     id: `acteur-${poi.id}`,
     nomCommerce: poi.name,
@@ -321,20 +301,29 @@ export function chartronsPoiToActeur(poi: ChartronsPoi, now: string): ActeurLoca
     regleFideliteMode: rule.mode,
     regleFideliteValeur: rule.valeur,
     menu: poi.hasMenu ? createCafeMarcheMenu() : null,
-    appointmentUrl: poi.hasBooking ? poi.bookingUrl ?? null : null,
-    rating: poi.rating ?? null,
-    reviewsCount: poi.reviewsCount ?? null,
+    appointmentUrl: premium && poi.hasBooking ? poi.bookingUrl ?? null : null,
+    rating: poi.reputation.score ?? poi.rating ?? null,
+    reviewsCount: poi.reputation.reviews ?? poi.reviewsCount ?? null,
     openingHours: poi.openingHours ?? null,
     specialite: poi.specialty,
     subcategory: poi.subcategory,
     pinCode: poi.isMerchant ? DEFAULT_MERCHANT_PIN : null,
-    merchantEmail: poi.isMerchant ? defaultMerchantEmail(poi.name) : null,
-    socialLinks: poi.website
-      ? { ...emptySocialLinks(), website: sanitizeExternalUrl(poi.website) }
-      : emptySocialLinks(),
+    merchantEmail: poi.email ?? null,
+    socialLinks: {
+      ...emptySocialLinks(),
+      instagram: poi.socialLinks?.instagram ?? null,
+      facebook: poi.socialLinks?.facebook ?? null,
+      whatsapp: poi.socialLinks?.whatsapp ?? null,
+      website,
+    },
     isMerchant: poi.isMerchant,
-    isVip: poi.id === 'poi-rest-001',
-    phoneForOrders: poi.id === 'poi-rest-001' ? poi.phone ?? null : null,
+    isVip: premium,
+    businessType: poi.businessType,
+    tier: poi.tier,
+    qualifications: poi.qualifications,
+    reputation: poi.reputation,
+    catalog: poi.catalog,
+    phoneForOrders: premium ? poi.phone ?? null : null,
     dailyMenuText: poi.id === 'poi-rest-001' ? 'Plat du jour : magret de canard, jus au poivre' : null,
     dailyMenuImage:
       poi.id === 'poi-rest-001'
@@ -347,8 +336,13 @@ export function chartronsPoiToActeur(poi: ChartronsPoi, now: string): ActeurLoca
   };
 }
 
+/** Fusion runtime : fiches curées d’abord, puis import OSM (`npm run fetch:pois`). */
+export function allChartronsPois(): ChartronsPoi[] {
+  return [...CHARTRONS_POIS, ...OSM_CHARTRONS_POIS].map(hydrateChartronsPoi);
+}
+
 export function createChartronsPoiActeurs(now: string): ActeurLocal[] {
-  return [...CHARTRONS_POIS, ...OSM_CHARTRONS_POIS].map((poi) => chartronsPoiToActeur(poi, now));
+  return allChartronsPois().map((poi) => chartronsPoiToActeur(poi, now));
 }
 
 export function culturePlacePois(): Array<{

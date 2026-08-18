@@ -653,6 +653,7 @@ export function createSeedData(): DatabaseSchema {
               : emptySocialLinks(),
           isMerchant: true,
           isVip: acteur.id === 'acteur-1' || acteur.id === 'acteur-2',
+          tier: acteur.id === 'acteur-1' || acteur.id === 'acteur-2' ? 'premium_pro' : 'free',
           phoneForOrders: acteur.telephone,
           dailyMenuText:
             acteur.id === 'acteur-2' ? 'Plat du jour : Tartiflette aux cèpes' : null,

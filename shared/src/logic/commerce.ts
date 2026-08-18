@@ -1,4 +1,5 @@
 import { ActeurLocalCategory } from '../types/enums.js';
+import { isPremiumProMerchant } from '../types/merchant.js';
 import type {
   ActeurLocal,
   CommerceMenuItem,
@@ -129,9 +130,27 @@ export function normalizeSocialLinks(
   };
 }
 
+export function hasPublicSocialLinks(links?: CommerceSocialLinks | null): boolean {
+  if (!links) return false;
+  return Boolean(links.instagram || links.facebook || links.whatsapp);
+}
+
 export function hasSocialLinks(links?: CommerceSocialLinks | null): boolean {
   if (!links) return false;
-  return Boolean(links.instagram || links.facebook || links.whatsapp || links.website);
+  return hasPublicSocialLinks(links) || Boolean(links.website);
+}
+
+export function publicSocialLinks(
+  links: CommerceSocialLinks | null | undefined,
+  premium: boolean,
+): CommerceSocialLinks {
+  const normalized = normalizeSocialLinks(links);
+  return {
+    instagram: normalized.instagram,
+    facebook: normalized.facebook,
+    whatsapp: normalized.whatsapp,
+    website: premium ? normalized.website : null,
+  };
 }
 
 export function normalizeMenuItem(item: Partial<CommerceMenuItem> | null | undefined, index = 0): CommerceMenuItem {
@@ -243,8 +262,10 @@ export function acteurHasMenu(acteur: Pick<ActeurLocal, 'categorie' | 'menu'>): 
   return isRestaurantCategory(acteur.categorie) && normalizeMenu(acteur.menu).some((section) => section.items.length > 0);
 }
 
-export function acteurHasAppointment(acteur: Pick<ActeurLocal, 'appointmentUrl'>): boolean {
-  return Boolean(sanitizeExternalUrl(acteur.appointmentUrl));
+export function acteurHasAppointment(
+  acteur: Pick<ActeurLocal, 'appointmentUrl' | 'isVip' | 'tier'>,
+): boolean {
+  return isPremiumProMerchant(acteur) && Boolean(sanitizeExternalUrl(acteur.appointmentUrl));
 }
 
 export function socialLinksEqual(

@@ -6,6 +6,8 @@ import type { AgendaEvenement, LocalRelais, PostAnnonce } from '@idea-chartrons/
 import { Badge, Card, Loading } from '../components/ui';
 import { PageHelp } from '../components/PageHelp';
 import { PickupAlert } from '../components/PickupAlert';
+import { HeroSearch } from '../components/HeroSearch';
+import { FaqModal } from '../components/FaqModal';
 import { api } from '../lib/api';
 import { getDeviceId, getOwnedPostIds } from '../lib/guestCarnet';
 
@@ -25,6 +27,7 @@ export function HomePage() {
   const [posts, setPosts] = useState<PostAnnonce[]>([]);
   const [weekendBrocante, setWeekendBrocante] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [faqOpen, setFaqOpen] = useState(false);
 
   const ownedPostIds = getOwnedPostIds();
 
@@ -93,7 +96,16 @@ export function HomePage() {
           <Badge variant="brass" icon="🙋">{t('guest.badge')}</Badge>
           <p className="text-xs text-chartrons-warm-gray">{t('guest.noAccount')}</p>
         </div>
+        <button
+          type="button"
+          onClick={() => setFaqOpen(true)}
+          className="mt-2 text-xs font-semibold text-chartrons-green underline-offset-2 hover:underline"
+        >
+          {t('faq.comparisonTitle')}
+        </button>
       </section>
+
+      <HeroSearch variant="hero" />
 
       <section className="grid grid-cols-2 gap-3">
         {[
@@ -136,6 +148,8 @@ export function HomePage() {
         <p className="text-sm font-medium opacity-95">{t('app.tagline')}</p>
         <p className="text-xs opacity-60 mt-1.5">{t('home.areaHint')}</p>
       </section>
+
+      <FaqModal open={faqOpen} onClose={() => setFaqOpen(false)} />
     </div>
   );
 }

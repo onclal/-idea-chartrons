@@ -9,6 +9,7 @@ interface OrderModalProps {
   open: boolean;
   onClose: () => void;
   acteur: ActeurLocal;
+  intent?: 'collect' | 'table';
 }
 
 function defaultPickupTime(): string {
@@ -21,7 +22,21 @@ function buildOrderMessage(input: {
   clientPhone: string;
   pickupTime: string;
   orderDetails: string;
+  intent: 'collect' | 'table';
 }): string {
+  if (input.intent === 'table') {
+    return [
+      `Bonjour ${input.merchantName},`,
+      '',
+      'Demande de table (IDÉA Chartrons)',
+      `Nom : ${input.clientName}`,
+      `Téléphone : ${input.clientPhone}`,
+      `Horaire souhaité : ${input.pickupTime}`,
+      '',
+      'Précisions :',
+      input.orderDetails,
+    ].join('\n');
+  }
   return [
     `Bonjour ${input.merchantName},`,
     '',
@@ -37,7 +52,7 @@ function buildOrderMessage(input: {
   ].join('\n');
 }
 
-export function OrderModal({ open, onClose, acteur }: OrderModalProps) {
+export function OrderModal({ open, onClose, acteur, intent = 'collect' }: OrderModalProps) {
   const { t } = useTranslation();
   const { showToast } = useToast();
   const [clientName, setClientName] = useState('');
@@ -78,6 +93,7 @@ export function OrderModal({ open, onClose, acteur }: OrderModalProps) {
       clientPhone: phone,
       pickupTime: time,
       orderDetails: details,
+      intent,
     });
     const whatsapp = buildWhatsAppHref(merchantPhone, message);
     const sms = buildSmsHref(merchantPhone, message);
@@ -93,10 +109,16 @@ export function OrderModal({ open, onClose, acteur }: OrderModalProps) {
   };
 
   return (
-    <Modal open={open} onClose={onClose} title={t('acteurs.clickCollect.title', { name: acteur.nomCommerce })}>
+    <Modal
+      open={open}
+      onClose={onClose}
+      title={t(intent === 'table' ? 'acteurs.bookTable.title' : 'acteurs.clickCollect.title', {
+        name: acteur.nomCommerce,
+      })}
+    >
       <form onSubmit={handleSubmit} className="space-y-4">
         <p className="text-sm text-chartrons-olive-dark/80 leading-relaxed bg-chartrons-beige/60 border border-chartrons-beige rounded-xl px-3 py-2.5">
-          {t('acteurs.clickCollect.disclaimer')}
+          {t(intent === 'table' ? 'acteurs.bookTable.disclaimer' : 'acteurs.clickCollect.disclaimer')}
         </p>
         <Input
           label={t('acteurs.clickCollect.clientName')}
@@ -123,7 +145,7 @@ export function OrderModal({ open, onClose, acteur }: OrderModalProps) {
           required
         />
         <Input
-          label={t('acteurs.clickCollect.pickupTime')}
+          label={t(intent === 'table' ? 'acteurs.bookTable.time' : 'acteurs.clickCollect.pickupTime')}
           value={pickupTime}
           onChange={(event) => {
             setPickupTime(event.target.value);
@@ -133,19 +155,19 @@ export function OrderModal({ open, onClose, acteur }: OrderModalProps) {
           required
         />
         <Textarea
-          label={t('acteurs.clickCollect.orderDetails')}
+          label={t(intent === 'table' ? 'acteurs.bookTable.details' : 'acteurs.clickCollect.orderDetails')}
           value={orderDetails}
           onChange={(event) => {
             setOrderDetails(event.target.value);
             setError('');
           }}
-          placeholder={t('acteurs.clickCollect.orderPlaceholder')}
+          placeholder={t(intent === 'table' ? 'acteurs.bookTable.placeholder' : 'acteurs.clickCollect.orderPlaceholder')}
           rows={4}
           required
         />
         {error ? <p className="text-sm text-chartrons-brick">{error}</p> : null}
         <Button type="submit" variant="primary" className="w-full">
-          {t('acteurs.clickCollect.submit')}
+          {t(intent === 'table' ? 'acteurs.bookTable.submit' : 'acteurs.clickCollect.submit')}
         </Button>
       </form>
     </Modal>

@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ContactForm } from '../components/ContactForm';
 import { Button } from '../components/ui';
-import { FAQ_AUDIENCES, FAQ_PAGE, type FaqAudienceId } from '../data/faq';
+import { FAQ_AUDIENCES, FAQ_PAGE, type FaqAudienceId } from '../data/faqData';
 import { loc } from '../lib/locale';
+import { FaqComparisonTable } from '../components/FaqComparisonTable';
 
 export function FaqPage() {
   const { t, i18n } = useTranslation();
@@ -50,6 +51,8 @@ export function FaqPage() {
           {loc(lang, FAQ_PAGE.subtitle)}
         </p>
       </header>
+
+      <FaqComparisonTable />
 
       <div
         className="grid grid-cols-1 sm:grid-cols-3 gap-2 p-1 rounded-2xl bg-chartrons-beige/60 border border-chartrons-beige"

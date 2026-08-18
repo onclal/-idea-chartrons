@@ -5,6 +5,7 @@ import { SiteFooter } from './SiteFooter';
 import { ToastContainer } from './ToastContainer';
 import { NearbyAlerts } from './NearbyAlerts';
 import { PwaStatusBanner } from './PwaStatusBanner';
+import { AISidePanel } from './AISidePanel';
 
 export function Layout() {
   return (
@@ -20,6 +21,7 @@ export function Layout() {
         <SiteFooter />
       </main>
       <BottomNav />
+      <AISidePanel />
     </div>
   );
 }

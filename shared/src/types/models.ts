@@ -1,4 +1,5 @@
 import type { ChartronsSubcategory, ReportSubcategoryId } from '../data/taxonomy.js';
+import type { BusinessType, MerchantTier, PoiCatalog, PoiReputation } from './poi.js';
 import {
   ActeurLocalCategory,
   ArdoiseStatus,
@@ -125,8 +126,13 @@ export interface ActeurLocal {
   merchantEmail: string | null;
   socialLinks: CommerceSocialLinks;
   isMerchant: boolean;
-  /** Commerce VIP : réseaux publics, Click & Collect et ardoise du jour. */
+  /** Commerce VIP / Premium Pro : site web, priorité IA et modules d’action. */
   isVip: boolean;
+  businessType?: BusinessType;
+  tier?: MerchantTier;
+  qualifications?: string[];
+  reputation?: PoiReputation;
+  catalog?: PoiCatalog;
   dailyMenuImage?: string | null;
   dailyMenuText?: string | null;
   /** Modération de l'ardoise : seules les ardoises approuvées sont publiques. */

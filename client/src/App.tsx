@@ -1,5 +1,6 @@
 import { BrowserRouter, Navigate, Routes, Route } from 'react-router-dom';
 import { SearchProvider } from './context/SearchContext';
+import { ConciergePanelProvider } from './context/ConciergePanelContext';
 import { FavoritesProvider } from './context/FavoritesContext';
 import { RoutesProvider } from './context/RoutesContext';
 import { PwaProvider } from './context/PwaContext';
@@ -36,6 +37,7 @@ export function App() {
         <RoutesProvider>
         <SearchProvider>
           <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '')}>
+            <ConciergePanelProvider>
             <Routes>
               <Route path="/admin" element={<AdminLayout />}>
                 <Route index element={<AdminDashboardPage />} />
@@ -67,6 +69,7 @@ export function App() {
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Route>
             </Routes>
+            </ConciergePanelProvider>
           </BrowserRouter>
         </SearchProvider>
         </RoutesProvider>

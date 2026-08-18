@@ -22,6 +22,7 @@ export enum PostType {
   Vente = 'Vente',
   ServiceAide = 'Service_Aide',
   PetitBoulot = 'Petit_Boulot',
+  OffrePro = 'Offre_Pro',
 }
 
 export enum PostStatus {

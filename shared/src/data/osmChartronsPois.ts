@@ -1,6 +1,6 @@
-import type { ChartronsPoi } from './chartronsPois.js';
+import type { ChartronsPoiInput } from '../types/poi.js';
 
-/** Auto-generated from OpenStreetMap Overpass API. Re-run `node scripts/import-osm-chartrons.mjs`. */
+/** Auto-generated from OpenStreetMap Overpass API. Re-run `npm run fetch:pois`. */
 export const OSM_IMPORT_META = {
   "source": "OpenStreetMap Overpass API",
   "license": "ODbL",
@@ -10,18 +10,19 @@ export const OSM_IMPORT_META = {
     "north": 44.862,
     "east": -0.565
   },
-  "fetchedAt": "2026-08-17T15:49:47.590Z",
-  "rawElements": 338,
-  "imported": 314
+  "fetchedAt": "2026-08-17T23:22:59.938Z",
+  "rawElements": 444,
+  "imported": 362,
+  "skippedCurated": 1
 } as const;
 
-export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
+export const OSM_CHARTRONS_POIS: ChartronsPoiInput[] = [
   {
     "id": "poi-osm-n4810820726",
     "name": "4e Vague Café - Spécialités Hawaïennes",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restauration rapide",
+    "subcategory": "restauration_cafes",
     "address": "92 Rue Notre-Dame, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852364,
@@ -36,8 +37,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7741811786",
     "name": "A2",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Bar",
+    "subcategory": "restauration_cafes",
     "address": "35 Rue Borie, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.854408,
@@ -50,8 +51,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7275800735",
     "name": "ADIL33",
     "category": "services_artisanat",
-    "subcategory": "services_proximite",
     "specialty": "Bureau / service",
+    "subcategory": "services_proximite",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.859138,
@@ -65,8 +66,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n3784277857",
     "name": "Agem Bordeaux",
     "category": "mode_deco_antiquites",
-    "subcategory": "boutiques",
     "specialty": "Mobilier",
+    "subcategory": "boutiques",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.848988,
@@ -82,8 +83,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n13037284854",
     "name": "ahi33",
     "category": "sante_bien_etre",
-    "subcategory": "services_proximite",
     "specialty": "Médecin",
+    "subcategory": "services_proximite",
     "address": "50 Cours Balguerie Stuttenberg, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.856334,
@@ -97,8 +98,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n13018862390",
     "name": "AMA.",
     "category": "mode_deco_antiquites",
-    "subcategory": "boutiques",
     "specialty": "Décoration",
+    "subcategory": "boutiques",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852874,
@@ -113,8 +114,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n12296084302",
     "name": "Amallya",
     "category": "services_artisanat",
-    "subcategory": "services_proximite",
     "specialty": "cleaning",
+    "subcategory": "services_proximite",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.858846,
@@ -130,8 +131,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7272376146",
     "name": "Amos",
     "category": "mode_deco_antiquites",
-    "subcategory": "boutiques",
     "specialty": "Prêt-à-porter",
+    "subcategory": "boutiques",
     "address": "5 Rue Étienne Huyard, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.859851,
@@ -146,8 +147,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n12036071100",
     "name": "Ananda",
     "category": "sante_bien_etre",
-    "subcategory": "services_proximite",
     "specialty": "Médecine douce",
+    "subcategory": "services_proximite",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.850819,
@@ -160,8 +161,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7741778885",
     "name": "Apothek",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Bar",
+    "subcategory": "restauration_cafes",
     "address": "96 Rue Notre-Dame, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852475,
@@ -173,11 +174,28 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "openingHours": "Tu 19:00-23:59; We-Sa 00:00-02:00, 19:00-23:59; Su 00:00-02:00"
   },
   {
+    "id": "poi-osm-n5246799747",
+    "name": "Aquilenet",
+    "category": "services_artisanat",
+    "specialty": "Association",
+    "subcategory": "services_proximite",
+    "address": "20 Rue Tourat, 33000 Bordeaux",
+    "coordinates": {
+      "lat": 44.850521,
+      "lng": -0.573143
+    },
+    "description": "Association du quartier des Chartrons. Mots-clés : association, loisirs. Fiche issue d’OpenStreetMap.",
+    "isMerchant": false,
+    "phone": "05 35 54 82 53",
+    "openingHours": "Tu 18:30-22:30",
+    "website": "https://www.aquilenet.fr/"
+  },
+  {
     "id": "poi-osm-n7279310699",
     "name": "Aquitaine Repro",
     "category": "services_artisanat",
-    "subcategory": "services_proximite",
     "specialty": "Reprographie",
+    "subcategory": "services_proximite",
     "address": "69 Rue du Jardin Public, 33300 Bordeaux",
     "coordinates": {
       "lat": 44.853,
@@ -192,8 +210,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n13062470781",
     "name": "Arc en rêve",
     "category": "patrimoine_culture",
-    "subcategory": "patrimoine_tourisme",
     "specialty": "Musée",
+    "subcategory": "patrimoine_tourisme",
     "address": "7 Rue Ferrère, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.848281,
@@ -209,8 +227,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n13990373032",
     "name": "ARCA",
     "category": "services_artisanat",
-    "subcategory": "services_proximite",
     "specialty": "Architecte",
+    "subcategory": "services_proximite",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.855133,
@@ -224,8 +242,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n11042334805",
     "name": "Architectures Bordeaux",
     "category": "services_artisanat",
-    "subcategory": "services_proximite",
     "specialty": "Agence immobilière",
+    "subcategory": "services_proximite",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.848588,
@@ -238,11 +256,28 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "website": "https://www.architectures-immobilier.com/agence/356381___/architectures-bordeaux.html"
   },
   {
+    "id": "poi-osm-w154310832",
+    "name": "Archives départementales de la Gironde",
+    "category": "patrimoine_culture",
+    "specialty": "Espace culturel",
+    "subcategory": "patrimoine_tourisme",
+    "address": "72 Cours Balguerie Stuttenberg, 33300 Bordeaux",
+    "coordinates": {
+      "lat": 44.856744,
+      "lng": -0.567912
+    },
+    "description": "Espace culturel du quartier des Chartrons. Mots-clés : spectacle, culture. Fiche issue d’OpenStreetMap.",
+    "isMerchant": true,
+    "phone": "05 56 99 66 00",
+    "openingHours": "Mo-Th 08:30-17:00; Fr 08:30-15:00",
+    "website": "https://archives.gironde.fr/"
+  },
+  {
     "id": "poi-osm-n13206472511",
     "name": "Artémis courtage",
     "category": "services_artisanat",
-    "subcategory": "services_proximite",
     "specialty": "Services financiers",
+    "subcategory": "services_proximite",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.849131,
@@ -257,8 +292,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n13037284866",
     "name": "Assu 2000",
     "category": "services_artisanat",
-    "subcategory": "services_proximite",
     "specialty": "Assurance",
+    "subcategory": "services_proximite",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.854747,
@@ -273,8 +308,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n8476042252",
     "name": "Atelier Citrouille",
     "category": "services_artisanat",
-    "subcategory": "artisans",
     "specialty": "atelier",
+    "subcategory": "artisans",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.859552,
@@ -288,8 +323,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n8598726638",
     "name": "Atelier santé 121",
     "category": "sante_bien_etre",
-    "subcategory": "services_proximite",
     "specialty": "Santé & bien-être",
+    "subcategory": "services_proximite",
     "address": "121 Cours Journu Auber, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.861895,
@@ -302,8 +337,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n13526886409",
     "name": "Au Fil du Linge",
     "category": "services_artisanat",
-    "subcategory": "services_proximite",
     "specialty": "Laverie",
+    "subcategory": "services_proximite",
     "address": "60 Rue du Jardin Public, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852762,
@@ -318,8 +353,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n6917575149",
     "name": "Au Pétrin Moissagais",
     "category": "bouche_restauration",
-    "subcategory": "metiers_de_bouche",
     "specialty": "Boulangerie",
+    "subcategory": "metiers_de_bouche",
     "address": "72 Cours de la Martinique, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.854,
@@ -334,8 +369,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-w195271449",
     "name": "Auchan Supermarché",
     "category": "bouche_restauration",
-    "subcategory": "metiers_de_bouche",
     "specialty": "Supermarché",
+    "subcategory": "metiers_de_bouche",
     "address": "42 Avenue Émile Counord, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.857113,
@@ -349,8 +384,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n12036140362",
     "name": "Autour de la Terre",
     "category": "services_artisanat",
-    "subcategory": "artisans",
     "specialty": "pottery",
+    "subcategory": "artisans",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.85525,
@@ -366,8 +401,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n9367483368",
     "name": "Aux Grains Gourmands",
     "category": "bouche_restauration",
-    "subcategory": "metiers_de_bouche",
     "specialty": "Boulangerie",
+    "subcategory": "metiers_de_bouche",
     "address": "11 Rue Camille Godard, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.855146,
@@ -381,8 +416,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7058326569",
     "name": "Aux P'tits Comptoirs",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Bar",
+    "subcategory": "restauration_cafes",
     "address": "15 Place Paul Doumer, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852374,
@@ -395,8 +430,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n4294713946",
     "name": "Bali Bowls",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "46 Rue Notre-Dame, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.850805,
@@ -409,8 +444,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7741792985",
     "name": "Bam",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Bar",
+    "subcategory": "restauration_cafes",
     "address": "36 Rue Cornac, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.851368,
@@ -425,14 +460,14 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n4769733219",
     "name": "Banque Populaire",
     "category": "services_artisanat",
+    "specialty": "Banque (DAB)",
     "subcategory": "services_proximite",
-    "specialty": "Banque",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.85218,
       "lng": -0.573427
     },
-    "description": "Banque du quartier des Chartrons. Fiche issue d’OpenStreetMap.",
+    "description": "Banque (DAB) du quartier des Chartrons. Mots-clés : DAB, distributeur automatique, ATM. Fiche issue d’OpenStreetMap.",
     "isMerchant": true,
     "phone": "05 56 69 30 40",
     "openingHours": "Tu-Sa 09:00-12:30, Tu-Fr 13:45-18:00",
@@ -442,8 +477,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n6027072685",
     "name": "Bar Notre-Dame",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Café",
+    "subcategory": "restauration_cafes",
     "address": "82 Rue Notre-Dame, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852129,
@@ -456,8 +491,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7272463778",
     "name": "Bar Tabac PMU",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Bar",
+    "subcategory": "restauration_cafes",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.860233,
@@ -470,8 +505,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n13037284855",
     "name": "Barber's saloon",
     "category": "sante_bien_etre",
-    "subcategory": "services_proximite",
     "specialty": "Coiffeur",
+    "subcategory": "services_proximite",
     "address": "24 Cours Balguerie Stuttenberg, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.855557,
@@ -485,8 +520,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n13526854695",
     "name": "Bartherotte Architecture",
     "category": "services_artisanat",
-    "subcategory": "services_proximite",
     "specialty": "Architecte",
+    "subcategory": "services_proximite",
     "address": "102 Rue du Jardin Public, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.854429,
@@ -497,11 +532,25 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "website": "https://bartherotte-architecture.fr"
   },
   {
+    "id": "poi-osm-n11694719396",
+    "name": "Battling club",
+    "category": "services_artisanat",
+    "specialty": "Club sportif",
+    "subcategory": "services_proximite",
+    "address": "84 Cours Balguerie Stuttenberg, 33000 Bordeaux",
+    "coordinates": {
+      "lat": 44.857417,
+      "lng": -0.567948
+    },
+    "description": "Club sportif du quartier des Chartrons. Mots-clés : association, loisirs. Fiche issue d’OpenStreetMap.",
+    "isMerchant": true
+  },
+  {
     "id": "poi-osm-n7741762086",
     "name": "Beer Trotter",
     "category": "bouche_restauration",
-    "subcategory": "metiers_de_bouche",
     "specialty": "Caviste",
+    "subcategory": "metiers_de_bouche",
     "address": "84 Rue Notre-Dame, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852176,
@@ -514,8 +563,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n2491301911",
     "name": "Beillevaire",
     "category": "services_artisanat",
-    "subcategory": "metiers_de_bouche",
     "specialty": "dairy",
+    "subcategory": "metiers_de_bouche",
     "address": "5 Cours Portal, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852399,
@@ -528,11 +577,28 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "website": "https://fromagerie-beillevaire.com"
   },
   {
+    "id": "poi-osm-n4861894594",
+    "name": "Bibliothèque franco-allemande",
+    "category": "patrimoine_culture",
+    "specialty": "Espace culturel",
+    "subcategory": "patrimoine_tourisme",
+    "address": "35 Cours de Verdun, 33000 Bordeaux",
+    "coordinates": {
+      "lat": 44.850292,
+      "lng": -0.574991
+    },
+    "description": "Espace culturel du quartier des Chartrons. Mots-clés : spectacle, culture. Fiche issue d’OpenStreetMap.",
+    "isMerchant": true,
+    "phone": "05 56 48 42 65",
+    "openingHours": "Closed",
+    "website": "https://www.u-bordeaux-montaigne.fr/fr/documentation/vos-bibliotheques/bibliotheque-franco-allemande-bifa.html"
+  },
+  {
     "id": "poi-osm-n6070507790",
     "name": "Bio C' Bon",
     "category": "bouche_restauration",
-    "subcategory": "metiers_de_bouche",
     "specialty": "Supermarché",
+    "subcategory": "metiers_de_bouche",
     "address": "73 Rue Notre-Dame, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.851975,
@@ -547,8 +613,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n4922966775",
     "name": "Biocoop Chartrons",
     "category": "bouche_restauration",
-    "subcategory": "metiers_de_bouche",
     "specialty": "Supermarché",
+    "subcategory": "metiers_de_bouche",
     "address": "6 Rue Sicard, 33300 Bordeaux",
     "coordinates": {
       "lat": 44.852027,
@@ -564,8 +630,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n13046462423",
     "name": "Bistro Cent Onze",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.853074,
@@ -578,8 +644,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7272639685",
     "name": "Bistrot du Fromager",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Pub",
+    "subcategory": "restauration_cafes",
     "address": "73 Quai des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.853227,
@@ -592,14 +658,14 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n581996871",
     "name": "BNP Paribas",
     "category": "services_artisanat",
+    "specialty": "Banque (DAB)",
     "subcategory": "services_proximite",
-    "specialty": "Banque",
     "address": "128 Cours de Verdun, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.851894,
       "lng": -0.573482
     },
-    "description": "Banque du quartier des Chartrons. Fiche issue d’OpenStreetMap.",
+    "description": "Banque (DAB) du quartier des Chartrons. Mots-clés : DAB, distributeur automatique, ATM. Fiche issue d’OpenStreetMap.",
     "isMerchant": true,
     "phone": "05 56 48 32 09",
     "openingHours": "Tu-Fr 09:30-12:30,13:30-18:00; Sa 09:00-13:00"
@@ -608,8 +674,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n10215783953",
     "name": "Bobo Pizza",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.854692,
@@ -622,8 +688,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n4469978330",
     "name": "boca a boca",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "Rue Notre-Dame, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852039,
@@ -638,8 +704,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7152499585",
     "name": "Bordeaux Beer Factory",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Bar",
+    "subcategory": "restauration_cafes",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.855014,
@@ -653,8 +719,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7373040100",
     "name": "Bordeaux Copies",
     "category": "services_artisanat",
-    "subcategory": "services_proximite",
     "specialty": "Reprographie",
+    "subcategory": "services_proximite",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.854979,
@@ -667,8 +733,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n11186474253",
     "name": "Bordeaux Manucure",
     "category": "sante_bien_etre",
-    "subcategory": "services_proximite",
     "specialty": "Institut de beauté",
+    "subcategory": "services_proximite",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852929,
@@ -681,8 +747,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n13037284859",
     "name": "Boucherie Chassagne",
     "category": "bouche_restauration",
-    "subcategory": "metiers_de_bouche",
     "specialty": "Boucherie",
+    "subcategory": "metiers_de_bouche",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.855328,
@@ -696,8 +762,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n6972468439",
     "name": "Boucherie des Chartrons",
     "category": "bouche_restauration",
-    "subcategory": "metiers_de_bouche",
     "specialty": "Boucherie",
+    "subcategory": "metiers_de_bouche",
     "address": "45 Cours Portal, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.853888,
@@ -708,11 +774,25 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "openingHours": "Mo-Fr 09:00-12:45, 16:00-19:00"
   },
   {
+    "id": "poi-osm-w117456212",
+    "name": "Bourse Maritime",
+    "category": "patrimoine_culture",
+    "specialty": "Patrimoine & culture",
+    "subcategory": "patrimoine_tourisme",
+    "address": "Quartier des Chartrons, 33000 Bordeaux",
+    "coordinates": {
+      "lat": 44.848482,
+      "lng": -0.571303
+    },
+    "description": "Patrimoine & culture du quartier des Chartrons. Fiche issue d’OpenStreetMap.",
+    "isMerchant": true
+  },
+  {
     "id": "poi-osm-n11492734173",
     "name": "Bowl Eat",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "34 Rue Camille Godard, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.854979,
@@ -727,8 +807,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7209030285",
     "name": "Bread Storming",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restauration rapide",
+    "subcategory": "restauration_cafes",
     "address": "27 Rue Notre-Dame, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.850428,
@@ -742,8 +822,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7058227930",
     "name": "Breizh Café",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "19 Rue Sicard, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852343,
@@ -759,8 +839,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n12855607101",
     "name": "Cabinet Bedin",
     "category": "services_artisanat",
-    "subcategory": "services_proximite",
     "specialty": "Agence immobilière",
+    "subcategory": "services_proximite",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852452,
@@ -776,8 +856,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n11328974020",
     "name": "Cabinet médical Counord",
     "category": "sante_bien_etre",
-    "subcategory": "services_proximite",
     "specialty": "Santé & bien-être",
+    "subcategory": "services_proximite",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.860194,
@@ -787,11 +867,41 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "isMerchant": true
   },
   {
+    "id": "poi-osm-n9204135754",
+    "name": "CACIS",
+    "category": "services_artisanat",
+    "specialty": "Association",
+    "subcategory": "services_proximite",
+    "address": "163 Avenue Émile Counord, 33000 Bordeaux",
+    "coordinates": {
+      "lat": 44.861671,
+      "lng": -0.575431
+    },
+    "description": "Association du quartier des Chartrons. Mots-clés : association, loisirs. Fiche issue d’OpenStreetMap.",
+    "isMerchant": true,
+    "phone": "05 56 39 11 69",
+    "website": "https://cacis-asso.net/"
+  },
+  {
+    "id": "poi-osm-w154397898",
+    "name": "Café Théâtre Drôle de Scène",
+    "category": "patrimoine_culture",
+    "specialty": "Théâtre",
+    "subcategory": "patrimoine_tourisme",
+    "address": "39 Rue Paul Verlaine, 33000 Bordeaux",
+    "coordinates": {
+      "lat": 44.854023,
+      "lng": -0.57695
+    },
+    "description": "Théâtre du quartier des Chartrons. Mots-clés : spectacle, culture. Fiche issue d’OpenStreetMap.",
+    "isMerchant": false
+  },
+  {
     "id": "poi-osm-n4769733218",
     "name": "Cafés Régus",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Café / Torréfaction",
+    "subcategory": "restauration_cafes",
     "address": "8 Cours Portal, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852314,
@@ -806,14 +916,14 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n445855214",
     "name": "Caisse d'Épargne",
     "category": "services_artisanat",
+    "specialty": "Banque (DAB)",
     "subcategory": "services_proximite",
-    "specialty": "Banque",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.851896,
       "lng": -0.574597
     },
-    "description": "Banque du quartier des Chartrons. Fiche issue d’OpenStreetMap.",
+    "description": "Banque (DAB) du quartier des Chartrons. Mots-clés : DAB, distributeur automatique, ATM. Fiche issue d’OpenStreetMap.",
     "isMerchant": true,
     "phone": "05 33 63 57 74",
     "website": "https://www.agences.caisse-epargne.fr/banque-assurance/33-id33"
@@ -822,8 +932,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n581996877",
     "name": "Cambridge Arms",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Pub",
+    "subcategory": "restauration_cafes",
     "address": "27 Rue Rode, 33300 Bordeaux",
     "coordinates": {
       "lat": 44.852801,
@@ -839,8 +949,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n2491301930",
     "name": "Camille Albane",
     "category": "sante_bien_etre",
-    "subcategory": "services_proximite",
     "specialty": "Coiffeur",
+    "subcategory": "services_proximite",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852447,
@@ -854,14 +964,14 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-w117456213",
     "name": "CAPC - Musée d'art contemporain de Bordeaux",
     "category": "patrimoine_culture",
+    "specialty": "Espace culturel",
     "subcategory": "patrimoine_tourisme",
-    "specialty": "Musée",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.848607,
       "lng": -0.572151
     },
-    "description": "Musée du quartier des Chartrons. Fiche issue d’OpenStreetMap.",
+    "description": "Espace culturel du quartier des Chartrons. Mots-clés : spectacle, culture. Fiche issue d’OpenStreetMap.",
     "isMerchant": true,
     "phone": "05 56 00 81 50",
     "openingHours": "Tu-Su 11:00-18:00; PH off",
@@ -871,8 +981,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n444753675",
     "name": "Carrefour City",
     "category": "bouche_restauration",
-    "subcategory": "metiers_de_bouche",
     "specialty": "Épicerie",
+    "subcategory": "metiers_de_bouche",
     "address": "82 Cours Balguerie Stuttenberg, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.85736,
@@ -888,8 +998,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n2491303538",
     "name": "Carrefour City",
     "category": "bouche_restauration",
-    "subcategory": "metiers_de_bouche",
     "specialty": "Épicerie",
+    "subcategory": "metiers_de_bouche",
     "address": "54 Cours de la Martinique, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.853665,
@@ -905,8 +1015,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n8077249446",
     "name": "Carrefour City",
     "category": "bouche_restauration",
-    "subcategory": "metiers_de_bouche",
     "specialty": "Épicerie",
+    "subcategory": "metiers_de_bouche",
     "address": "8 Rue Notre-Dame, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.849593,
@@ -922,8 +1032,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n11347270417",
     "name": "Carrefour City",
     "category": "bouche_restauration",
-    "subcategory": "metiers_de_bouche",
     "specialty": "Épicerie",
+    "subcategory": "metiers_de_bouche",
     "address": "69 Rue Camille Godard, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.855097,
@@ -939,8 +1049,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n4443464013",
     "name": "Carrefour Express",
     "category": "bouche_restauration",
-    "subcategory": "metiers_de_bouche",
     "specialty": "Épicerie",
+    "subcategory": "metiers_de_bouche",
     "address": "59 Cours de Verdun, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.851124,
@@ -956,8 +1066,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n6971785158",
     "name": "Carrefour Express",
     "category": "bouche_restauration",
-    "subcategory": "metiers_de_bouche",
     "specialty": "Épicerie",
+    "subcategory": "metiers_de_bouche",
     "address": "20 Cours Portal, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852708,
@@ -973,9 +1083,9 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n2501534581",
     "name": "Carrosserie Des Chartrons",
     "category": "services_artisanat",
-    "subcategory": "artisans",
     "specialty": "car repair",
-    "address": "91 Cours Saint-Louis, 33000 Bordeaux",
+    "subcategory": "artisans",
+    "address": "481 Boulevard Alfred Daney, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.859629,
       "lng": -0.569027
@@ -990,14 +1100,14 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n13046462424",
     "name": "Cartopolo",
     "category": "mode_deco_antiquites",
-    "subcategory": "patrimoine_tourisme",
     "specialty": "Galerie / Art",
+    "subcategory": "patrimoine_tourisme",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.853482,
       "lng": -0.569758
     },
-    "description": "Galerie / Art du quartier des Chartrons. Fiche issue d’OpenStreetMap.",
+    "description": "Galerie / Art du quartier des Chartrons. Mots-clés : antiquités, artisanat. Fiche issue d’OpenStreetMap.",
     "isMerchant": true,
     "website": "https://cartopolo.fr"
   },
@@ -1005,8 +1115,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n13046524270",
     "name": "Casa Gaia",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "16 bis Rue Latour, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.850514,
@@ -1022,8 +1132,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-w154358588",
     "name": "Casino Shop",
     "category": "bouche_restauration",
-    "subcategory": "metiers_de_bouche",
     "specialty": "Épicerie",
+    "subcategory": "metiers_de_bouche",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.861646,
@@ -1036,8 +1146,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n6347765268",
     "name": "Castagnon Avocats",
     "category": "services_artisanat",
-    "subcategory": "services_proximite",
     "specialty": "Avocat",
+    "subcategory": "services_proximite",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.859463,
@@ -1052,8 +1162,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n12036072761",
     "name": "Cat' pattes",
     "category": "services_artisanat",
-    "subcategory": "services_proximite",
     "specialty": "pet grooming",
+    "subcategory": "services_proximite",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.854982,
@@ -1068,8 +1178,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n11186262327",
     "name": "CB2P",
     "category": "services_artisanat",
-    "subcategory": "services_proximite",
     "specialty": "Avocat",
+    "subcategory": "services_proximite",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.849898,
@@ -1080,11 +1190,25 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "openingHours": "Mo-Fr 09:00-18:00"
   },
   {
+    "id": "poi-osm-w154322627",
+    "name": "Centre de jeunesse l'Aiglon",
+    "category": "services_artisanat",
+    "specialty": "Association",
+    "subcategory": "services_proximite",
+    "address": "Quartier des Chartrons, 33000 Bordeaux",
+    "coordinates": {
+      "lat": 44.853031,
+      "lng": -0.571437
+    },
+    "description": "Association du quartier des Chartrons. Mots-clés : association, loisirs. Fiche issue d’OpenStreetMap.",
+    "isMerchant": false
+  },
+  {
     "id": "poi-osm-n13526854696",
     "name": "Century 21",
     "category": "services_artisanat",
-    "subcategory": "services_proximite",
     "specialty": "Agence immobilière",
+    "subcategory": "services_proximite",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.85469,
@@ -1095,11 +1219,40 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "openingHours": "Mo-Th 09:30-12:30, 14:00-18:30; Fr 09:30-12:30, 14:00-18:00"
   },
   {
+    "id": "poi-osm-n2501425338",
+    "name": "CESACOM",
+    "category": "services_artisanat",
+    "specialty": "École publique",
+    "subcategory": "services_proximite",
+    "address": "Quartier des Chartrons, 33000 Bordeaux",
+    "coordinates": {
+      "lat": 44.854121,
+      "lng": -0.566224
+    },
+    "description": "École publique du quartier des Chartrons. Mots-clés : petite enfance, éducation. Fiche issue d’OpenStreetMap.",
+    "isMerchant": true,
+    "website": "https://www.cesacom.fr"
+  },
+  {
+    "id": "poi-osm-n4690461390",
+    "name": "Chartrons Boxe",
+    "category": "services_artisanat",
+    "specialty": "Salle de sport",
+    "subcategory": "services_proximite",
+    "address": "50 Rue Camille Godard, 33000 Bordeaux",
+    "coordinates": {
+      "lat": 44.85495,
+      "lng": -0.57523
+    },
+    "description": "Salle de sport du quartier des Chartrons. Mots-clés : association, loisirs. Fiche issue d’OpenStreetMap.",
+    "isMerchant": true
+  },
+  {
     "id": "poi-osm-n8146711786",
     "name": "Cheese Naan",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restauration rapide",
+    "subcategory": "restauration_cafes",
     "address": "58 Cours Portal, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.854123,
@@ -1112,8 +1265,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n13364309088",
     "name": "Chez Aurel",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "12 Place Paul et Jean-Paul Avisseau, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.855346,
@@ -1127,8 +1280,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n9332959466",
     "name": "Chez Dupont",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.850964,
@@ -1142,8 +1295,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n13039625741",
     "name": "Chez Wass",
     "category": "bouche_restauration",
-    "subcategory": "metiers_de_bouche",
     "specialty": "Boulangerie",
+    "subcategory": "metiers_de_bouche",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.860103,
@@ -1153,32 +1306,17 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "isMerchant": true
   },
   {
-    "id": "poi-osm-n1509360637",
-    "name": "Cho7.com",
-    "category": "mode_deco_antiquites",
-    "subcategory": "boutiques",
-    "specialty": "Prêt-à-porter",
-    "address": "Quartier des Chartrons, 33000 Bordeaux",
-    "coordinates": {
-      "lat": 44.858491,
-      "lng": -0.566486
-    },
-    "description": "Prêt-à-porter du quartier des Chartrons. Fiche issue d’OpenStreetMap.",
-    "isMerchant": true,
-    "website": "https://www.cho7.com/"
-  },
-  {
     "id": "poi-osm-n3066702285",
     "name": "CIC",
     "category": "services_artisanat",
+    "specialty": "Banque (DAB)",
     "subcategory": "services_proximite",
-    "specialty": "Banque",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.85442,
       "lng": -0.57233
     },
-    "description": "Banque du quartier des Chartrons. Fiche issue d’OpenStreetMap.",
+    "description": "Banque (DAB) du quartier des Chartrons. Mots-clés : DAB, distributeur automatique, ATM. Fiche issue d’OpenStreetMap.",
     "isMerchant": true,
     "phone": "05 56 47 10 63",
     "openingHours": "Tu 08:45-12:30,14:30-18:00; We-Fr 08:45-12:30,13:30-18:00; Sa 08:30-12:30",
@@ -1188,8 +1326,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n8173974631",
     "name": "CIC",
     "category": "services_artisanat",
-    "subcategory": "services_proximite",
     "specialty": "Bureau / Entreprise",
+    "subcategory": "services_proximite",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.849811,
@@ -1202,8 +1340,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n3412582763",
     "name": "City Résidence Appart Hôtel Bordeaux",
     "category": "patrimoine_culture",
-    "subcategory": "patrimoine_tourisme",
     "specialty": "Hôtel",
+    "subcategory": "patrimoine_tourisme",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.855441,
@@ -1218,8 +1356,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n13526854697",
     "name": "Clinique Vétérinaire du Jardin Public",
     "category": "sante_bien_etre",
-    "subcategory": "services_proximite",
     "specialty": "Vétérinaire",
+    "subcategory": "services_proximite",
     "address": "95 Rue du Jardin Public, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.853725,
@@ -1234,8 +1372,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n13037284869",
     "name": "Coco la Boulange",
     "category": "bouche_restauration",
-    "subcategory": "metiers_de_bouche",
     "specialty": "Boulangerie",
+    "subcategory": "metiers_de_bouche",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.854474,
@@ -1246,11 +1384,40 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "openingHours": "Mo,Su off; Tu-Sa 07:30-19:30"
   },
   {
+    "id": "poi-osm-n13827410492",
+    "name": "Collège L'Envol - Bordeaux",
+    "category": "services_artisanat",
+    "specialty": "École privée",
+    "subcategory": "services_proximite",
+    "address": "Quartier des Chartrons, 33000 Bordeaux",
+    "coordinates": {
+      "lat": 44.861081,
+      "lng": -0.569785
+    },
+    "description": "École privée du quartier des Chartrons. Mots-clés : petite enfance, éducation. Fiche issue d’OpenStreetMap.",
+    "isMerchant": false,
+    "phone": "06 05 39 03 73"
+  },
+  {
+    "id": "poi-osm-n2060449949",
+    "name": "Collège privé Saint-Louis Sainte-Thérèse",
+    "category": "services_artisanat",
+    "specialty": "École privée",
+    "subcategory": "services_proximite",
+    "address": "47 Cours Balguerie Stuttenberg, 33000 Bordeaux",
+    "coordinates": {
+      "lat": 44.857334,
+      "lng": -0.569378
+    },
+    "description": "École privée du quartier des Chartrons. Mots-clés : petite enfance, éducation. Fiche issue d’OpenStreetMap.",
+    "isMerchant": false
+  },
+  {
     "id": "poi-osm-n13165803901",
     "name": "Comme des coiffeurs",
     "category": "sante_bien_etre",
-    "subcategory": "services_proximite",
     "specialty": "Coiffeur",
+    "subcategory": "services_proximite",
     "address": "89 Rue Notre-Dame, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852513,
@@ -1266,8 +1433,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7053483515",
     "name": "Comptoir du Grand Parc",
     "category": "services_artisanat",
-    "subcategory": "boutiques",
     "specialty": "appliance",
+    "subcategory": "boutiques",
     "address": "4 Rue Lagrange, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.854886,
@@ -1280,14 +1447,14 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n2878016359",
     "name": "Cool Bike",
     "category": "services_artisanat",
+    "specialty": "Réparateur de vélos",
     "subcategory": "artisans",
-    "specialty": "Vélo",
     "address": "77 Quai des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.853434,
       "lng": -0.567139
     },
-    "description": "Vélo du quartier des Chartrons. Fiche issue d’OpenStreetMap.",
+    "description": "Réparateur de vélos du quartier des Chartrons. Fiche issue d’OpenStreetMap.",
     "isMerchant": true,
     "phone": "05 33 48 13 86",
     "openingHours": "Tu-Su 11:00-20:00",
@@ -1297,8 +1464,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7741811785",
     "name": "Copa Rota",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "87 Rue Notre-Dame, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852393,
@@ -1311,8 +1478,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n6964027979",
     "name": "Copies Chartrons",
     "category": "services_artisanat",
-    "subcategory": "services_proximite",
     "specialty": "Reprographie",
+    "subcategory": "services_proximite",
     "address": "3 Place du Marché des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852452,
@@ -1327,8 +1494,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n11186432688",
     "name": "Corfias",
     "category": "sante_bien_etre",
-    "subcategory": "services_proximite",
     "specialty": "Opticien",
+    "subcategory": "services_proximite",
     "address": "27 Cours Portal, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.853187,
@@ -1344,8 +1511,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n13526886418",
     "name": "Corim",
     "category": "services_artisanat",
-    "subcategory": "services_proximite",
     "specialty": "Agence immobilière",
+    "subcategory": "services_proximite",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.85105,
@@ -1358,22 +1525,22 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n2524280788",
     "name": "Cortex Athletico",
     "category": "patrimoine_culture",
-    "subcategory": "patrimoine_tourisme",
     "specialty": "Galerie",
+    "subcategory": "patrimoine_tourisme",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.848015,
       "lng": -0.572371
     },
-    "description": "Galerie du quartier des Chartrons. Fiche issue d’OpenStreetMap.",
+    "description": "Galerie du quartier des Chartrons. Mots-clés : antiquités, artisanat. Fiche issue d’OpenStreetMap.",
     "isMerchant": true
   },
   {
     "id": "poi-osm-n7257844722",
     "name": "Couleurs Chartron",
     "category": "sante_bien_etre",
-    "subcategory": "services_proximite",
     "specialty": "Coiffeur",
+    "subcategory": "services_proximite",
     "address": "90 Cours de Verdun, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.850205,
@@ -1386,8 +1553,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n12022523270",
     "name": "Coutume",
     "category": "mode_deco_antiquites",
-    "subcategory": "boutiques",
     "specialty": "Arts de la table",
+    "subcategory": "boutiques",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852154,
@@ -1402,8 +1569,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n12036063945",
     "name": "Couture & Co",
     "category": "services_artisanat",
-    "subcategory": "artisans",
     "specialty": "dressmaker",
+    "subcategory": "artisans",
     "address": "20 Rue Camille Godard, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.854985,
@@ -1418,14 +1585,14 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n581996872",
     "name": "Crédit Agricole",
     "category": "services_artisanat",
+    "specialty": "Banque (DAB)",
     "subcategory": "services_proximite",
-    "specialty": "Banque",
     "address": "19 Place Paul Doumer, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852256,
       "lng": -0.573651
     },
-    "description": "Banque du quartier des Chartrons. Fiche issue d’OpenStreetMap.",
+    "description": "Banque (DAB) du quartier des Chartrons. Mots-clés : DAB, distributeur automatique, ATM. Fiche issue d’OpenStreetMap.",
     "isMerchant": true,
     "phone": "05 57 35 44 00",
     "openingHours": "Sa 09:15-12:45, 14:00-17:00; Tu-Fr 09:15-12:45, 14:00-18:00",
@@ -1435,25 +1602,53 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n507551116",
     "name": "Crédit Mutuel",
     "category": "services_artisanat",
+    "specialty": "Banque (DAB)",
     "subcategory": "services_proximite",
-    "specialty": "Banque",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.854249,
       "lng": -0.572429
     },
-    "description": "Banque du quartier des Chartrons. Fiche issue d’OpenStreetMap.",
+    "description": "Banque (DAB) du quartier des Chartrons. Mots-clés : DAB, distributeur automatique, ATM. Fiche issue d’OpenStreetMap.",
     "isMerchant": true,
     "phone": "05 56 07 95 23",
     "openingHours": "Tu-We 09:00-12:45, 14:00-18:00; Th 09:00-12:45, 15:45-18:00; Fr 09:00-12:45, 14:00-18:00; Sa 09:00-12:45",
     "website": "https://www.cmso.com/reseau-bancaire-cooperatif/web/recherche-agence-credit-mutuel-du-sud-ouest/gironde/bordeaux/bordeaux-chartrons-33000"
   },
   {
+    "id": "poi-osm-n12057572968",
+    "name": "DAB CIC",
+    "category": "services_artisanat",
+    "specialty": "Distributeur automatique (DAB)",
+    "subcategory": "services_proximite",
+    "address": "Quartier des Chartrons, 33000 Bordeaux",
+    "coordinates": {
+      "lat": 44.849762,
+      "lng": -0.570427
+    },
+    "description": "Distributeur automatique (DAB) du quartier des Chartrons. Mots-clés : DAB, distributeur automatique, ATM. Fiche issue d’OpenStreetMap.",
+    "isMerchant": false
+  },
+  {
+    "id": "poi-osm-n13923341099",
+    "name": "DAB Société Générale",
+    "category": "services_artisanat",
+    "specialty": "Distributeur automatique (DAB)",
+    "subcategory": "services_proximite",
+    "address": "Quartier des Chartrons, 33000 Bordeaux",
+    "coordinates": {
+      "lat": 44.855486,
+      "lng": -0.571044
+    },
+    "description": "Distributeur automatique (DAB) du quartier des Chartrons. Mots-clés : DAB, distributeur automatique, ATM. Fiche issue d’OpenStreetMap.",
+    "isMerchant": false
+  },
+  {
     "id": "poi-osm-n9297766817",
     "name": "Délices de Damas",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "85 Cours Balguerie Stuttenberg, 33300 Bordeaux",
     "coordinates": {
       "lat": 44.858196,
@@ -1467,8 +1662,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n9866159117",
     "name": "Demathieu Bard Immobilier",
     "category": "services_artisanat",
-    "subcategory": "services_proximite",
     "specialty": "property developer",
+    "subcategory": "services_proximite",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.848503,
@@ -1483,8 +1678,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n6241716685",
     "name": "Derma Pro",
     "category": "sante_bien_etre",
-    "subcategory": "services_proximite",
     "specialty": "Institut de beauté",
+    "subcategory": "services_proximite",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852329,
@@ -1500,14 +1695,14 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7947189487",
     "name": "Do you speak francais ?",
     "category": "services_artisanat",
+    "specialty": "variety store",
     "subcategory": "boutiques",
-    "specialty": "Bazar",
     "address": "93 Rue Notre-Dame, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.85262,
       "lng": -0.570662
     },
-    "description": "Bazar du quartier des Chartrons. Fiche issue d’OpenStreetMap.",
+    "description": "variety store du quartier des Chartrons. Fiche issue d’OpenStreetMap.",
     "isMerchant": true,
     "openingHours": "Tu 11:00-19:00; We-Fr 10:30-19:00; Sa 10:00-19:00",
     "website": "https://www.doyouspeakfrancais.fr/"
@@ -1516,8 +1711,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n4387016837",
     "name": "dolomites pizza",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restauration rapide",
+    "subcategory": "restauration_cafes",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.853301,
@@ -1527,11 +1722,27 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "isMerchant": true
   },
   {
+    "id": "poi-osm-n10788272879",
+    "name": "e-artsup Bordeaux",
+    "category": "services_artisanat",
+    "specialty": "École publique",
+    "subcategory": "services_proximite",
+    "address": "51 Rue Camille Godard, 33300 Bordeaux",
+    "coordinates": {
+      "lat": 44.855126,
+      "lng": -0.575835
+    },
+    "description": "École publique du quartier des Chartrons. Mots-clés : petite enfance, éducation. Fiche issue d’OpenStreetMap.",
+    "isMerchant": true,
+    "phone": "05 57 87 33 61",
+    "website": "https://www.e-artsup.net/campus/ecole-creation-visuelle-bordeaux/"
+  },
+  {
     "id": "poi-osm-n7781748144",
     "name": "E.Leclerc Drive",
     "category": "bouche_restauration",
-    "subcategory": "metiers_de_bouche",
     "specialty": "Supermarché",
+    "subcategory": "metiers_de_bouche",
     "address": "126 Cours de Verdun, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.851841,
@@ -1547,8 +1758,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n12049539358",
     "name": "E.Leclerc Express",
     "category": "bouche_restauration",
-    "subcategory": "metiers_de_bouche",
     "specialty": "Supermarché",
+    "subcategory": "metiers_de_bouche",
     "address": "38 Quai des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.851122,
@@ -1561,11 +1772,153 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "website": "https://www.e.leclerc/mag/e-leclerc-express-bordeaux-chartrons"
   },
   {
+    "id": "poi-osm-w773556002",
+    "name": "École élémentaire Balguerie",
+    "category": "services_artisanat",
+    "specialty": "École publique",
+    "subcategory": "services_proximite",
+    "address": "Quartier des Chartrons, 33000 Bordeaux",
+    "coordinates": {
+      "lat": 44.856589,
+      "lng": -0.569908
+    },
+    "description": "École publique du quartier des Chartrons. Mots-clés : petite enfance, éducation. Fiche issue d’OpenStreetMap.",
+    "isMerchant": false
+  },
+  {
+    "id": "poi-osm-w779580735",
+    "name": "École élémentaire Stendhal",
+    "category": "services_artisanat",
+    "specialty": "École publique",
+    "subcategory": "services_proximite",
+    "address": "Quartier des Chartrons, 33000 Bordeaux",
+    "coordinates": {
+      "lat": 44.855997,
+      "lng": -0.568044
+    },
+    "description": "École publique du quartier des Chartrons. Mots-clés : petite enfance, éducation. Fiche issue d’OpenStreetMap.",
+    "isMerchant": false
+  },
+  {
+    "id": "poi-osm-w192251546",
+    "name": "École maternelle Montgolfier",
+    "category": "services_artisanat",
+    "specialty": "École publique",
+    "subcategory": "services_proximite",
+    "address": "Quartier des Chartrons, 33000 Bordeaux",
+    "coordinates": {
+      "lat": 44.852147,
+      "lng": -0.577558
+    },
+    "description": "École publique du quartier des Chartrons. Mots-clés : petite enfance, éducation. Fiche issue d’OpenStreetMap.",
+    "isMerchant": false
+  },
+  {
+    "id": "poi-osm-w195612721",
+    "name": "École maternelle Paul Berthelot",
+    "category": "services_artisanat",
+    "specialty": "École publique",
+    "subcategory": "services_proximite",
+    "address": "Quartier des Chartrons, 33000 Bordeaux",
+    "coordinates": {
+      "lat": 44.856624,
+      "lng": -0.571922
+    },
+    "description": "École publique du quartier des Chartrons. Mots-clés : petite enfance, éducation. Fiche issue d’OpenStreetMap.",
+    "isMerchant": false
+  },
+  {
+    "id": "poi-osm-n13827410488",
+    "name": "École maternelle privée paroissiale des Chartrons",
+    "category": "services_artisanat",
+    "specialty": "École privée",
+    "subcategory": "services_proximite",
+    "address": "Quartier des Chartrons, 33000 Bordeaux",
+    "coordinates": {
+      "lat": 44.851203,
+      "lng": -0.572107
+    },
+    "description": "École privée du quartier des Chartrons. Mots-clés : petite enfance, éducation. Fiche issue d’OpenStreetMap.",
+    "isMerchant": false,
+    "phone": "06 62 25 97 02"
+  },
+  {
+    "id": "poi-osm-w779580736",
+    "name": "École maternelle Stendhal",
+    "category": "services_artisanat",
+    "specialty": "École publique",
+    "subcategory": "services_proximite",
+    "address": "Quartier des Chartrons, 33000 Bordeaux",
+    "coordinates": {
+      "lat": 44.855726,
+      "lng": -0.567673
+    },
+    "description": "École publique du quartier des Chartrons. Mots-clés : petite enfance, éducation. Fiche issue d’OpenStreetMap.",
+    "isMerchant": false
+  },
+  {
+    "id": "poi-osm-n12176269965",
+    "name": "École paroissiale des Chartrons",
+    "category": "services_artisanat",
+    "specialty": "École publique",
+    "subcategory": "services_proximite",
+    "address": "51 Rue Notre-Dame, 33000 Bordeaux",
+    "coordinates": {
+      "lat": 44.851502,
+      "lng": -0.572388
+    },
+    "description": "École publique du quartier des Chartrons. Mots-clés : petite enfance, éducation. Fiche issue d’OpenStreetMap.",
+    "isMerchant": false,
+    "website": "https://ep-chartrons.fr"
+  },
+  {
+    "id": "poi-osm-n2060449961",
+    "name": "École primaire privée Saint-Louis Sainte-Thérèse",
+    "category": "services_artisanat",
+    "specialty": "École privée",
+    "subcategory": "services_proximite",
+    "address": "47 Cours Balguerie Stuttenberg, 33000 Bordeaux",
+    "coordinates": {
+      "lat": 44.857042,
+      "lng": -0.568949
+    },
+    "description": "École privée du quartier des Chartrons. Mots-clés : petite enfance, éducation. Fiche issue d’OpenStreetMap.",
+    "isMerchant": false
+  },
+  {
+    "id": "poi-osm-n2060427536",
+    "name": "École secondaire privée Jacques Prévert",
+    "category": "services_artisanat",
+    "specialty": "École privée",
+    "subcategory": "services_proximite",
+    "address": "Quartier des Chartrons, 33000 Bordeaux",
+    "coordinates": {
+      "lat": 44.856232,
+      "lng": -0.573273
+    },
+    "description": "École privée du quartier des Chartrons. Mots-clés : petite enfance, éducation. Fiche issue d’OpenStreetMap.",
+    "isMerchant": false
+  },
+  {
+    "id": "poi-osm-n1786354435",
+    "name": "École Supérieure de Commerce et d'Économie Numérique",
+    "category": "services_artisanat",
+    "specialty": "École privée",
+    "subcategory": "services_proximite",
+    "address": "101 Quai des Chartrons, 33300 Bordeaux",
+    "coordinates": {
+      "lat": 44.855339,
+      "lng": -0.565708
+    },
+    "description": "École privée du quartier des Chartrons. Mots-clés : petite enfance, éducation. Fiche issue d’OpenStreetMap.",
+    "isMerchant": true
+  },
+  {
     "id": "poi-osm-n7257790359",
     "name": "Écouter Voir",
     "category": "sante_bien_etre",
-    "subcategory": "services_proximite",
     "specialty": "Opticien",
+    "subcategory": "services_proximite",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852553,
@@ -1578,11 +1931,28 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "website": "https://magasins.ecoutervoir.fr/nouvelle-aquitaine/gironde/bordeaux/ecouter-voir-optique-mutualiste-494"
   },
   {
+    "id": "poi-osm-n7920164369",
+    "name": "Ehpad Korian Villa Louisa",
+    "category": "services_artisanat",
+    "specialty": "Association",
+    "subcategory": "services_proximite",
+    "address": "Quartier des Chartrons, 33000 Bordeaux",
+    "coordinates": {
+      "lat": 44.858446,
+      "lng": -0.569135
+    },
+    "description": "Association du quartier des Chartrons. Mots-clés : association, loisirs. Fiche issue d’OpenStreetMap.",
+    "isMerchant": true,
+    "phone": "05 57 10 58 50",
+    "openingHours": "Mo-Su 00:00-24:00",
+    "website": "https://www.korian.fr/maisons-retraite/nouvelle-aquitaine/gironde-33/bordeaux-33300/ehpad-korian-villa-louisa"
+  },
+  {
     "id": "poi-osm-n2524273756",
     "name": "El Nacional",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "23 Rue Rode, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852751,
@@ -1595,11 +1965,40 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "website": "https://www.elnacional.fr/"
   },
   {
+    "id": "poi-osm-n13526854699",
+    "name": "Elevate",
+    "category": "services_artisanat",
+    "specialty": "Salle de sport",
+    "subcategory": "services_proximite",
+    "address": "107 Rue du Jardin Public, 33000 Bordeaux",
+    "coordinates": {
+      "lat": 44.854112,
+      "lng": -0.574593
+    },
+    "description": "Salle de sport du quartier des Chartrons. Mots-clés : association, loisirs. Fiche issue d’OpenStreetMap.",
+    "isMerchant": true,
+    "website": "https://elevate-fitness.fr/"
+  },
+  {
+    "id": "poi-osm-w773558156",
+    "name": "Ensemble scolaire privé Saint-Louis Sainte-Thérèse",
+    "category": "services_artisanat",
+    "specialty": "École publique",
+    "subcategory": "services_proximite",
+    "address": "Quartier des Chartrons, 33000 Bordeaux",
+    "coordinates": {
+      "lat": 44.857381,
+      "lng": -0.569086
+    },
+    "description": "École publique du quartier des Chartrons. Mots-clés : petite enfance, éducation. Fiche issue d’OpenStreetMap.",
+    "isMerchant": false
+  },
+  {
     "id": "poi-osm-n13671042501",
     "name": "Espaces Atypiques",
     "category": "services_artisanat",
-    "subcategory": "services_proximite",
     "specialty": "Agence immobilière",
+    "subcategory": "services_proximite",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852672,
@@ -1614,8 +2013,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n2491301893",
     "name": "Et Pâtes et Vous",
     "category": "bouche_restauration",
-    "subcategory": "metiers_de_bouche",
     "specialty": "Traiteur",
+    "subcategory": "metiers_de_bouche",
     "address": "33 Cours Portal, 33300 Bordeaux",
     "coordinates": {
       "lat": 44.853444,
@@ -1630,8 +2029,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n8942551526",
     "name": "Eurofins Bordeaux Grand Parc",
     "category": "sante_bien_etre",
-    "subcategory": "services_proximite",
     "specialty": "Laboratoire",
+    "subcategory": "services_proximite",
     "address": "9 Rue Étienne Huyard, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.860027,
@@ -1647,14 +2046,14 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n12036085097",
     "name": "Excel'Cycle",
     "category": "services_artisanat",
+    "specialty": "Réparateur de vélos",
     "subcategory": "artisans",
-    "specialty": "Vélo",
     "address": "88 Cours Saint-Louis, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.859156,
       "lng": -0.569076
     },
-    "description": "Vélo du quartier des Chartrons. Fiche issue d’OpenStreetMap.",
+    "description": "Réparateur de vélos du quartier des Chartrons. Fiche issue d’OpenStreetMap.",
     "isMerchant": true,
     "openingHours": "Tu-Sa 09:00-12:30, Tu-Fr 14:30-19:00"
   },
@@ -1662,8 +2061,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n3933559413",
     "name": "Félix Associés",
     "category": "services_artisanat",
-    "subcategory": "services_proximite",
     "specialty": "Architecte",
+    "subcategory": "services_proximite",
     "address": "123 Cours Journu Auber, 33300 Bordeaux",
     "coordinates": {
       "lat": 44.86198,
@@ -1677,8 +2076,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n14041742545",
     "name": "Féret",
     "category": "services_artisanat",
-    "subcategory": "services_proximite",
     "specialty": "publisher",
+    "subcategory": "services_proximite",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.848826,
@@ -1692,8 +2091,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n9950930617",
     "name": "Fire Walk",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Bar",
+    "subcategory": "restauration_cafes",
     "address": "28 Rue Latour, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.850736,
@@ -1706,8 +2105,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7304558838",
     "name": "Fleurs de Mars",
     "category": "services_artisanat",
-    "subcategory": "boutiques",
     "specialty": "Fleuriste",
+    "subcategory": "boutiques",
     "address": "1 Rue de la Course, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.851681,
@@ -1722,8 +2121,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7741803185",
     "name": "Foodji",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "38 Cours Portal, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.853457,
@@ -1736,8 +2135,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7041729248",
     "name": "Freddy's Corner",
     "category": "bouche_restauration",
-    "subcategory": "metiers_de_bouche",
     "specialty": "Traiteur",
+    "subcategory": "metiers_de_bouche",
     "address": "18 Rue Minvielle, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.853332,
@@ -1752,8 +2151,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n4745476222",
     "name": "fufu",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.854801,
@@ -1769,8 +2168,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n1509363337",
     "name": "Garage du Médoc",
     "category": "services_artisanat",
-    "subcategory": "artisans",
     "specialty": "car repair",
+    "subcategory": "artisans",
     "address": "20 Cours du Médoc, 33300 Bordeaux",
     "coordinates": {
       "lat": 44.856738,
@@ -1783,8 +2182,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n4922966774",
     "name": "Gastronomie des Pyrénées",
     "category": "bouche_restauration",
-    "subcategory": "metiers_de_bouche",
     "specialty": "Épicerie",
+    "subcategory": "metiers_de_bouche",
     "address": "12 Cours Portal, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852468,
@@ -1797,11 +2196,26 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "website": "https://www.gastronomie-pyrenees.fr/"
   },
   {
+    "id": "poi-osm-n13716421913",
+    "name": "GEM Tertio",
+    "category": "services_artisanat",
+    "specialty": "Association",
+    "subcategory": "services_proximite",
+    "address": "6 rue Paul verlaine, 33000 Bordeaux",
+    "coordinates": {
+      "lat": 44.85334,
+      "lng": -0.575385
+    },
+    "description": "Association du quartier des Chartrons. Mots-clés : association, loisirs. Fiche issue d’OpenStreetMap.",
+    "isMerchant": false,
+    "website": "https://ari-accompagnement.fr/dispositif/gem-tertio/"
+  },
+  {
     "id": "poi-osm-n11543796214",
     "name": "Gi group",
     "category": "services_artisanat",
-    "subcategory": "services_proximite",
     "specialty": "Agence d’emploi",
+    "subcategory": "services_proximite",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.850013,
@@ -1815,8 +2229,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7373529906",
     "name": "Ginette Laven L'Artisane",
     "category": "services_artisanat",
-    "subcategory": "artisans",
     "specialty": "Tapissier",
+    "subcategory": "artisans",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.8514,
@@ -1830,8 +2244,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7359507939",
     "name": "Giovanni l'Umbro",
     "category": "bouche_restauration",
-    "subcategory": "metiers_de_bouche",
     "specialty": "Traiteur",
+    "subcategory": "metiers_de_bouche",
     "address": "47 Cours de la Martinique, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.854,
@@ -1846,8 +2260,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n4861902724",
     "name": "Goethe Institut Bordeaux",
     "category": "services_artisanat",
-    "subcategory": "services_proximite",
     "specialty": "Formation",
+    "subcategory": "services_proximite",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.850217,
@@ -1860,8 +2274,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n444751540",
     "name": "Golden Apple",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Pub",
+    "subcategory": "restauration_cafes",
     "address": "46 Rue Borie, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.854566,
@@ -1872,11 +2286,25 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "phone": "05 56 79 03 85"
   },
   {
+    "id": "poi-osm-w1002339874",
+    "name": "Groupe Scolaire Saint-Louis - Sainte-Teresa",
+    "category": "services_artisanat",
+    "specialty": "École publique",
+    "subcategory": "services_proximite",
+    "address": "Quartier des Chartrons, 33000 Bordeaux",
+    "coordinates": {
+      "lat": 44.852239,
+      "lng": -0.57459
+    },
+    "description": "École publique du quartier des Chartrons. Mots-clés : petite enfance, éducation. Fiche issue d’OpenStreetMap.",
+    "isMerchant": false
+  },
+  {
     "id": "poi-osm-n6347765270",
     "name": "GSI Network",
     "category": "services_artisanat",
-    "subcategory": "services_proximite",
     "specialty": "Bureau / Entreprise",
+    "subcategory": "services_proximite",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.859522,
@@ -1887,11 +2315,39 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "website": "https://www.gsi-network.com/"
   },
   {
+    "id": "poi-osm-n6347450839",
+    "name": "Guignol Guérin",
+    "category": "patrimoine_culture",
+    "specialty": "Théâtre",
+    "subcategory": "patrimoine_tourisme",
+    "address": "Quartier des Chartrons, 33000 Bordeaux",
+    "coordinates": {
+      "lat": 44.848305,
+      "lng": -0.577119
+    },
+    "description": "Théâtre du quartier des Chartrons. Mots-clés : spectacle, culture. Fiche issue d’OpenStreetMap.",
+    "isMerchant": false
+  },
+  {
+    "id": "poi-osm-w154310371",
+    "name": "Gymnase des Chartrons",
+    "category": "services_artisanat",
+    "specialty": "Club sportif",
+    "subcategory": "services_proximite",
+    "address": "Quartier des Chartrons, 33000 Bordeaux",
+    "coordinates": {
+      "lat": 44.855697,
+      "lng": -0.56618
+    },
+    "description": "Club sportif du quartier des Chartrons. Mots-clés : association, loisirs. Fiche issue d’OpenStreetMap.",
+    "isMerchant": true
+  },
+  {
     "id": "poi-osm-n11286390465",
     "name": "Holy Pink",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Café",
+    "subcategory": "restauration_cafes",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.84812,
@@ -1904,8 +2360,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n1373688875",
     "name": "Hortus",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "114 Cours de Verdun, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.851395,
@@ -1921,8 +2377,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n4445771117",
     "name": "Hôtel du Parc",
     "category": "patrimoine_culture",
-    "subcategory": "patrimoine_tourisme",
     "specialty": "Hôtel",
+    "subcategory": "patrimoine_tourisme",
     "address": "10 Rue de la Verrerie, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.849685,
@@ -1936,8 +2392,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n1932868191",
     "name": "Hôtel Indigo",
     "category": "patrimoine_culture",
-    "subcategory": "patrimoine_tourisme",
     "specialty": "Hôtel",
+    "subcategory": "patrimoine_tourisme",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.84976,
@@ -1950,8 +2406,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-w154393906",
     "name": "Hôtel Mercure Bordeaux Château Chartrons",
     "category": "patrimoine_culture",
-    "subcategory": "patrimoine_tourisme",
     "specialty": "Hôtel",
+    "subcategory": "patrimoine_tourisme",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.859268,
@@ -1966,8 +2422,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7756197291",
     "name": "Hôtel Mercure Château Chartrons",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "81 Cours Saint-Louis, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.859026,
@@ -1981,8 +2437,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n11186466580",
     "name": "Humain immobilier",
     "category": "services_artisanat",
-    "subcategory": "services_proximite",
     "specialty": "Agence immobilière",
+    "subcategory": "services_proximite",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.853308,
@@ -1995,8 +2451,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-w193297094",
     "name": "Ibaïa Café",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.849862,
@@ -2010,8 +2466,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n10621342107",
     "name": "Icd - Rcg",
     "category": "services_artisanat",
-    "subcategory": "services_proximite",
     "specialty": "Agence immobilière",
+    "subcategory": "services_proximite",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.859229,
@@ -2027,8 +2483,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n11186475015",
     "name": "Immobanques",
     "category": "services_artisanat",
-    "subcategory": "services_proximite",
     "specialty": "Banque",
+    "subcategory": "services_proximite",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852859,
@@ -2041,8 +2497,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-w926653744",
     "name": "Institut Médico-Pédagogique Saint Joseph",
     "category": "sante_bien_etre",
-    "subcategory": "services_proximite",
     "specialty": "rehabilitation",
+    "subcategory": "services_proximite",
     "address": "130 Cours Journu Auber, 33300 Bordeaux",
     "coordinates": {
       "lat": 44.861783,
@@ -2056,8 +2512,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n9583460670",
     "name": "intersections",
     "category": "services_artisanat",
-    "subcategory": "services_proximite",
     "specialty": "Bureau / Entreprise",
+    "subcategory": "services_proximite",
     "address": "175 Rue du Jardin Public, 33300 Bordeaux",
     "coordinates": {
       "lat": 44.856467,
@@ -2069,11 +2525,59 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "website": "https://www.intersections-coop.fr/"
   },
   {
+    "id": "poi-osm-n10790218522",
+    "name": "ISEG Bodreaux",
+    "category": "services_artisanat",
+    "specialty": "École publique",
+    "subcategory": "services_proximite",
+    "address": "85 Rue du Jardin Public, 33000 Bordeaux",
+    "coordinates": {
+      "lat": 44.853475,
+      "lng": -0.574969
+    },
+    "description": "École publique du quartier des Chartrons. Mots-clés : petite enfance, éducation. Fiche issue d’OpenStreetMap.",
+    "isMerchant": true,
+    "phone": "05 57 87 00 28",
+    "website": "https://www.iseg.fr/"
+  },
+  {
+    "id": "poi-osm-n2501563526",
+    "name": "ISG Bordeaux",
+    "category": "services_artisanat",
+    "specialty": "École publique",
+    "subcategory": "services_proximite",
+    "address": "85 Rue du Jardin Public, 33000 Bordeaux",
+    "coordinates": {
+      "lat": 44.853503,
+      "lng": -0.574952
+    },
+    "description": "École publique du quartier des Chartrons. Mots-clés : petite enfance, éducation. Fiche issue d’OpenStreetMap.",
+    "isMerchant": true,
+    "phone": "05 57 87 72 25",
+    "website": "https://www.isg.fr/"
+  },
+  {
+    "id": "poi-osm-n10790333012",
+    "name": "ISG Luxury Management - Bordeaux",
+    "category": "services_artisanat",
+    "specialty": "École publique",
+    "subcategory": "services_proximite",
+    "address": "85 Rue du Jardin Public, 33000 Bordeaux",
+    "coordinates": {
+      "lat": 44.853531,
+      "lng": -0.574935
+    },
+    "description": "École publique du quartier des Chartrons. Mots-clés : petite enfance, éducation. Fiche issue d’OpenStreetMap.",
+    "isMerchant": true,
+    "phone": "05 56 78 57 86",
+    "website": "https://isg-luxury.fr/"
+  },
+  {
     "id": "poi-osm-n2505240358",
     "name": "Jill",
     "category": "services_artisanat",
-    "subcategory": "services_proximite",
     "specialty": "advertising agency",
+    "subcategory": "services_proximite",
     "address": "43 Rue de la Course, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.851193,
@@ -2087,14 +2591,14 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n4745476024",
     "name": "Jim et Compagnie",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restauration rapide",
+    "subcategory": "restauration_cafes",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.853157,
       "lng": -0.56749
     },
-    "description": "Restauration rapide du quartier des Chartrons. Spécialités : sandwichs. Fiche issue d’OpenStreetMap.",
+    "description": "Restauration rapide du quartier des Chartrons. Spécialités : sandwich. Fiche issue d’OpenStreetMap.",
     "isMerchant": true,
     "openingHours": "Mo-Fr 09:00-16:00"
   },
@@ -2102,8 +2606,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n13381184601",
     "name": "John Dory - Traiteur épicerie pain & vin",
     "category": "services_artisanat",
-    "subcategory": "metiers_de_bouche",
     "specialty": "caterer",
+    "subcategory": "metiers_de_bouche",
     "address": "42 Rue Camille Godard, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.854995,
@@ -2117,8 +2621,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n11544759869",
     "name": "Julien Vichy Immobilier",
     "category": "services_artisanat",
-    "subcategory": "services_proximite",
     "specialty": "Agence immobilière",
+    "subcategory": "services_proximite",
     "address": "19 Rue Frere, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.85219,
@@ -2131,8 +2635,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n13526886422",
     "name": "Julienne Adeline",
     "category": "sante_bien_etre",
-    "subcategory": "services_proximite",
     "specialty": "Médecine douce",
+    "subcategory": "services_proximite",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.851302,
@@ -2145,8 +2649,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n8841061729",
     "name": "Kaizen Developments",
     "category": "services_artisanat",
-    "subcategory": "services_proximite",
     "specialty": "Informatique / Digital",
+    "subcategory": "services_proximite",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.854768,
@@ -2159,8 +2663,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7741770485",
     "name": "Kanãhina",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restauration rapide",
+    "subcategory": "restauration_cafes",
     "address": "71 Rue Notre-Dame, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.85192,
@@ -2173,8 +2677,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7135206192",
     "name": "King Kong Bar",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Bar",
+    "subcategory": "restauration_cafes",
     "address": "72 Quai des Chartrons, 33300 Bordeaux",
     "coordinates": {
       "lat": 44.853158,
@@ -2187,8 +2691,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7366475250",
     "name": "Ko-San",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.850847,
@@ -2201,8 +2705,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n13274256255",
     "name": "Kolkoz",
     "category": "mode_deco_antiquites",
-    "subcategory": "boutiques",
     "specialty": "Prêt-à-porter",
+    "subcategory": "boutiques",
     "address": "8 Rue Cornac, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.850024,
@@ -2218,14 +2722,14 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n6934438033",
     "name": "Kuoni & Univairmer",
     "category": "services_artisanat",
+    "specialty": "travel agency",
     "subcategory": "services_proximite",
-    "specialty": "Agence de voyages",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.854101,
       "lng": -0.572566
     },
-    "description": "Agence de voyages du quartier des Chartrons. Fiche issue d’OpenStreetMap.",
+    "description": "travel agency du quartier des Chartrons. Fiche issue d’OpenStreetMap.",
     "isMerchant": true,
     "phone": "05 57 34 10 50",
     "website": "https://voyages.univairmer.com/rechercheAgence.cfm"
@@ -2234,8 +2738,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n1932014153",
     "name": "L'Arc-en-Ciel",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "3 Impasse du Couvent, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.851599,
@@ -2248,8 +2752,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n13274302090",
     "name": "L'Atelier",
     "category": "services_artisanat",
-    "subcategory": "boutiques",
     "specialty": "kitchen",
+    "subcategory": "boutiques",
     "address": "19 Rue Notre-Dame, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.850139,
@@ -2265,14 +2769,14 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n6195429730",
     "name": "L'Atelier du Sandwich",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restauration rapide",
+    "subcategory": "restauration_cafes",
     "address": "6 Rue Camille Godard, 33070 Bordeaux",
     "coordinates": {
       "lat": 44.854989,
       "lng": -0.572146
     },
-    "description": "Restauration rapide du quartier des Chartrons. Spécialités : sandwichs. Fiche issue d’OpenStreetMap.",
+    "description": "Restauration rapide du quartier des Chartrons. Spécialités : sandwich. Fiche issue d’OpenStreetMap.",
     "isMerchant": true,
     "phone": "06 33 62 26 86",
     "openingHours": "Mo-Fr 08:00-18:00",
@@ -2282,8 +2786,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n1576209631",
     "name": "L'Avant-Scène",
     "category": "patrimoine_culture",
-    "subcategory": "patrimoine_tourisme",
     "specialty": "Hôtel",
+    "subcategory": "patrimoine_tourisme",
     "address": "36 Rue Borie, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.854176,
@@ -2296,8 +2800,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n6972576925",
     "name": "L'Écharpe",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "27 Rue Minvielle, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.853502,
@@ -2313,8 +2817,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n1576209633",
     "name": "L'Esprit des Chartrons",
     "category": "patrimoine_culture",
-    "subcategory": "patrimoine_tourisme",
     "specialty": "Maison d’hôtes",
+    "subcategory": "patrimoine_tourisme",
     "address": "17 Rue Borie, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.854002,
@@ -2328,8 +2832,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n13077979901",
     "name": "L'Onglerie",
     "category": "sante_bien_etre",
-    "subcategory": "services_proximite",
     "specialty": "Institut de beauté",
+    "subcategory": "services_proximite",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.853514,
@@ -2345,8 +2849,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n4745476023",
     "name": "La Baraka",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restauration rapide",
+    "subcategory": "restauration_cafes",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.854982,
@@ -2359,8 +2863,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7411834214",
     "name": "La belle laverie des Chartrons",
     "category": "services_artisanat",
-    "subcategory": "services_proximite",
     "specialty": "Laverie",
+    "subcategory": "services_proximite",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.855608,
@@ -2374,8 +2878,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n4469978329",
     "name": "La Bocca",
     "category": "bouche_restauration",
-    "subcategory": "metiers_de_bouche",
     "specialty": "Traiteur",
+    "subcategory": "metiers_de_bouche",
     "address": "78 Rue Notre-Dame, 33300 Bordeaux",
     "coordinates": {
       "lat": 44.851997,
@@ -2390,8 +2894,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n3066695860",
     "name": "La boîte à pizza",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.854402,
@@ -2404,8 +2908,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n4521161553",
     "name": "La boucherie de Gaston",
     "category": "sante_bien_etre",
-    "subcategory": "services_proximite",
     "specialty": "Coiffeur",
+    "subcategory": "services_proximite",
     "address": "30 Cours Portal, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.853087,
@@ -2418,8 +2922,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n11898738269",
     "name": "La Boulangerie",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "48 Rue Barreyre, 33300 Bordeaux",
     "coordinates": {
       "lat": 44.85517,
@@ -2432,8 +2936,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7227257476",
     "name": "La Brasserie du Médoc",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "66 Cours du Médoc, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.858283,
@@ -2446,8 +2950,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n3336460636",
     "name": "La Cabane Cent Un",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "7 Rue Rode, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852429,
@@ -2462,8 +2966,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n2506169867",
     "name": "La Causerie Des Chartrons",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "14 Avenue Émile Counord, 33300 Bordeaux",
     "coordinates": {
       "lat": 44.855655,
@@ -2478,8 +2982,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n10049974746",
     "name": "La Crypte du vin",
     "category": "bouche_restauration",
-    "subcategory": "metiers_de_bouche",
     "specialty": "Caviste",
+    "subcategory": "metiers_de_bouche",
     "address": "6 Rue Notre-Dame, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.84952,
@@ -2495,8 +2999,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n6972468440",
     "name": "La Fromagerie de Pierre",
     "category": "bouche_restauration",
-    "subcategory": "metiers_de_bouche",
     "specialty": "Fromagerie",
+    "subcategory": "metiers_de_bouche",
     "address": "43 Cours Portal, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.853768,
@@ -2512,8 +3016,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n6972290494",
     "name": "La Jardinière",
     "category": "bouche_restauration",
-    "subcategory": "metiers_de_bouche",
     "specialty": "Primeur",
+    "subcategory": "metiers_de_bouche",
     "address": "14 Place Paul Doumer, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852393,
@@ -2527,8 +3031,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7544903170",
     "name": "La Librairie des Chartrons",
     "category": "services_artisanat",
-    "subcategory": "boutiques",
     "specialty": "Librairie",
+    "subcategory": "boutiques",
     "address": "17 Cours Saint-Louis, 33300 Bordeaux",
     "coordinates": {
       "lat": 44.855919,
@@ -2543,8 +3047,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n11186498028",
     "name": "La maison Gabin",
     "category": "bouche_restauration",
-    "subcategory": "metiers_de_bouche",
     "specialty": "Caviste",
+    "subcategory": "metiers_de_bouche",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.8535,
@@ -2558,8 +3062,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n4690426494",
     "name": "La Naupalée",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restauration rapide",
+    "subcategory": "restauration_cafes",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852797,
@@ -2572,8 +3076,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7257805257",
     "name": "La p'tite boulangerie Notre-Dame",
     "category": "bouche_restauration",
-    "subcategory": "metiers_de_bouche",
     "specialty": "Boulangerie",
+    "subcategory": "metiers_de_bouche",
     "address": "62 Rue Notre-Dame, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.851428,
@@ -2589,8 +3093,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n5324850521",
     "name": "La Pelle Cafe",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Café",
+    "subcategory": "restauration_cafes",
     "address": "29 Rue Notre-Dame, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.850514,
@@ -2606,8 +3110,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n2509120031",
     "name": "La Plantation",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Bar",
+    "subcategory": "restauration_cafes",
     "address": "31 Rue Camille Godard, 33300 Bordeaux",
     "coordinates": {
       "lat": 44.855231,
@@ -2621,8 +3125,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n9297763417",
     "name": "La Pointe",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "10 Rue Sicard, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852126,
@@ -2635,14 +3139,14 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n343382432",
     "name": "La Poste Bordeaux Chartrons",
     "category": "services_artisanat",
-    "subcategory": "services_proximite",
     "specialty": "La Poste",
+    "subcategory": "services_proximite",
     "address": "Quartier des Chartrons, 33300 Bordeaux",
     "coordinates": {
       "lat": 44.855324,
       "lng": -0.571747
     },
-    "description": "La Poste du quartier des Chartrons. Fiche issue d’OpenStreetMap.",
+    "description": "La Poste du quartier des Chartrons. Mots-clés : DAB, distributeur automatique, ATM. Fiche issue d’OpenStreetMap.",
     "isMerchant": true,
     "phone": "3631",
     "openingHours": "Mo-Fr 09:00-12:30,14:00-18:00; Sa 09:00-12:00; PH off; 2024 May 20 off"
@@ -2651,8 +3155,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n12099578783",
     "name": "La Ruche des Chartrons",
     "category": "services_artisanat",
-    "subcategory": "metiers_de_bouche",
     "specialty": "honey",
+    "subcategory": "metiers_de_bouche",
     "address": "34 Cours Balguerie Stuttenberg, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.855889,
@@ -2665,22 +3169,22 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n4637342789",
     "name": "La Table de Bécassine",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "63 Rue Borie, 33300 Bordeaux",
     "coordinates": {
       "lat": 44.855192,
       "lng": -0.570703
     },
-    "description": "Restaurant du quartier des Chartrons. Spécialités : viandes. Fiche issue d’OpenStreetMap.",
+    "description": "Restaurant du quartier des Chartrons. Spécialités : steak house. Fiche issue d’OpenStreetMap.",
     "isMerchant": true
   },
   {
     "id": "poi-osm-n4442503879",
     "name": "La Toque Cuivrée",
     "category": "bouche_restauration",
-    "subcategory": "metiers_de_bouche",
     "specialty": "Confiserie",
+    "subcategory": "metiers_de_bouche",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.851766,
@@ -2694,8 +3198,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n13018891903",
     "name": "La touche d'aurée",
     "category": "mode_deco_antiquites",
-    "subcategory": "boutiques",
     "specialty": "Décoration",
+    "subcategory": "boutiques",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.853236,
@@ -2708,8 +3212,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n2897082472",
     "name": "La Tradizione",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "6 Place Paul et Jean-Paul Avisseau, 33300 Bordeaux",
     "coordinates": {
       "lat": 44.855837,
@@ -2725,8 +3229,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n445855212",
     "name": "La vie de quartier Cocagne",
     "category": "bouche_restauration",
-    "subcategory": "metiers_de_bouche",
     "specialty": "Épicerie",
+    "subcategory": "metiers_de_bouche",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.854333,
@@ -2741,8 +3245,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7019765705",
     "name": "La Vie en Rose",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "8 Rue Sicard, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852067,
@@ -2756,8 +3260,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7098325285",
     "name": "Laforêt",
     "category": "services_artisanat",
-    "subcategory": "services_proximite",
     "specialty": "Agence immobilière",
+    "subcategory": "services_proximite",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.856533,
@@ -2773,8 +3277,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n13018891876",
     "name": "Laverie Chartrons",
     "category": "services_artisanat",
-    "subcategory": "services_proximite",
     "specialty": "Laverie",
+    "subcategory": "services_proximite",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.853131,
@@ -2787,8 +3291,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n5537166021",
     "name": "Laverie Godard",
     "category": "services_artisanat",
-    "subcategory": "services_proximite",
     "specialty": "Laverie",
+    "subcategory": "services_proximite",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.854984,
@@ -2802,14 +3306,14 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n444500522",
     "name": "LCL",
     "category": "services_artisanat",
+    "specialty": "Banque (DAB)",
     "subcategory": "services_proximite",
-    "specialty": "Banque",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.855254,
       "lng": -0.571779
     },
-    "description": "Banque du quartier des Chartrons. Fiche issue d’OpenStreetMap.",
+    "description": "Banque (DAB) du quartier des Chartrons. Mots-clés : DAB, distributeur automatique, ATM. Fiche issue d’OpenStreetMap.",
     "isMerchant": true,
     "phone": "05 57 87 48 87",
     "website": "https://www.lcl.fr/agence-banque/01832-LCL-BORDEAUX-CHARTRONS"
@@ -2818,22 +3322,22 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n13045855607",
     "name": "Le 101",
     "category": "patrimoine_culture",
-    "subcategory": "patrimoine_tourisme",
     "specialty": "Galerie",
+    "subcategory": "patrimoine_tourisme",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852814,
       "lng": -0.570456
     },
-    "description": "Galerie du quartier des Chartrons. Fiche issue d’OpenStreetMap.",
+    "description": "Galerie du quartier des Chartrons. Mots-clés : antiquités, artisanat. Fiche issue d’OpenStreetMap.",
     "isMerchant": true
   },
   {
     "id": "poi-osm-n4690461389",
     "name": "Le 48",
     "category": "bouche_restauration",
-    "subcategory": "metiers_de_bouche",
     "specialty": "Boulangerie",
+    "subcategory": "metiers_de_bouche",
     "address": "3 Place Paul Doumer, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.851563,
@@ -2847,8 +3351,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7741778886",
     "name": "Le Bar Sardine",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Bar",
+    "subcategory": "restauration_cafes",
     "address": "109 Rue Notre-Dame, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.853027,
@@ -2861,8 +3365,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7058248586",
     "name": "Le Bistrot des Anges",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "19 Rue Rode, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852672,
@@ -2876,8 +3380,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7058227931",
     "name": "Le Carré",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "1 Place du Marché des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852394,
@@ -2888,11 +3392,27 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "openingHours": "Mo-Sa 12:00-14:15,20:00-23:30"
   },
   {
+    "id": "poi-osm-n12036075752",
+    "name": "Le carreau",
+    "category": "services_artisanat",
+    "specialty": "Salle de sport",
+    "subcategory": "services_proximite",
+    "address": "Quartier des Chartrons, 33000 Bordeaux",
+    "coordinates": {
+      "lat": 44.855151,
+      "lng": -0.573173
+    },
+    "description": "Salle de sport du quartier des Chartrons. Mots-clés : association, loisirs. Fiche issue d’OpenStreetMap.",
+    "isMerchant": true,
+    "phone": "06 77 75 43 85",
+    "website": "https://www.lecarreau.net"
+  },
+  {
     "id": "poi-osm-n7279298510",
     "name": "Le Cent 33",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "133 Rue du Jardin Public, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.854893,
@@ -2906,14 +3426,14 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n14067711773",
     "name": "le chat bleu le chat chineur",
     "category": "mode_deco_antiquites",
-    "subcategory": "boutiques",
     "specialty": "Antiquaire",
+    "subcategory": "boutiques",
     "address": "3 Rue Saint-Joseph, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852406,
       "lng": -0.571083
     },
-    "description": "Antiquaire du quartier des Chartrons. Fiche issue d’OpenStreetMap.",
+    "description": "Antiquaire du quartier des Chartrons. Mots-clés : antiquités, artisanat. Fiche issue d’OpenStreetMap.",
     "isMerchant": true,
     "phone": "06 25 65 18 04"
   },
@@ -2921,8 +3441,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n4442509417",
     "name": "Le Jardin des Fleurs",
     "category": "services_artisanat",
-    "subcategory": "boutiques",
     "specialty": "Fleuriste",
+    "subcategory": "boutiques",
     "address": "31 Cours Portal, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.853298,
@@ -2935,8 +3455,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n446355810",
     "name": "Le K Baroque",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.848838,
@@ -2949,8 +3469,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n13065439930",
     "name": "Le Lasagna",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "23 Rue Notre-Dame, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.850269,
@@ -2966,8 +3486,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7373321099",
     "name": "Le Mandron",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.851307,
@@ -2981,22 +3501,22 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n2491301869",
     "name": "Le Manhattan",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restauration rapide",
+    "subcategory": "restauration_cafes",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852415,
       "lng": -0.573266
     },
-    "description": "Restauration rapide du quartier des Chartrons. Spécialités : sandwichs. Fiche issue d’OpenStreetMap.",
+    "description": "Restauration rapide du quartier des Chartrons. Spécialités : sandwich. Fiche issue d’OpenStreetMap.",
     "isMerchant": true
   },
   {
     "id": "poi-osm-n7060531908",
     "name": "Le Mirabelle",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "31 Rue Camille Godard, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.855276,
@@ -3009,8 +3529,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n6972468442",
     "name": "Le Pain de la Renaissance",
     "category": "bouche_restauration",
-    "subcategory": "metiers_de_bouche",
     "specialty": "Boulangerie",
+    "subcategory": "metiers_de_bouche",
     "address": "47 Cours Portal, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.853955,
@@ -3022,11 +3542,41 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "openingHours": "Mo-Fr 07:00-20:00; Sa 07:30-13:30, 16:30-19:30"
   },
   {
+    "id": "poi-osm-w746933786",
+    "name": "Le performance",
+    "category": "services_artisanat",
+    "specialty": "Centre de loisirs",
+    "subcategory": "services_proximite",
+    "address": "Quartier des Chartrons, 33000 Bordeaux",
+    "coordinates": {
+      "lat": 44.852209,
+      "lng": -0.569501
+    },
+    "description": "Centre de loisirs du quartier des Chartrons. Mots-clés : association, loisirs. Fiche issue d’OpenStreetMap.",
+    "isMerchant": true
+  },
+  {
+    "id": "poi-osm-n4432787445",
+    "name": "Le Petit Conservatoire",
+    "category": "patrimoine_culture",
+    "specialty": "Espace culturel",
+    "subcategory": "patrimoine_tourisme",
+    "address": "Quartier des Chartrons, 33000 Bordeaux",
+    "coordinates": {
+      "lat": 44.851053,
+      "lng": -0.572303
+    },
+    "description": "Espace culturel du quartier des Chartrons. Mots-clés : spectacle, culture. Fiche issue d’OpenStreetMap.",
+    "isMerchant": true,
+    "phone": "05 40 71 83 51",
+    "website": "http://www.lepetitconservatoire.org"
+  },
+  {
     "id": "poi-osm-n1373688884",
     "name": "Le potager des Chartrons",
     "category": "bouche_restauration",
-    "subcategory": "metiers_de_bouche",
     "specialty": "Primeur",
+    "subcategory": "metiers_de_bouche",
     "address": "60 Rue Notre-Dame, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.851403,
@@ -3040,8 +3590,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7227268197",
     "name": "Le Ranelagh",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Bar",
+    "subcategory": "restauration_cafes",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.85816,
@@ -3054,8 +3604,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7257805581",
     "name": "Le salon de Charlotte",
     "category": "sante_bien_etre",
-    "subcategory": "services_proximite",
     "specialty": "Coiffeur",
+    "subcategory": "services_proximite",
     "address": "110 Cours de Verdun, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.851193,
@@ -3070,8 +3620,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n11981301269",
     "name": "Le Sobre Chartrons",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Bar",
+    "subcategory": "restauration_cafes",
     "address": "24 Quai des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.850041,
@@ -3087,8 +3637,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n13460637301",
     "name": "Lebolabo",
     "category": "services_artisanat",
-    "subcategory": "services_proximite",
     "specialty": "Reprographie",
+    "subcategory": "services_proximite",
     "address": "23 Rue des Retaillons, 33300 Bordeaux",
     "coordinates": {
       "lat": 44.854268,
@@ -3104,8 +3654,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n4745451726",
     "name": "Lekkers",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restauration rapide",
+    "subcategory": "restauration_cafes",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852951,
@@ -3118,8 +3668,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n6971588685",
     "name": "Leogusto",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restauration rapide",
+    "subcategory": "restauration_cafes",
     "address": "9 Rue Rode, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852458,
@@ -3134,8 +3684,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n11186477503",
     "name": "Les burgers de Colette",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "23 Cours Portal, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.853006,
@@ -3150,8 +3700,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n11822610824",
     "name": "Les Canailles du midi",
     "category": "bouche_restauration",
-    "subcategory": "metiers_de_bouche",
     "specialty": "Traiteur",
+    "subcategory": "metiers_de_bouche",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.857862,
@@ -3164,8 +3714,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n13037284867",
     "name": "Les deux frères",
     "category": "bouche_restauration",
-    "subcategory": "metiers_de_bouche",
     "specialty": "Épicerie",
+    "subcategory": "metiers_de_bouche",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.85468,
@@ -3178,8 +3728,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7257790333",
     "name": "Les Formules",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Café",
+    "subcategory": "restauration_cafes",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852999,
@@ -3192,8 +3742,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n6514867341",
     "name": "Les mains de So",
     "category": "sante_bien_etre",
-    "subcategory": "services_proximite",
     "specialty": "Institut de beauté",
+    "subcategory": "services_proximite",
     "address": "12 Cours Balguerie Stuttenberg, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.855154,
@@ -3207,8 +3757,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n12104358095",
     "name": "Les Mains Rebelles",
     "category": "services_artisanat",
-    "subcategory": "artisans",
     "specialty": "handicraft",
+    "subcategory": "artisans",
     "address": "37 Rue Saint-Joseph, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.853148,
@@ -3221,8 +3771,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n12036089333",
     "name": "Les mauvaises herbes",
     "category": "services_artisanat",
-    "subcategory": "boutiques",
     "specialty": "Fleuriste",
+    "subcategory": "boutiques",
     "address": "24 Rue Camille Godard, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.854989,
@@ -3236,8 +3786,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7741805385",
     "name": "Les Sauvages",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "49 Cours de la Martinique, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.854095,
@@ -3250,8 +3800,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7385578923",
     "name": "Les Trois Pinardiers",
     "category": "bouche_restauration",
-    "subcategory": "metiers_de_bouche",
     "specialty": "Caviste",
+    "subcategory": "metiers_de_bouche",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852617,
@@ -3266,14 +3816,14 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n5687630221",
     "name": "Les Vélos de Marge",
     "category": "services_artisanat",
+    "specialty": "Réparateur de vélos",
     "subcategory": "artisans",
-    "specialty": "Vélo",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.850756,
       "lng": -0.574133
     },
-    "description": "Vélo du quartier des Chartrons. Fiche issue d’OpenStreetMap.",
+    "description": "Réparateur de vélos du quartier des Chartrons. Fiche issue d’OpenStreetMap.",
     "isMerchant": true,
     "phone": "05 56 52 00 73",
     "openingHours": "Tu,We,Fr 11:00-13:00, Tu-Sa 14:00-19:00",
@@ -3283,8 +3833,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n6964028378",
     "name": "Librairie Olympique",
     "category": "services_artisanat",
-    "subcategory": "boutiques",
     "specialty": "Librairie",
+    "subcategory": "boutiques",
     "address": "23 Rue Rode, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852728,
@@ -3299,8 +3849,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n13037284861",
     "name": "Litalia pizzeria",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.855054,
@@ -3316,8 +3866,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7359524361",
     "name": "Local’Attitude",
     "category": "bouche_restauration",
-    "subcategory": "metiers_de_bouche",
     "specialty": "Épicerie",
+    "subcategory": "metiers_de_bouche",
     "address": "5 Rue Étienne Huyard, 33300 Bordeaux",
     "coordinates": {
       "lat": 44.860049,
@@ -3332,8 +3882,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7373529907",
     "name": "Lola Lo Bueno",
     "category": "bouche_restauration",
-    "subcategory": "metiers_de_bouche",
     "specialty": "Traiteur",
+    "subcategory": "metiers_de_bouche",
     "address": "25 Rue du Jardin Public, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.851447,
@@ -3347,8 +3897,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n4791923613",
     "name": "Louis d'Or",
     "category": "mode_deco_antiquites",
-    "subcategory": "boutiques",
     "specialty": "Bijouterie",
+    "subcategory": "boutiques",
     "address": "15 Cours Portal, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852765,
@@ -3358,11 +3908,25 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "isMerchant": true
   },
   {
+    "id": "poi-osm-w773891437",
+    "name": "Lycée professionnel Les Chartrons",
+    "category": "services_artisanat",
+    "specialty": "École publique",
+    "subcategory": "services_proximite",
+    "address": "130 Rue du Jardin Public, 33000 Bordeaux",
+    "coordinates": {
+      "lat": 44.855783,
+      "lng": -0.573048
+    },
+    "description": "École publique du quartier des Chartrons. Mots-clés : petite enfance, éducation. Fiche issue d’OpenStreetMap.",
+    "isMerchant": false
+  },
+  {
     "id": "poi-osm-n9433530221",
     "name": "Mähler-Besse",
     "category": "bouche_restauration",
-    "subcategory": "metiers_de_bouche",
     "specialty": "Vigneron",
+    "subcategory": "metiers_de_bouche",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.855565,
@@ -3376,8 +3940,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n3815304744",
     "name": "Maison de l'Agriculture et de la Forêt d'Aquitaine",
     "category": "services_artisanat",
-    "subcategory": "services_proximite",
     "specialty": "Bureau / service",
+    "subcategory": "services_proximite",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.84984,
@@ -3390,8 +3954,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7053411912",
     "name": "Maison de l'emploi de Bordeaux",
     "category": "services_artisanat",
-    "subcategory": "services_proximite",
     "specialty": "Agence d’emploi",
+    "subcategory": "services_proximite",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.860324,
@@ -3407,8 +3971,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n2491301873",
     "name": "Maison Hegara",
     "category": "bouche_restauration",
-    "subcategory": "metiers_de_bouche",
     "specialty": "Épicerie",
+    "subcategory": "metiers_de_bouche",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852539,
@@ -3423,8 +3987,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n13274302089",
     "name": "Maison Loma",
     "category": "sante_bien_etre",
-    "subcategory": "services_proximite",
     "specialty": "Institut de beauté",
+    "subcategory": "services_proximite",
     "address": "17 Rue Notre-Dame, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.850078,
@@ -3439,8 +4003,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n9512650971",
     "name": "Maison Nouvelle",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "11 Rue Rode, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852493,
@@ -3454,8 +4018,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n2491306385",
     "name": "Maison Pauillac",
     "category": "services_artisanat",
-    "subcategory": "metiers_de_bouche",
     "specialty": "caterer",
+    "subcategory": "metiers_de_bouche",
     "address": "27 Rue Pomme-d'Or, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.853228,
@@ -3467,11 +4031,25 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "website": "https://www.facebook.com/PauillacTraiteur"
   },
   {
+    "id": "poi-osm-n9583603058",
+    "name": "Maison protestante de retraite",
+    "category": "services_artisanat",
+    "specialty": "Association",
+    "subcategory": "services_proximite",
+    "address": "Quartier des Chartrons, 33000 Bordeaux",
+    "coordinates": {
+      "lat": 44.854552,
+      "lng": -0.577821
+    },
+    "description": "Association du quartier des Chartrons. Mots-clés : association, loisirs. Fiche issue d’OpenStreetMap.",
+    "isMerchant": true
+  },
+  {
     "id": "poi-osm-n12036106288",
     "name": "Majolice",
     "category": "services_artisanat",
-    "subcategory": "services_proximite",
     "specialty": "Architecte",
+    "subcategory": "services_proximite",
     "address": "22 Rue Camille Godard, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.854989,
@@ -3486,8 +4064,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7272463779",
     "name": "Mak Food",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.860195,
@@ -3497,17 +4075,32 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "isMerchant": true
   },
   {
+    "id": "poi-osm-n9313293830",
+    "name": "Makadam Fitness",
+    "category": "services_artisanat",
+    "specialty": "Salle de sport",
+    "subcategory": "services_proximite",
+    "address": "Quartier des Chartrons, 33000 Bordeaux",
+    "coordinates": {
+      "lat": 44.859842,
+      "lng": -0.565883
+    },
+    "description": "Salle de sport du quartier des Chartrons. Mots-clés : association, loisirs. Fiche issue d’OpenStreetMap.",
+    "isMerchant": true,
+    "website": "https://www.makadam-fitness.fr/clubs/salle-de-sport-bordeaux/"
+  },
+  {
     "id": "poi-osm-n7058248588",
     "name": "Man Mo Bordeaux",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "8 Place du Marché des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852258,
       "lng": -0.57195
     },
-    "description": "Restaurant du quartier des Chartrons. Spécialités : chinoise, dim sum. Fiche issue d’OpenStreetMap.",
+    "description": "Restaurant du quartier des Chartrons. Spécialités : chinese, dim sum. Fiche issue d’OpenStreetMap.",
     "isMerchant": true,
     "phone": "05 57 30 13 52",
     "openingHours": "Mo-Sa 12:00-14:30,18:00-22:30; \"drink service to 2am\"",
@@ -3517,8 +4110,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n9313231609",
     "name": "Manpower",
     "category": "services_artisanat",
-    "subcategory": "services_proximite",
     "specialty": "Agence d’emploi",
+    "subcategory": "services_proximite",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.859497,
@@ -3531,8 +4124,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n6972468441",
     "name": "Maraîcher Argonne",
     "category": "bouche_restauration",
-    "subcategory": "metiers_de_bouche",
     "specialty": "Primeur",
+    "subcategory": "metiers_de_bouche",
     "address": "41 Cours Portal, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.853714,
@@ -3542,17 +4135,62 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "isMerchant": true
   },
   {
+    "id": "poi-osm-n1259853067",
+    "name": "Marché des Chartrons",
+    "category": "services_artisanat",
+    "specialty": "Producteur local",
+    "subcategory": "metiers_de_bouche",
+    "address": "2 Rue Sicard, 33000 Bordeaux",
+    "coordinates": {
+      "lat": 44.85195,
+      "lng": -0.572517
+    },
+    "description": "Producteur local du quartier des Chartrons. Mots-clés : circuit court, B2B. Fiche issue d’OpenStreetMap.",
+    "isMerchant": true,
+    "openingHours": "Tu-Sa 07:00-13:00"
+  },
+  {
+    "id": "poi-osm-n6349298179",
+    "name": "Marché des quais de Bordeaux Chartrons",
+    "category": "services_artisanat",
+    "specialty": "Producteur local",
+    "subcategory": "metiers_de_bouche",
+    "address": "142 Quai des Chartrons, 33000 Bordeaux",
+    "coordinates": {
+      "lat": 44.851974,
+      "lng": -0.567996
+    },
+    "description": "Producteur local du quartier des Chartrons. Mots-clés : circuit court, B2B. Fiche issue d’OpenStreetMap.",
+    "isMerchant": true,
+    "openingHours": "Th 06:00-14:00"
+  },
+  {
+    "id": "poi-osm-n9405126916",
+    "name": "Marché Saint-Martial",
+    "category": "services_artisanat",
+    "specialty": "Producteur local",
+    "subcategory": "metiers_de_bouche",
+    "address": "Place Saint-Martial, 33300 Bordeaux",
+    "coordinates": {
+      "lat": 44.858671,
+      "lng": -0.565545
+    },
+    "description": "Producteur local du quartier des Chartrons. Mots-clés : circuit court, B2B. Fiche issue d’OpenStreetMap.",
+    "isMerchant": true,
+    "openingHours": "Fr 07:00-13:00"
+  },
+  {
     "id": "poi-osm-n6985804985",
     "name": "Marionnaud Paris",
     "category": "services_artisanat",
+    "specialty": "variety store",
     "subcategory": "boutiques",
-    "specialty": "Bazar",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.851695,
       "lng": -0.573598
     },
-    "description": "Bazar du quartier des Chartrons. Fiche issue d’OpenStreetMap.",
+    "description": "variety store du quartier des Chartrons. Fiche issue d’OpenStreetMap.",
     "isMerchant": true,
     "openingHours": "Mo 14:00-19:00; Tu-Sa 10:00-19:00"
   },
@@ -3560,8 +4198,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n12443780503",
     "name": "Mat",
     "category": "mode_deco_antiquites",
-    "subcategory": "boutiques",
     "specialty": "Prêt-à-porter",
+    "subcategory": "boutiques",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.851846,
@@ -3574,8 +4212,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n9332959467",
     "name": "Micheline et Paulette",
     "category": "bouche_restauration",
-    "subcategory": "metiers_de_bouche",
     "specialty": "Pâtisserie",
+    "subcategory": "metiers_de_bouche",
     "address": "21 Rue Notre-Dame, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.850229,
@@ -3590,14 +4228,14 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n12367999701",
     "name": "Moelleuses et Persillées",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "65 Quai des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852818,
       "lng": -0.567974
     },
-    "description": "Restaurant du quartier des Chartrons. Spécialités : viandes. Fiche issue d’OpenStreetMap.",
+    "description": "Restaurant du quartier des Chartrons. Spécialités : steak house. Fiche issue d’OpenStreetMap.",
     "isMerchant": true,
     "phone": "05 57 87 60 82",
     "openingHours": "Mo-Th 12:00-14:30, 19:00-23:00; Fr-Su 12:00-23:00",
@@ -3607,8 +4245,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n443144697",
     "name": "Molly Malone's",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Pub",
+    "subcategory": "restauration_cafes",
     "address": "83 Quai des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.853798,
@@ -3622,8 +4260,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n3076603690",
     "name": "Monzù",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "10B-11 Place du Marché des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852017,
@@ -3636,11 +4274,42 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "website": "https://www.monzu.fr/chartrons"
   },
   {
+    "id": "poi-osm-n347058416",
+    "name": "Multiaccueil Barreyre",
+    "category": "services_artisanat",
+    "specialty": "Crèche",
+    "subcategory": "services_proximite",
+    "address": "Quartier des Chartrons, 33000 Bordeaux",
+    "coordinates": {
+      "lat": 44.856361,
+      "lng": -0.570454
+    },
+    "description": "Crèche du quartier des Chartrons. Fiche issue d’OpenStreetMap.",
+    "isMerchant": false,
+    "phone": "05 56 00 49 75",
+    "openingHours": "Mo-Fr 07:30-18:30 ; PH off",
+    "website": "http://www.bordeaux.fr/o10277"
+  },
+  {
+    "id": "poi-osm-n1797692420",
+    "name": "MultiAccueil Brins d'éveil",
+    "category": "services_artisanat",
+    "specialty": "Crèche",
+    "subcategory": "services_proximite",
+    "address": "18 Rue Vauban, 33000 Bordeaux",
+    "coordinates": {
+      "lat": 44.848384,
+      "lng": -0.574014
+    },
+    "description": "Crèche du quartier des Chartrons. Fiche issue d’OpenStreetMap.",
+    "isMerchant": false
+  },
+  {
     "id": "poi-osm-n13037284865",
     "name": "Mutuelle de Poitiers Assurances",
     "category": "services_artisanat",
-    "subcategory": "services_proximite",
     "specialty": "Assurance",
+    "subcategory": "services_proximite",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.854783,
@@ -3656,8 +4325,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n11186481832",
     "name": "Nicolas",
     "category": "bouche_restauration",
-    "subcategory": "metiers_de_bouche",
     "specialty": "Caviste",
+    "subcategory": "metiers_de_bouche",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.853055,
@@ -3672,8 +4341,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7289748596",
     "name": "NLC Coiffure & Esthétique - Quartier des Chartrons",
     "category": "sante_bien_etre",
-    "subcategory": "services_proximite",
     "specialty": "Coiffeur",
+    "subcategory": "services_proximite",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.860151,
@@ -3687,8 +4356,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7411606881",
     "name": "Nos minis",
     "category": "mode_deco_antiquites",
-    "subcategory": "boutiques",
     "specialty": "Décoration",
+    "subcategory": "boutiques",
     "address": "68 Rue Notre-Dame, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.851598,
@@ -3703,8 +4372,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n11124614769",
     "name": "notaire blanquet-maison",
     "category": "services_artisanat",
-    "subcategory": "services_proximite",
     "specialty": "Notaire",
+    "subcategory": "services_proximite",
     "address": "116 Cours de Verdun, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.851523,
@@ -3719,8 +4388,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n444641360",
     "name": "Nouveaux Chartrons",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Café",
+    "subcategory": "restauration_cafes",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852913,
@@ -3733,8 +4402,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n2501524357",
     "name": "O'Wise Family",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restauration rapide",
+    "subcategory": "restauration_cafes",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.856676,
@@ -3749,8 +4418,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n11186523391",
     "name": "Optique Portal",
     "category": "sante_bien_etre",
-    "subcategory": "services_proximite",
     "specialty": "Opticien",
+    "subcategory": "services_proximite",
     "address": "49 Cours Portal, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.854011,
@@ -3766,8 +4435,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n4466389697",
     "name": "Orpi",
     "category": "services_artisanat",
-    "subcategory": "services_proximite",
     "specialty": "Agence immobilière",
+    "subcategory": "services_proximite",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.855133,
@@ -3783,8 +4452,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n13526886414",
     "name": "Oscar Rodrigues",
     "category": "sante_bien_etre",
-    "subcategory": "services_proximite",
     "specialty": "Médecin",
+    "subcategory": "services_proximite",
     "address": "31 Rue de la Course, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.851327,
@@ -3798,8 +4467,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n1691164992",
     "name": "Pains et caetera",
     "category": "bouche_restauration",
-    "subcategory": "metiers_de_bouche",
     "specialty": "Boulangerie",
+    "subcategory": "metiers_de_bouche",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.851181,
@@ -3812,22 +4481,22 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n2491301935",
     "name": "Pan Pan",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restauration rapide",
+    "subcategory": "restauration_cafes",
     "address": "74 Cours Portal, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.854715,
       "lng": -0.57187
     },
-    "description": "Restauration rapide du quartier des Chartrons. Spécialités : sandwichs. Fiche issue d’OpenStreetMap.",
+    "description": "Restauration rapide du quartier des Chartrons. Spécialités : sandwich. Fiche issue d’OpenStreetMap.",
     "isMerchant": true
   },
   {
     "id": "poi-osm-n2501425278",
     "name": "Papà Lello",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "35 Quai des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.850949,
@@ -3842,8 +4511,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7272644685",
     "name": "Papouch",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "138 Rue Notre Dame, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.854216,
@@ -3857,8 +4526,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7257839333",
     "name": "Pasta Fresca",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.851846,
@@ -3871,8 +4540,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7741784785",
     "name": "Pastificio Marcellino",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "11 Rue Sicard, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.851821,
@@ -3888,8 +4557,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n445864842",
     "name": "Paul",
     "category": "bouche_restauration",
-    "subcategory": "metiers_de_bouche",
     "specialty": "Boulangerie",
+    "subcategory": "metiers_de_bouche",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.854977,
@@ -3904,8 +4573,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n3709687032",
     "name": "Paul",
     "category": "bouche_restauration",
-    "subcategory": "metiers_de_bouche",
     "specialty": "Boulangerie",
+    "subcategory": "metiers_de_bouche",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.858323,
@@ -3920,8 +4589,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7279255516",
     "name": "Pavillon Yuasa",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "9 Rue Camille Godard, 33300 Bordeaux",
     "coordinates": {
       "lat": 44.855148,
@@ -3934,8 +4603,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7220695165",
     "name": "Pépinière éco-créative Bordeaux Chartrons",
     "category": "services_artisanat",
-    "subcategory": "services_proximite",
     "specialty": "Coworking",
+    "subcategory": "services_proximite",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.854805,
@@ -3949,8 +4618,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7257810103",
     "name": "Perla Donna",
     "category": "mode_deco_antiquites",
-    "subcategory": "boutiques",
     "specialty": "Prêt-à-porter",
+    "subcategory": "boutiques",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852501,
@@ -3963,8 +4632,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7279298512",
     "name": "Petits-fils",
     "category": "services_artisanat",
-    "subcategory": "services_proximite",
     "specialty": "personal service",
+    "subcategory": "services_proximite",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.855196,
@@ -3980,8 +4649,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n10759624481",
     "name": "Pharmacie de la Place Picard",
     "category": "sante_bien_etre",
-    "subcategory": "services_proximite",
     "specialty": "Pharmacie",
+    "subcategory": "services_proximite",
     "address": "1 Cours Saint-Louis, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.855158,
@@ -3994,8 +4663,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n671743122",
     "name": "Pharmacie de Luze",
     "category": "sante_bien_etre",
-    "subcategory": "services_proximite",
     "specialty": "Pharmacie",
+    "subcategory": "services_proximite",
     "address": "2 Rue Lagrange, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.854933,
@@ -4009,8 +4678,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7272463776",
     "name": "Pharmacie et parapharmacie Bordeaux Nord",
     "category": "sante_bien_etre",
-    "subcategory": "services_proximite",
     "specialty": "Pharmacie",
+    "subcategory": "services_proximite",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.860365,
@@ -4023,8 +4692,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n581996870",
     "name": "Pharmacie Paul Doumer",
     "category": "sante_bien_etre",
-    "subcategory": "services_proximite",
     "specialty": "Pharmacie",
+    "subcategory": "services_proximite",
     "address": "132 Cours de Verdun, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852059,
@@ -4038,9 +4707,9 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n1509361474",
     "name": "Pharmacie Saint-Martial",
     "category": "sante_bien_etre",
-    "subcategory": "services_proximite",
     "specialty": "Pharmacie",
-    "address": "Quartier des Chartrons, 33000 Bordeaux",
+    "subcategory": "services_proximite",
+    "address": "93 Cours Balguerie Stuttenberg, 33300 Bordeaux",
     "coordinates": {
       "lat": 44.858624,
       "lng": -0.566603
@@ -4049,11 +4718,27 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "isMerchant": true
   },
   {
+    "id": "poi-osm-n10792948900",
+    "name": "PHG Academy Bordeaux",
+    "category": "services_artisanat",
+    "specialty": "École publique",
+    "subcategory": "services_proximite",
+    "address": "51 Rue Camille Godard, 33300 Bordeaux",
+    "coordinates": {
+      "lat": 44.855157,
+      "lng": -0.575754
+    },
+    "description": "École publique du quartier des Chartrons. Mots-clés : petite enfance, éducation. Fiche issue d’OpenStreetMap.",
+    "isMerchant": true,
+    "phone": "06 79 65 74 95",
+    "website": "https://phg.academy/"
+  },
+  {
     "id": "poi-osm-n4447706774",
     "name": "Photo Frédéric",
     "category": "services_artisanat",
-    "subcategory": "boutiques",
     "specialty": "photo",
+    "subcategory": "boutiques",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852628,
@@ -4069,8 +4754,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n4769725229",
     "name": "Picard",
     "category": "services_artisanat",
-    "subcategory": "metiers_de_bouche",
     "specialty": "frozen food",
+    "subcategory": "metiers_de_bouche",
     "address": "15 Cours Portal, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852713,
@@ -4086,8 +4771,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n4928251889",
     "name": "Pickles",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "15 Rue Notre-Dame, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.850025,
@@ -4103,8 +4788,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7366475251",
     "name": "Pierre à Feu",
     "category": "services_artisanat",
-    "subcategory": "boutiques",
     "specialty": "Tabac",
+    "subcategory": "boutiques",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.850799,
@@ -4118,8 +4803,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n9739049693",
     "name": "Pirouettes",
     "category": "services_artisanat",
-    "subcategory": "boutiques",
     "specialty": "games",
+    "subcategory": "boutiques",
     "address": "130 Cours de Verdun, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.851943,
@@ -4135,8 +4820,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n4690461889",
     "name": "Pizzeria Mirabella",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restauration rapide",
+    "subcategory": "restauration_cafes",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.854944,
@@ -4149,8 +4834,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n12036150630",
     "name": "Plomberie Service Urgence",
     "category": "services_artisanat",
-    "subcategory": "artisans",
     "specialty": "Plombier",
+    "subcategory": "artisans",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.85526,
@@ -4165,8 +4850,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7058248587",
     "name": "PNY",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852093,
@@ -4180,8 +4865,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7235404285",
     "name": "Poké Moon",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "114 Rue Notre-Dame, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.853361,
@@ -4194,8 +4879,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n4521161552",
     "name": "Pressing Doumer",
     "category": "services_artisanat",
-    "subcategory": "services_proximite",
     "specialty": "Pressing",
+    "subcategory": "services_proximite",
     "address": "120 Cours de Verdun, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.85163,
@@ -4209,8 +4894,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n10941990507",
     "name": "Proman",
     "category": "services_artisanat",
-    "subcategory": "services_proximite",
     "specialty": "Agence d’emploi",
+    "subcategory": "services_proximite",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.861876,
@@ -4226,8 +4911,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7275995914",
     "name": "Proxi",
     "category": "bouche_restauration",
-    "subcategory": "metiers_de_bouche",
     "specialty": "Épicerie",
+    "subcategory": "metiers_de_bouche",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.859668,
@@ -4240,8 +4925,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n13045855606",
     "name": "Pure Pâtisserie",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Café",
+    "subcategory": "restauration_cafes",
     "address": "104 Rue Notre-Dame, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852758,
@@ -4256,8 +4941,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n13526854700",
     "name": "Rapid Couture",
     "category": "services_artisanat",
-    "subcategory": "artisans",
     "specialty": "Tailleur",
+    "subcategory": "artisans",
     "address": "80 Rue du Jardin Public, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.853537,
@@ -4273,8 +4958,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n2902635869",
     "name": "Relais du Grand Parc",
     "category": "services_artisanat",
-    "subcategory": "boutiques",
     "specialty": "Maison de la presse",
+    "subcategory": "boutiques",
     "address": "71 Rue Camille Godard, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.85509,
@@ -4288,8 +4973,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-w154358741",
     "name": "Relais Ravezies",
     "category": "services_artisanat",
-    "subcategory": "metiers_de_bouche",
     "specialty": "convenience;gas",
+    "subcategory": "metiers_de_bouche",
     "address": "127 Cours du Médoc, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.861533,
@@ -4304,8 +4989,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n13526854694",
     "name": "Rémi Poitout",
     "category": "sante_bien_etre",
-    "subcategory": "services_proximite",
     "specialty": "Coiffeur",
+    "subcategory": "services_proximite",
     "address": "84 Rue du Jardin Public, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.853778,
@@ -4319,8 +5004,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n2501425261",
     "name": "Restaurant Pastel",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "2 Quai des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.84893,
@@ -4335,14 +5020,14 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7041729249",
     "name": "Riot Skateshop",
     "category": "services_artisanat",
-    "subcategory": "boutiques",
     "specialty": "Sport",
+    "subcategory": "boutiques",
     "address": "81 Quai des Chartrons, 33300 Bordeaux",
     "coordinates": {
       "lat": 44.853668,
       "lng": -0.566898
     },
-    "description": "Sport du quartier des Chartrons. Fiche issue d’OpenStreetMap.",
+    "description": "Sport du quartier des Chartrons. Mots-clés : association, loisirs. Fiche issue d’OpenStreetMap.",
     "isMerchant": true,
     "phone": "05 57 87 20 07",
     "website": "https://riotskateshop.fr/"
@@ -4351,8 +5036,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n6856080192",
     "name": "RN7",
     "category": "bouche_restauration",
-    "subcategory": "metiers_de_bouche",
     "specialty": "Caviste",
+    "subcategory": "metiers_de_bouche",
     "address": "102 Rue Notre-Dame, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852677,
@@ -4364,11 +5049,25 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "website": "https://www.facebook.com/Rn7vins/"
   },
   {
+    "id": "poi-osm-w154398492",
+    "name": "Salle Gouffrand",
+    "category": "services_artisanat",
+    "specialty": "Club sportif",
+    "subcategory": "services_proximite",
+    "address": "Quartier des Chartrons, 33000 Bordeaux",
+    "coordinates": {
+      "lat": 44.855813,
+      "lng": -0.572511
+    },
+    "description": "Club sportif du quartier des Chartrons. Mots-clés : association, loisirs. Fiche issue d’OpenStreetMap.",
+    "isMerchant": true
+  },
+  {
     "id": "poi-osm-n445864841",
     "name": "Saveur saveurs",
     "category": "bouche_restauration",
-    "subcategory": "metiers_de_bouche",
     "specialty": "Boucherie",
+    "subcategory": "metiers_de_bouche",
     "address": "8 Cours Balguerie Stuttenberg, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.855102,
@@ -4381,8 +5080,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7959728457",
     "name": "Shoes art",
     "category": "mode_deco_antiquites",
-    "subcategory": "boutiques",
     "specialty": "Chaussures",
+    "subcategory": "boutiques",
     "address": "81 Rue Notre-Dame, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852212,
@@ -4395,8 +5094,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n4465829064",
     "name": "So Wines",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Bar",
+    "subcategory": "restauration_cafes",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.8546,
@@ -4409,14 +5108,14 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n445855213",
     "name": "Société Générale",
     "category": "services_artisanat",
+    "specialty": "Banque (DAB)",
     "subcategory": "services_proximite",
-    "specialty": "Banque",
     "address": "1 Cours Balguerie Stuttenberg, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.855471,
       "lng": -0.571255
     },
-    "description": "Banque du quartier des Chartrons. Fiche issue d’OpenStreetMap.",
+    "description": "Banque (DAB) du quartier des Chartrons. Mots-clés : DAB, distributeur automatique, ATM. Fiche issue d’OpenStreetMap.",
     "isMerchant": true,
     "phone": "05 57 87 42 10",
     "openingHours": "Tu-Sa 08:55-12:30",
@@ -4426,8 +5125,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n11663519917",
     "name": "Solidaires",
     "category": "services_artisanat",
-    "subcategory": "services_proximite",
     "specialty": "union",
+    "subcategory": "services_proximite",
     "address": "8 Rue de la Course, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.851486,
@@ -4442,8 +5141,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n9332959468",
     "name": "Soukka",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Café",
+    "subcategory": "restauration_cafes",
     "address": "11 Rue Notre-Dame, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.849889,
@@ -4457,8 +5156,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n13037284856",
     "name": "Stock affaires 33",
     "category": "services_artisanat",
-    "subcategory": "boutiques",
     "specialty": "household linen",
+    "subcategory": "boutiques",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.855652,
@@ -4472,8 +5171,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n12036104120",
     "name": "Styliste coiffure",
     "category": "sante_bien_etre",
-    "subcategory": "services_proximite",
     "specialty": "Coiffeur",
+    "subcategory": "services_proximite",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.854938,
@@ -4485,11 +5184,25 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "openingHours": "Tu-Sa 10:00-12:00,15:00-19:00"
   },
   {
+    "id": "poi-osm-n13379887701",
+    "name": "Sup de Vinci",
+    "category": "services_artisanat",
+    "specialty": "École publique",
+    "subcategory": "services_proximite",
+    "address": "86 Cours de la Martinique, 33000 Bordeaux",
+    "coordinates": {
+      "lat": 44.854374,
+      "lng": -0.572602
+    },
+    "description": "École publique du quartier des Chartrons. Mots-clés : petite enfance, éducation. Fiche issue d’OpenStreetMap.",
+    "isMerchant": true
+  },
+  {
     "id": "poi-osm-n4745451724",
     "name": "Sushi Shop",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.853655,
@@ -4502,8 +5215,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n13526886421",
     "name": "SVM immobilier",
     "category": "services_artisanat",
-    "subcategory": "services_proximite",
     "specialty": "Agence immobilière",
+    "subcategory": "services_proximite",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.851987,
@@ -4516,8 +5229,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n4745451725",
     "name": "Symbiose",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Bar",
+    "subcategory": "restauration_cafes",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.849028,
@@ -4530,8 +5243,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n8688259203",
     "name": "Synlab Bordeaux Chartrons",
     "category": "sante_bien_etre",
-    "subcategory": "services_proximite",
     "specialty": "Laboratoire",
+    "subcategory": "services_proximite",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.853843,
@@ -4546,8 +5259,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n9314952153",
     "name": "Systra",
     "category": "services_artisanat",
-    "subcategory": "services_proximite",
     "specialty": "Bureau / Entreprise",
+    "subcategory": "services_proximite",
     "address": "23 Parvis des Chartrons, 33075 Bordeaux",
     "coordinates": {
       "lat": 44.850235,
@@ -4560,8 +5273,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n11220755676",
     "name": "Teint'auto",
     "category": "services_artisanat",
-    "subcategory": "boutiques",
     "specialty": "car parts",
+    "subcategory": "boutiques",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852117,
@@ -4574,8 +5287,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n1923380863",
     "name": "The Market Tavern",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Pub",
+    "subcategory": "restauration_cafes",
     "address": "15 Rue Rode, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852561,
@@ -4590,8 +5303,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n13045855608",
     "name": "Tiki Bar Cookie & Smoothie",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restauration rapide",
+    "subcategory": "restauration_cafes",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.850748,
@@ -4604,9 +5317,9 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-w154309607",
     "name": "Tollens",
     "category": "services_artisanat",
-    "subcategory": "boutiques",
     "specialty": "paint",
-    "address": "Quartier des Chartrons, 33000 Bordeaux",
+    "subcategory": "boutiques",
+    "address": "Cours Balguerie Stuttenberg, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.859353,
       "lng": -0.566286
@@ -4618,8 +5331,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n13397626743",
     "name": "Toto lé la",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "83 B Cours Balguerie Stuttenberg, 33300 Bordeaux",
     "coordinates": {
       "lat": 44.858127,
@@ -4634,8 +5347,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n11181201638",
     "name": "Tripletta",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "83 Cours du Médoc, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.860131,
@@ -4648,8 +5361,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n13526886419",
     "name": "Un Petit Point",
     "category": "services_artisanat",
-    "subcategory": "artisans",
     "specialty": "Tapissier",
+    "subcategory": "artisans",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.85142,
@@ -4662,8 +5375,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n10924739506",
     "name": "Urban Kustom Shop",
     "category": "mode_deco_antiquites",
-    "subcategory": "boutiques",
     "specialty": "Prêt-à-porter",
+    "subcategory": "boutiques",
     "address": "17 Rue Cornac, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.851218,
@@ -4679,8 +5392,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n2491299828",
     "name": "Vieille Branche",
     "category": "sante_bien_etre",
-    "subcategory": "services_proximite",
     "specialty": "Opticien",
+    "subcategory": "services_proximite",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.850197,
@@ -4694,8 +5407,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n13037284870",
     "name": "Vision Libre",
     "category": "sante_bien_etre",
-    "subcategory": "services_proximite",
     "specialty": "Opticien",
+    "subcategory": "services_proximite",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.854428,
@@ -4711,8 +5424,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n13037284858",
     "name": "Viva services",
     "category": "services_artisanat",
-    "subcategory": "services_proximite",
     "specialty": "personal service",
+    "subcategory": "services_proximite",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.855375,
@@ -4728,8 +5441,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n12509451001",
     "name": "Wine Moment",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Bar",
+    "subcategory": "restauration_cafes",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.853967,
@@ -4744,8 +5457,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n9120591917",
     "name": "Yarra",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Bar",
+    "subcategory": "restauration_cafes",
     "address": "18 Rue Notre-Dame, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.849956,
@@ -4759,14 +5472,14 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n13046462422",
     "name": "Yoga Searcher",
     "category": "services_artisanat",
-    "subcategory": "boutiques",
     "specialty": "Sport",
+    "subcategory": "boutiques",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.852912,
       "lng": -0.57036
     },
-    "description": "Sport du quartier des Chartrons. Fiche issue d’OpenStreetMap.",
+    "description": "Sport du quartier des Chartrons. Mots-clés : association, loisirs. Fiche issue d’OpenStreetMap.",
     "isMerchant": true,
     "openingHours": "Tu-Th 13:00-18:30; Fr 13:30-18:30; Sa 11:00-19:00"
   },
@@ -4774,8 +5487,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7272463777",
     "name": "Yoyo Vidéo",
     "category": "services_artisanat",
-    "subcategory": "boutiques",
     "specialty": "video",
+    "subcategory": "boutiques",
     "address": "4 Rue des Frères Portmann, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.860273,
@@ -4789,8 +5502,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n4344451196",
     "name": "Yumi",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.853391,
@@ -4806,8 +5519,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7279255517",
     "name": "Yummy Kebab",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restauration rapide",
+    "subcategory": "restauration_cafes",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.854987,
@@ -4820,8 +5533,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n3815295141",
     "name": "ZAC",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restauration rapide",
+    "subcategory": "restauration_cafes",
     "address": "88 Quai des Chartrons, 33300 Bordeaux",
     "coordinates": {
       "lat": 44.855226,
@@ -4834,8 +5547,8 @@ export const OSM_CHARTRONS_POIS: ChartronsPoi[] = [
     "id": "poi-osm-n7279298509",
     "name": "Zinc",
     "category": "bouche_restauration",
-    "subcategory": "restauration_cafes",
     "specialty": "Restaurant",
+    "subcategory": "restauration_cafes",
     "address": "Quartier des Chartrons, 33000 Bordeaux",
     "coordinates": {
       "lat": 44.855141,

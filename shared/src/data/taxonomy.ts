@@ -56,7 +56,7 @@ export function isChartronsSubcategory(value: string): value is ChartronsSubcate
  * Classification spécialité fine -> sous-catégorie unifiée
  * ------------------------------------------------------------------ */
 
-function normalize(value: string): string {
+export function normalizeTaxonomyText(value: string): string {
   return value
     .toLowerCase()
     .normalize('NFD')
@@ -173,6 +173,23 @@ const SPECIALTY_MAP: Record<string, ChartronsSubcategory> = {
   pressing: 'services_proximite',
   'pressing laverie': 'services_proximite',
   cleaning: 'services_proximite',
+  dab: 'services_proximite',
+  'distributeur automatique dab': 'services_proximite',
+  'banque dab': 'services_proximite',
+  ecole: 'services_proximite',
+  'ecole publique': 'services_proximite',
+  'ecole privee': 'services_proximite',
+  creche: 'services_proximite',
+  'halte garderie': 'services_proximite',
+  'accueil petite enfance': 'services_proximite',
+  association: 'services_proximite',
+  'maison de quartier': 'services_proximite',
+  'club sportif': 'services_proximite',
+  'salle de sport': 'services_proximite',
+  'centre de loisirs': 'services_proximite',
+  grossiste: 'services_proximite',
+  'producteur local': 'metiers_de_bouche',
+  'circuit court': 'metiers_de_bouche',
 
   // Patrimoine & Tourisme
   musee: 'patrimoine_tourisme',
@@ -182,6 +199,10 @@ const SPECIALTY_MAP: Record<string, ChartronsSubcategory> = {
   'galerie art': 'patrimoine_tourisme',
   hotel: 'patrimoine_tourisme',
   'maison d hotes': 'patrimoine_tourisme',
+  theatre: 'patrimoine_tourisme',
+  cinema: 'patrimoine_tourisme',
+  'espace culturel': 'patrimoine_tourisme',
+  'salle de spectacle': 'patrimoine_tourisme',
 };
 
 /** Repli par mot-clé pour toute spécialité future non listée. */
@@ -194,11 +215,12 @@ const KEYWORD_FALLBACK: Array<[string[], ChartronsSubcategory]> = [
   ],
   [['artisan', 'atelier', 'reparat', 'plombier', 'menuisier', 'craft', 'couturier', 'cordonnier'], 'artisans'],
   [
-    ['banque', 'assurance', 'avocat', 'notaire', 'agence', 'bureau', 'sante', 'medic', 'medecin',
-      'pharmacie', 'coiffeur', 'beaute', 'pressing', 'laverie', 'service', 'office', 'clinic'],
+    ['banque', 'dab', 'distributeur', 'atm', 'assurance', 'avocat', 'notaire', 'agence', 'bureau',
+      'sante', 'medic', 'medecin', 'pharmacie', 'coiffeur', 'beaute', 'pressing', 'laverie',
+      'service', 'office', 'clinic', 'ecole', 'creche', 'garderie', 'association', 'coworking'],
     'services_proximite',
   ],
-  [['musee', 'patrimoine', 'culte', 'galerie', 'hotel', 'monument', 'tourisme'], 'patrimoine_tourisme'],
+  [['musee', 'patrimoine', 'culte', 'galerie', 'hotel', 'monument', 'tourisme', 'theatre', 'cinema', 'spectacle'], 'patrimoine_tourisme'],
   [['boutique', 'magasin', 'shop', 'store', 'mode', 'vetement'], 'boutiques'],
 ];
 
@@ -216,7 +238,7 @@ const CATEGORY_FALLBACK: Record<string, ChartronsSubcategory> = {
  * Déterministe : table exacte, puis mots-clés, puis catégorie large.
  */
 export function classifySubcategory(specialty: string, category: string): ChartronsSubcategory {
-  const key = normalize(specialty);
+  const key = normalizeTaxonomyText(specialty);
   const exact = SPECIALTY_MAP[key];
   if (exact) return exact;
 

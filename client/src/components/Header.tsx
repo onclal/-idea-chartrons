@@ -1,56 +1,20 @@
-import { type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useNavigate } from 'react-router-dom';
-import { useSearch } from '../context/SearchContext';
+import { Link } from 'react-router-dom';
 import { useAdmin } from '../context/AdminContext';
 import { useFavorites } from '../context/FavoritesContext';
 import { usePwa } from '../context/PwaContext';
 import { CategoryTabs } from './CategoryTabs';
+import { HeroSearch } from './HeroSearch';
 import { Badge } from './ui';
-
-function SearchIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="w-5 h-5"
-      aria-hidden
-    >
-      <circle cx="11" cy="11" r="7" />
-      <path d="M20 20l-3.5-3.5" />
-    </svg>
-  );
-}
 
 export function Header() {
   const { t, i18n } = useTranslation();
-  const { query, setQuery } = useSearch();
   const { isAdminMode } = useAdmin();
   const { favorites } = useFavorites();
   const { online } = usePwa();
-  const navigate = useNavigate();
 
   const setLanguage = (lang: 'fr' | 'en') => {
     i18n.changeLanguage(lang);
-  };
-
-  const submitSearch = () => {
-    const q = query.trim();
-    if (!q) {
-      navigate('/recherche');
-      return;
-    }
-    navigate(`/recherche?q=${encodeURIComponent(q)}`);
-  };
-
-  const handleSearch = (event: FormEvent) => {
-    event.preventDefault();
-    submitSearch();
   };
 
   return (
@@ -113,53 +77,7 @@ export function Header() {
             </div>
           </div>
 
-          <form onSubmit={handleSearch} className="flex items-stretch" role="search">
-            <div className="flex flex-1 min-w-0 items-stretch rounded-2xl overflow-hidden bg-white shadow-sm focus-within:ring-2 focus-within:ring-white/50">
-              <button
-                type="button"
-                onClick={submitSearch}
-                className="cursor-pointer shrink-0 touch-target w-12 min-h-[48px] text-chartrons-olive-dark flex items-center justify-center hover:bg-chartrons-beige active:bg-chartrons-sand transition-colors"
-                aria-label={t('search.submit')}
-              >
-                <SearchIcon />
-              </button>
-              <input
-                type="search"
-                inputMode="search"
-                enterKeyHint="search"
-                autoComplete="off"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter') {
-                    event.preventDefault();
-                    submitSearch();
-                  }
-                }}
-                placeholder={t('search.placeholder')}
-                className="flex-1 min-w-0 py-3 pr-2 bg-transparent border-0 text-base text-chartrons-olive-dark placeholder:text-chartrons-warm-gray/60 focus:outline-none min-h-[48px]"
-                aria-label={t('search.placeholder')}
-              />
-              {query && (
-                <button
-                  type="button"
-                  onClick={() => setQuery('')}
-                  className="cursor-pointer shrink-0 touch-target w-10 min-h-[48px] text-chartrons-warm-gray text-xs hover:text-chartrons-olive-dark"
-                  aria-label={t('search.clear')}
-                >
-                  ✕
-                </button>
-              )}
-              <button
-                type="button"
-                onClick={submitSearch}
-                className="cursor-pointer shrink-0 touch-target min-h-[48px] px-3.5 bg-chartrons-green text-white text-xs font-bold hover:bg-chartrons-green-light active:scale-[0.98] transition-all inline-flex items-center justify-center gap-1.5"
-              >
-                <SearchIcon />
-                <span>{t('search.submit')}</span>
-              </button>
-            </div>
-          </form>
+          <HeroSearch variant="header" />
 
           <CategoryTabs />
         </div>

@@ -5,6 +5,12 @@ import { Button, Input, Modal, Textarea } from './ui';
 import { useToast } from '../context/ToastContext';
 import { api } from '../lib/api';
 import { rememberOwnedPost } from '../lib/guestCarnet';
+import { OtpPinInput } from './OtpPinInput';
+import {
+  confirmPostOtp,
+  needsFirstPostOtp,
+  startPostVerification,
+} from '../lib/postVerification';
 
 interface PostCreateFormProps {
   open: boolean;
@@ -18,6 +24,7 @@ const POST_TYPES = [
   PostType.Vente,
   PostType.ServiceAide,
   PostType.PetitBoulot,
+  PostType.OffrePro,
 ] as const;
 
 export function PostCreateForm({ open, onClose, onCreated, post = null }: PostCreateFormProps) {
@@ -29,6 +36,11 @@ export function PostCreateForm({ open, onClose, onCreated, post = null }: PostCr
   const [type, setType] = useState<PostType>(PostType.Don);
   const [prix, setPrix] = useState('');
   const [telephone, setTelephone] = useState('');
+  const [email, setEmail] = useState('');
+  const [otpChannel, setOtpChannel] = useState<'email' | 'sms'>('sms');
+  const [otpCode, setOtpCode] = useState('');
+  const [otpHint, setOtpHint] = useState<string | null>(null);
+  const [otpVerified, setOtpVerified] = useState(() => !needsFirstPostOtp());
   const [auteurNom, setAuteurNom] = useState('');
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -42,6 +54,10 @@ export function PostCreateForm({ open, onClose, onCreated, post = null }: PostCr
       setType(post.type);
       setPrix(post.prix != null ? String(post.prix) : '');
       setTelephone(post.telephone ?? '');
+      setEmail('');
+      setOtpCode('');
+      setOtpHint(null);
+      setOtpVerified(true);
       setAuteurNom(post.auteurNom ?? '');
       setPhotoPreview(post.photos[0] ?? null);
       setError(null);
@@ -52,6 +68,10 @@ export function PostCreateForm({ open, onClose, onCreated, post = null }: PostCr
     setType(PostType.Don);
     setPrix('');
     setTelephone('');
+    setEmail('');
+    setOtpCode('');
+    setOtpHint(null);
+    setOtpVerified(!needsFirstPostOtp());
     setAuteurNom('');
     setPhotoPreview(null);
     setError(null);
@@ -65,8 +85,43 @@ export function PostCreateForm({ open, onClose, onCreated, post = null }: PostCr
     reader.readAsDataURL(file);
   };
 
+  const requireOtp = !editing && !otpVerified;
+
+  const handleSendOtp = () => {
+    const target = otpChannel === 'sms' ? telephone.trim() : email.trim();
+    if (!target) {
+      setError(t('posts.create.otp.missingTarget'));
+      return;
+    }
+    const verification = startPostVerification(otpChannel, target);
+    setOtpHint(verification.code);
+    setOtpCode('');
+    setError(null);
+    showToast(t('posts.create.otp.sent'));
+  };
+
+  const handleConfirmOtp = () => {
+    const next = confirmPostOtp(otpCode);
+    if (next?.status === 'verified') {
+      setOtpVerified(true);
+      setOtpHint(null);
+      setError(null);
+      showToast(t('posts.create.otp.verified'));
+      return;
+    }
+    if (next?.status === 'blocked' || next?.status === 'expired') {
+      setError(t(`posts.create.otp.${next.status}`));
+      return;
+    }
+    setError(t('posts.create.otp.invalid'));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (requireOtp) {
+      setError(t('posts.create.otp.required'));
+      return;
+    }
     setSubmitting(true);
     setError(null);
     try {
@@ -74,7 +129,10 @@ export function PostCreateForm({ open, onClose, onCreated, post = null }: PostCr
         titre: titre.trim(),
         description: description.trim(),
         type,
-        prix: type === PostType.Vente || type === PostType.PetitBoulot ? Number(prix) || 0 : null,
+        prix:
+          type === PostType.Vente || type === PostType.PetitBoulot || type === PostType.OffrePro
+            ? Number(prix) || 0
+            : null,
         photos: photoPreview ? [photoPreview] : [],
         telephone: telephone.trim() || null,
         auteurNom: auteurNom.trim() || null,
@@ -139,7 +197,7 @@ export function PostCreateForm({ open, onClose, onCreated, post = null }: PostCr
           </div>
         </div>
 
-        {(type === PostType.Vente || type === PostType.PetitBoulot) && (
+        {(type === PostType.Vente || type === PostType.PetitBoulot || type === PostType.OffrePro) && (
           <Input
             label={t('posts.create.prix')}
             type="number"
@@ -158,6 +216,52 @@ export function PostCreateForm({ open, onClose, onCreated, post = null }: PostCr
           onChange={(e) => setTelephone(e.target.value)}
           placeholder={t('common.phonePlaceholder')}
         />
+
+        {requireOtp && (
+          <div className="space-y-3 rounded-xl border border-chartrons-gold/30 bg-chartrons-beige/40 p-3">
+            <p className="text-xs text-chartrons-olive-dark leading-relaxed">{t('posts.create.otp.hint')}</p>
+            <div className="grid grid-cols-2 gap-2">
+              {(['sms', 'email'] as const).map((channel) => (
+                <button
+                  key={channel}
+                  type="button"
+                  onClick={() => setOtpChannel(channel)}
+                  className={`px-3 py-2 rounded-xl text-xs font-medium border transition-colors ${
+                    otpChannel === channel
+                      ? 'bg-chartrons-green text-white border-chartrons-green'
+                      : 'bg-white text-chartrons-green-dark border-chartrons-gold/20'
+                  }`}
+                >
+                  {t(`posts.create.otp.channel.${channel}`)}
+                </button>
+              ))}
+            </div>
+            {otpChannel === 'email' && (
+              <Input
+                label={t('contact.email')}
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="prenom@email.fr"
+              />
+            )}
+            <Button type="button" variant="secondary" className="w-full" onClick={handleSendOtp}>
+              {t('posts.create.otp.send')}
+            </Button>
+            {otpHint && (
+              <p className="text-xs text-chartrons-warm-gray">
+                {t('posts.create.otp.demoCode', { code: otpHint })}
+              </p>
+            )}
+            <p id="post-otp-code-label" className="text-xs font-medium text-chartrons-warm-gray">
+              {t('posts.create.otp.code')}
+            </p>
+            <OtpPinInput value={otpCode} onChange={setOtpCode} labelledBy="post-otp-code-label" />
+            <Button type="button" className="w-full" onClick={handleConfirmOtp}>
+              {t('posts.create.otp.confirm')}
+            </Button>
+          </div>
+        )}
 
         <Input
           label={t('posts.create.auteurNom')}

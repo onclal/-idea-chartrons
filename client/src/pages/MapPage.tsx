@@ -5,8 +5,7 @@ import {
   ActeurLocalCategory,
   CHARTRONS_MAP_CENTER,
   hasCoordinates,
-  isVipMerchant,
-  canClickAndCollect,
+  isPremiumProMerchant,
   LOCAL_RELAIS_PHONE,
   STATIC_MAP_POIS,
   type ActeurLocal,
@@ -15,13 +14,13 @@ import {
 } from '@idea-chartrons/shared';
 import { Badge, Button, Card, Loading } from '../components/ui';
 import { PageHelp } from '../components/PageHelp';
-import { AppointmentButton } from '../components/AppointmentButton';
 import { PlaceMeta } from '../components/PlaceMeta';
 import { MerchantSocialSection } from '../components/MerchantSocialSection';
+import { MerchantActionButtons } from '../components/MerchantActionButtons';
 import { MerchantReviews } from '../components/MerchantReviews';
 import { DailyMenuSection } from '../components/DailyMenuSection';
-import { OrderModal } from '../components/OrderModal';
 import { PhoneLink } from '../components/PhoneLink';
+import { EmailLink } from '../components/EmailLink';
 import { FavoriteButton } from '../components/FavoriteButton';
 import { FavoritesDrawer } from '../components/FavoritesDrawer';
 import { DirectionsButton } from '../components/DirectionsButton';
@@ -123,7 +122,6 @@ export function MapPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [acteurs, setActeurs] = useState<ActeurLocal[]>([]);
   const [reviewSummary, setReviewSummary] = useState<ReviewSummary>({ rating: 0, count: 0 });
-  const [orderOpen, setOrderOpen] = useState(false);
   const [events, setEvents] = useState<AgendaEvenement[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeLayers, setActiveLayers] = useState<Set<MapLayer>>(new Set(LAYERS));
@@ -583,8 +581,8 @@ export function MapPage() {
                 <h3 className="font-semibold text-chartrons-olive-dark">{selectedPin.title}</h3>
                 <div className="mt-1.5 flex flex-wrap gap-1.5">
                   <Badge variant="olive">{selectedPin.subtitle}</Badge>
-                  {selectedActeur && isVipMerchant(selectedActeur) && (
-                    <Badge variant="vip" icon="⭐">{t('badges.vip')}</Badge>
+                  {selectedActeur && isPremiumProMerchant(selectedActeur) && (
+                    <Badge variant="vip" icon="⭐">{t('badges.premiumPro')}</Badge>
                   )}
                   {selectedActeur && reviewSummary.count > 0 && (
                     <Badge variant="gold">
@@ -606,26 +604,15 @@ export function MapPage() {
                   }
                 />
                 <p className="text-xs text-chartrons-warm-gray mt-2">📍 {selectedPin.adresse}</p>
-                <div className="mt-1">
+                <div className="mt-1 space-y-1">
                   <PhoneLink phone={selectedPin.telephone} />
+                  {selectedActeur && <EmailLink email={selectedActeur.merchantEmail} />}
                 </div>
               </div>
               <FavoriteButton place={pinToFavorite(selectedPin)} />
             </div>
-            {selectedActeur && isVipMerchant(selectedActeur) && (
+            {selectedActeur && isPremiumProMerchant(selectedActeur) && (
               <DailyMenuSection acteur={selectedActeur} />
-            )}
-            {selectedActeur && canClickAndCollect(selectedActeur) && (
-              <div className="mt-3">
-                <Button
-                  type="button"
-                  variant="primary"
-                  className="w-full"
-                  onClick={() => setOrderOpen(true)}
-                >
-                  {t('acteurs.clickCollect.cta')}
-                </Button>
-              </div>
             )}
             {selectedActeur && (
               <MerchantSocialSection
@@ -635,13 +622,9 @@ export function MapPage() {
                 }
               />
             )}
+            {selectedActeur && <MerchantActionButtons acteur={selectedActeur} />}
             {selectedActeur && (
               <MerchantReviews merchantId={selectedActeur.id} onSummaryChange={setReviewSummary} />
-            )}
-            {selectedActeur && (
-              <div className="mt-3">
-                <AppointmentButton acteur={selectedActeur} />
-              </div>
             )}
             <div className="flex flex-wrap gap-2 mt-3">
               <DirectionsButton latitude={selectedPin.latitude} longitude={selectedPin.longitude} />
@@ -662,10 +645,6 @@ export function MapPage() {
         </Card>
       ) : (
         <p className="text-xs text-chartrons-warm-gray text-center">{t('map.tapHint')}</p>
-      )}
-
-      {selectedActeur && canClickAndCollect(selectedActeur) && (
-        <OrderModal open={orderOpen} onClose={() => setOrderOpen(false)} acteur={selectedActeur} />
       )}
 
       <FavoritesDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />

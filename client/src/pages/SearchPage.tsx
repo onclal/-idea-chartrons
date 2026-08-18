@@ -56,7 +56,8 @@ export function SearchPage() {
               matchesSearch(acteur.nomCommerce, q) ||
               matchesSearch(acteur.description, q) ||
               matchesSearch(acteur.adresse, q) ||
-              matchesSearch(acteur.telephone ?? '', q),
+              matchesSearch(acteur.telephone ?? '', q) ||
+              matchesSearch(acteur.specialite ?? '', q),
           )
         : [],
     [acteurs, q],

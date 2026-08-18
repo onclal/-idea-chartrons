@@ -5,6 +5,7 @@ import {
   CHARTRONS_SUBCATEGORIES,
   CHARTRONS_SUBCATEGORY_LABELS,
   classifySubcategory,
+  matchesSearchQuery,
   type ActeurLocal,
   type ChartronsSubcategory,
 } from '@idea-chartrons/shared';
@@ -71,13 +72,11 @@ export function AdminPoiManager() {
   useEffect(load, []);
 
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return acteurs.filter(
-      (a) =>
-        !q ||
-        a.nomCommerce.toLowerCase().includes(q) ||
-        a.description.toLowerCase().includes(q) ||
-        a.adresse.toLowerCase().includes(q),
+    return acteurs.filter((a) =>
+      matchesSearchQuery(
+        `${a.nomCommerce} ${a.description} ${a.adresse} ${a.telephone ?? ''} ${a.specialite ?? ''}`,
+        query,
+      ),
     );
   }, [acteurs, query]);
 

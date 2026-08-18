@@ -1,18 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { BudgetUnit, ConciergeLang, ConciergeRationale, ConciergeRecommendation } from '@idea-chartrons/shared';
+import type { ConciergeLang } from '@idea-chartrons/shared';
 import { Badge, Button, Card } from './ui';
-import {
-  askConcierge,
-  CONCIERGE_LANG_OPTIONS,
-  conciergeSmsHref,
-  conciergeWalkingRouteUrl,
-  conciergeWhatsAppHref,
-  formatConciergeBudget,
-  type ConciergeLangChoice,
-  type ConciergeMessage,
-} from '../lib/concierge';
-import { walkingDirectionsUrl } from '../lib/itinerary';
+import { CONCIERGE_LANG_OPTIONS, type ConciergeLangChoice } from '../lib/concierge';
+import { ConciergeBeretLoader } from './ConciergeBeretLoader';
+import { useConciergePanel } from '../context/ConciergePanelContext';
 
 interface VoiceRecognitionResult {
   0: { transcript: string };
@@ -56,47 +48,27 @@ function voiceRecognitionConstructor(): VoiceRecognitionConstructor | null {
   return scope.SpeechRecognition ?? scope.webkitSpeechRecognition ?? null;
 }
 
-function createMessage(
-  role: ConciergeMessage['role'],
-  content: string,
-  extra: Partial<ConciergeMessage> = {},
-): ConciergeMessage {
-  return {
-    id: `${role}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-    role,
-    content,
-    createdAt: new Date().toISOString(),
-    ...extra,
-  };
-}
-
 export function AIConcierge() {
   const { t, i18n } = useTranslation();
   const uiLang = i18n.language;
-  const [messages, setMessages] = useState<ConciergeMessage[]>([]);
+  const {
+    messages,
+    pending,
+    replyLang,
+    setReplyLang,
+    lastAssistant,
+    ask,
+    openPanel,
+    clear,
+    collapsed,
+    open,
+  } = useConciergePanel();
   const [input, setInput] = useState('');
-  const [replyLang, setReplyLang] = useState<ConciergeLangChoice>('auto');
-  const [pending, setPending] = useState(false);
   const [listening, setListening] = useState(false);
   const recognitionRef = useRef<VoiceRecognition | null>(null);
   const threadEndRef = useRef<HTMLDivElement | null>(null);
 
   const voiceSupported = useMemo(() => voiceRecognitionConstructor() !== null, []);
-
-  const unitLabel = useCallback((unit: BudgetUnit) => t(`conciergerie.ai.units.${unit}`), [t]);
-
-  const rationaleLabel = useCallback(
-    (rationale: ConciergeRationale) => {
-      if (rationale.kind === 'keyword' || rationale.kind === 'intent' || rationale.kind === 'street') {
-        return t(`conciergerie.ai.rationale.${rationale.kind}`, { value: rationale.value ?? '' });
-      }
-      if (rationale.kind === 'rating') {
-        return t('conciergerie.ai.rationale.rating', { value: rationale.value ?? '' });
-      }
-      return t(`conciergerie.ai.rationale.${rationale.kind}`);
-    },
-    [t],
-  );
 
   useEffect(() => {
     threadEndRef.current?.scrollIntoView({ block: 'nearest' });
@@ -113,29 +85,10 @@ export function AIConcierge() {
     async (question: string) => {
       const trimmed = question.trim();
       if (!trimmed || pending) return;
-
-      const history = messages;
-      setMessages((current) => [...current, createMessage('user', trimmed)]);
       setInput('');
-      setPending(true);
-      try {
-        const answer = await askConcierge({ message: trimmed, history, lang: replyLang, uiLang });
-        setMessages((current) => [
-          ...current,
-          createMessage('assistant', answer.reply, {
-            source: answer.source,
-            lang: answer.lang,
-            recommendations: answer.recommendations,
-            heritage: answer.heritage,
-          }),
-        ]);
-      } catch {
-        setMessages((current) => [...current, createMessage('assistant', t('conciergerie.ai.error'))]);
-      } finally {
-        setPending(false);
-      }
+      await ask(trimmed);
     },
-    [messages, pending, replyLang, t, uiLang],
+    [ask, pending],
   );
 
   const handleSubmit = (event: FormEvent) => {
@@ -180,11 +133,8 @@ export function AIConcierge() {
     [t],
   );
 
-  const lastAnswer = [...messages].reverse().find((message) => message.role === 'assistant');
-  const recommendations = lastAnswer?.recommendations ?? [];
-  const heritage = lastAnswer?.heritage ?? [];
-  const answerLang: ConciergeLang = lastAnswer?.lang ?? 'fr';
-  const routeUrl = conciergeWalkingRouteUrl(recommendations);
+  const hasRich =
+    Boolean(lastAssistant?.recommendations?.length) || Boolean(lastAssistant?.heritage?.length);
 
   return (
     <section className="space-y-4">
@@ -232,7 +182,7 @@ export function AIConcierge() {
             </select>
           </label>
           {messages.length > 0 && (
-            <Button type="button" variant="ghost" size="sm" onClick={() => setMessages([])}>
+            <Button type="button" variant="ghost" size="sm" onClick={clear}>
               {t('conciergerie.ai.clear')}
             </Button>
           )}
@@ -269,13 +219,19 @@ export function AIConcierge() {
             ))}
             {pending && (
               <div className="flex justify-start">
-                <div className="rounded-2xl rounded-bl-md bg-chartrons-stone px-4 py-3 text-sm text-chartrons-warm-gray animate-pulse-slow">
-                  {t('conciergerie.ai.thinking')}
+                <div className="rounded-2xl rounded-bl-md bg-chartrons-stone px-4 py-3">
+                  <ConciergeBeretLoader size="md" label={t('conciergerie.ai.thinking')} />
                 </div>
               </div>
             )}
             <div ref={threadEndRef} />
           </div>
+        )}
+
+        {hasRich && (!open || collapsed) && (
+          <Button type="button" variant="secondary" className="w-full" onClick={openPanel}>
+            {t('conciergePanel.expand')}
+          </Button>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-3">
@@ -327,168 +283,7 @@ export function AIConcierge() {
         </div>
       </Card>
 
-      {recommendations.length > 0 && (
-        <section className="space-y-3">
-          <div className="flex items-center justify-between gap-2">
-            <h4 className="text-base font-bold text-chartrons-bordeaux">
-              {t('conciergerie.ai.topTitle', { count: recommendations.length })}
-            </h4>
-            {routeUrl && (
-              <a
-                href={routeUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs font-semibold text-chartrons-bordeaux hover:underline"
-              >
-                🚶 {t('conciergerie.ai.routeAll')}
-              </a>
-            )}
-          </div>
-
-          {recommendations.map((item, index) => (
-            <ConciergeRecommendationCard
-              key={item.poiId}
-              rank={index + 1}
-              item={item}
-              lang={answerLang}
-              unitLabel={unitLabel}
-              rationaleLabel={rationaleLabel}
-            />
-          ))}
-        </section>
-      )}
-
-      {heritage.length > 0 && (
-        <section className="space-y-3">
-          <h4 className="text-base font-bold text-chartrons-bordeaux">{t('conciergerie.ai.heritageTitle')}</h4>
-          {heritage.map((street) => (
-            <Card key={street.id} className="!p-4 space-y-2 bg-gradient-to-br from-chartrons-brass/12 to-white">
-              <div className="flex items-center justify-between gap-2">
-                <p className="font-semibold text-chartrons-olive-dark">{street.street}</p>
-                <Badge variant="brass">{street.era}</Badge>
-              </div>
-              <p className="text-sm text-chartrons-warm-gray leading-relaxed">
-                {uiLang.startsWith('en') ? street.summary.en : street.summary.fr}
-              </p>
-              <p className="text-sm text-chartrons-olive-dark leading-relaxed">
-                <span aria-hidden className="mr-1">
-                  💡
-                </span>
-                {uiLang.startsWith('en') ? street.trivia.en : street.trivia.fr}
-              </p>
-              <a
-                href={walkingDirectionsUrl({
-                  latitude: street.coordinates.lat,
-                  longitude: street.coordinates.lng,
-                })}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center min-h-[40px] px-3 rounded-xl bg-white border border-chartrons-beige text-xs font-semibold text-chartrons-olive-dark hover:bg-chartrons-stone"
-              >
-                🚶 {t('conciergerie.ai.routeStreet')}
-              </a>
-            </Card>
-          ))}
-        </section>
-      )}
-
       <p className="text-xs text-chartrons-warm-gray leading-relaxed">{t('conciergerie.ai.disclaimer')}</p>
     </section>
-  );
-}
-
-interface RecommendationCardProps {
-  rank: number;
-  item: ConciergeRecommendation;
-  lang: ConciergeLang;
-  unitLabel: (unit: BudgetUnit) => string;
-  rationaleLabel: (rationale: ConciergeRationale) => string;
-}
-
-function ConciergeRecommendationCard({
-  rank,
-  item,
-  lang,
-  unitLabel,
-  rationaleLabel,
-}: RecommendationCardProps) {
-  const { t } = useTranslation();
-  const budget = formatConciergeBudget(item.budget, unitLabel);
-  const whatsapp = conciergeWhatsAppHref(item, lang);
-  const sms = conciergeSmsHref(item, lang);
-  const directions = walkingDirectionsUrl({
-    latitude: item.coordinates.lat,
-    longitude: item.coordinates.lng,
-  });
-
-  return (
-    <Card className="!p-4 space-y-3">
-      <div className="flex items-start gap-3">
-        <span className="shrink-0 w-8 h-8 rounded-full bg-chartrons-green text-white text-sm font-bold flex items-center justify-center">
-          {rank}
-        </span>
-        <div className="min-w-0 flex-1">
-          <p className="font-semibold text-chartrons-olive-dark leading-snug">{item.name}</p>
-          <p className="text-xs text-chartrons-warm-gray mt-0.5">{item.subcategory}</p>
-          <p className="text-xs text-chartrons-warm-gray mt-1">📍 {item.address}</p>
-          {item.openingHours && (
-            <p className="text-xs text-chartrons-warm-gray mt-1">🕒 {item.openingHours}</p>
-          )}
-        </div>
-        {item.rating != null && (
-          <Badge variant="gold" icon="★">
-            {item.rating.toFixed(1)}
-          </Badge>
-        )}
-      </div>
-
-      <div className="flex flex-wrap gap-1.5">
-        {item.rationale.map((rationale, index) => (
-          <Badge key={`${rationale.kind}-${index}`} variant="stone">
-            {rationaleLabel(rationale)}
-          </Badge>
-        ))}
-        {item.clickAndCollect && (
-          <Badge variant="vip" icon="🛍️">
-            {t('conciergerie.ai.clickCollect')}
-          </Badge>
-        )}
-      </div>
-
-      {budget && (
-        <p className="text-sm font-semibold text-chartrons-bordeaux">
-          💶 {t('conciergerie.ai.budget')} : {budget}
-        </p>
-      )}
-
-      <div className="flex flex-wrap gap-2">
-        {whatsapp && (
-          <a
-            href={whatsapp}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-1 min-w-[120px] inline-flex items-center justify-center min-h-[40px] px-3 rounded-xl bg-chartrons-green text-white text-xs font-semibold hover:bg-chartrons-green-light"
-          >
-            {t('conciergerie.ai.orderWhatsapp')}
-          </a>
-        )}
-        {sms && (
-          <a
-            href={sms}
-            className="flex-1 min-w-[120px] inline-flex items-center justify-center min-h-[40px] px-3 rounded-xl bg-white border border-chartrons-beige text-xs font-semibold text-chartrons-olive-dark hover:bg-chartrons-stone"
-          >
-            {t('conciergerie.ai.orderSms')}
-          </a>
-        )}
-        <a
-          href={directions}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex-1 min-w-[120px] inline-flex items-center justify-center min-h-[40px] px-3 rounded-xl bg-white border border-chartrons-beige text-xs font-semibold text-chartrons-olive-dark hover:bg-chartrons-stone"
-        >
-          🚶 {t('conciergerie.ai.route')}
-        </a>
-      </div>
-    </Card>
   );
 }

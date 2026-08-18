@@ -1,5 +1,5 @@
-import { CHARTRONS_POIS, type ChartronsPoi, type ChartronsPoiCategory } from '../data/chartronsPois.js';
-import { OSM_CHARTRONS_POIS } from '../data/osmChartronsPois.js';
+import { allChartronsPois } from '../data/chartronsPois.js';
+import type { ChartronsPoi, ChartronsPoiCategory } from '../types/poi.js';
 import {
   CHARTRONS_SUBCATEGORIES,
   CHARTRONS_SUBCATEGORY_LABELS,
@@ -16,6 +16,8 @@ import {
   streetHeritageForAddress,
   type StreetHeritage,
 } from '../data/chartronsHeritage.js';
+import { expandActivityQuery, normalizeSearchText, tokensMatch } from './search.js';
+import { poiPublicWebsite } from './poi.js';
 
 /** Langues gérées par le concierge (réponse et détection). */
 export const CONCIERGE_LANGUAGES = ['fr', 'en', 'es', 'de', 'it', 'pt', 'nl'] as const;
@@ -42,7 +44,8 @@ export type ConciergeRationaleKind =
   | 'menu'
   | 'booking'
   | 'clickCollect'
-  | 'curated';
+  | 'curated'
+  | 'premium';
 
 export interface ConciergeRationale {
   kind: ConciergeRationaleKind;
@@ -384,6 +387,66 @@ const CONCIERGE_INTENTS: ConciergeIntent[] = [
     specialties: ['sport'],
     budget: euros(25, 90, 'item'),
   },
+  {
+    id: 'atm',
+    subcategory: 'services_proximite',
+    keywords: [
+      'dab', 'distributeur', 'distributeurs', 'atm', 'cash', 'argent', 'billets', 'retrait',
+      'cash machine', 'cajero', 'geldautomat', 'bancomat', 'geldautomaat',
+    ],
+    specialties: ['dab', 'banque', 'distributeur'],
+    budget: null,
+  },
+  {
+    id: 'school',
+    subcategory: 'services_proximite',
+    keywords: [
+      'ecole', 'ecoles', 'scolaire', 'college', 'lycee', 'school', 'schools', 'privada', 'publique',
+      'schule', 'scuola', 'escola', 'schooltje',
+    ],
+    specialties: ['ecole', 'ecole publique', 'ecole privee'],
+    budget: null,
+  },
+  {
+    id: 'nursery',
+    subcategory: 'services_proximite',
+    keywords: [
+      'creche', 'creches', 'halte garderie', 'nounou', 'petite enfance', 'nursery', 'kindergarden',
+      'kindergarten', 'guarderia', 'kita', 'asilo', 'kinderdagverblijf',
+    ],
+    specialties: ['creche', 'halte garderie', 'accueil petite enfance'],
+    budget: null,
+  },
+  {
+    id: 'theatre',
+    subcategory: 'patrimoine_tourisme',
+    keywords: [
+      'theatre', 'theatres', 'spectacle', 'concert', 'scene', 'theater', 'theatre', 'cinema',
+      'teatro', 'espectaculo', 'schauspielhaus', 'voorstelling',
+    ],
+    specialties: ['theatre', 'cinema', 'espace culturel', 'salle de spectacle'],
+    budget: euros(12, 35, 'visit'),
+  },
+  {
+    id: 'association',
+    subcategory: 'services_proximite',
+    keywords: [
+      'association', 'associations', 'club', 'clubs', 'loisirs', 'sportif', 'maison de quartier',
+      'community', 'youth', 'jeunesse', 'centro civico', 'verein', 'vereniging',
+    ],
+    specialties: ['association', 'club sportif', 'centre de loisirs', 'maison de quartier', 'salle de sport'],
+    budget: null,
+  },
+  {
+    id: 'b2b',
+    subcategory: 'services_proximite',
+    keywords: [
+      'coworking', 'circuit court', 'grossiste', 'producteur', 'b2b', 'fournisseur', 'wholesale',
+      'short circuit', 'local producer', 'mayorista', 'grosshandel',
+    ],
+    specialties: ['coworking', 'grossiste', 'producteur local', 'circuit court'],
+    budget: null,
+  },
 ];
 
 const CATEGORY_FALLBACK_BUDGET: Record<ChartronsPoiCategory, BudgetEstimate | null> = {
@@ -468,8 +531,10 @@ export interface ConciergeQueryAnalysis {
 }
 
 function matchesKeyword(normalized: string, tokens: string[], keyword: string): boolean {
-  if (keyword.includes(' ')) return normalized.includes(keyword);
-  return tokens.includes(keyword);
+  const key = normalizeSearchText(keyword);
+  if (!key) return false;
+  if (key.includes(' ')) return normalized.includes(key);
+  return tokens.some((token) => tokensMatch(token, key));
 }
 
 function parseBudgetCeiling(normalized: string): number | null {
@@ -514,7 +579,13 @@ const SUBCATEGORY_KEYWORDS: Record<ChartronsSubcategory, string[]> = {
 
 export function analyzeConciergeQuery(query: string): ConciergeQueryAnalysis {
   const normalized = normalizeConciergeText(query);
-  const tokens = normalized.split(' ').filter((token) => token.length > 1 && !STOP_TOKENS.has(token));
+  const expanded = expandActivityQuery(query);
+  const tokens = [
+    ...new Set([
+      ...normalized.split(' ').filter((token) => token.length > 1 && !STOP_TOKENS.has(token)),
+      ...expanded.filter((token) => token.length > 1 && !STOP_TOKENS.has(token)),
+    ]),
+  ];
   const intentIds = CONCIERGE_INTENTS.filter((intent) =>
     intent.keywords.some((keyword) => matchesKeyword(normalized, tokens, normalizeConciergeText(keyword))),
   ).map((intent) => intent.id);
@@ -543,7 +614,7 @@ export function analyzeConciergeQuery(query: string): ConciergeQueryAnalysis {
 }
 
 export function conciergePoiPool(): ChartronsPoi[] {
-  return [...CHARTRONS_POIS, ...OSM_CHARTRONS_POIS];
+  return allChartronsPois();
 }
 
 function intentById(id: string): ConciergeIntent | undefined {
@@ -565,9 +636,9 @@ export function estimatePoiBudget(poi: ChartronsPoi): BudgetEstimate | null {
   return CATEGORY_FALLBACK_BUDGET[poi.category];
 }
 
-/** Le Click & Collect est proposé dès qu’un commerçant peut recevoir une commande par téléphone. */
+/** Le Click & Collect est un module d’action Premium Pro. */
 export function conciergeClickAndCollect(poi: ChartronsPoi): boolean {
-  return poi.isMerchant && Boolean(poi.phone?.trim());
+  return poi.tier === 'premium_pro' && poi.isMerchant && Boolean(poi.phone?.trim());
 }
 
 function scorePoi(poi: ChartronsPoi, analysis: ConciergeQueryAnalysis) {
@@ -600,12 +671,13 @@ function scorePoi(poi: ChartronsPoi, analysis: ConciergeQueryAnalysis) {
   }
 
   for (const token of analysis.tokens) {
-    if (token.length >= 3 && name.includes(token)) {
+    if (token.length < 3) continue;
+    if (name.includes(token) || tokensMatch(name, token)) {
       relevance += 16;
       rationale.push({ kind: 'keyword', value: token });
-    } else if (containsWords(specialty, token)) {
+    } else if (containsWords(specialty, token) || specialty.includes(token) || tokensMatch(specialty, token)) {
       relevance += 12;
-    } else if (token.length >= 4 && description.includes(token)) {
+    } else if (token.length >= 4 && (description.includes(token) || description.split(' ').some((word) => tokensMatch(word, token)))) {
       relevance += 5;
     }
   }
@@ -629,6 +701,10 @@ function scorePoi(poi: ChartronsPoi, analysis: ConciergeQueryAnalysis) {
     rationale.push({ kind: 'curated' });
   }
   if (poi.isMerchant) score += 4;
+  if (poi.tier === 'premium_pro') {
+    score += 18;
+    rationale.push({ kind: 'premium' });
+  }
   if (poi.hasMenu) {
     score += 3;
     rationale.push({ kind: 'menu' });
@@ -673,7 +749,7 @@ function toRecommendation(
     address: poi.address,
     coordinates: poi.coordinates,
     phone: poi.phone ?? null,
-    website: poi.website ?? null,
+    website: poiPublicWebsite(poi),
     openingHours: poi.openingHours ?? null,
     rating: poi.rating ?? null,
     reviewsCount: poi.reviewsCount ?? null,
@@ -681,7 +757,7 @@ function toRecommendation(
     rationale: dedupeRationale(rationale).slice(0, 4),
     budget: estimatePoiBudget(poi),
     clickAndCollect: conciergeClickAndCollect(poi),
-    bookingUrl: poi.bookingUrl ?? null,
+    bookingUrl: poi.tier === 'premium_pro' ? poi.bookingUrl ?? null : null,
     street: heritage?.street ?? null,
     heritageId: heritage?.id ?? null,
   };

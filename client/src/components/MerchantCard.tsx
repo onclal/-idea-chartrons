@@ -1,21 +1,20 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  canClickAndCollect,
   hasQrVitrine,
+  isPremiumProMerchant,
   isRestaurantCategory,
-  isVipMerchant,
   type ActeurLocal,
   type ReviewSummary,
 } from '@idea-chartrons/shared';
 import { Badge, Button, Card } from './ui';
 import { PhoneLink } from './PhoneLink';
-import { AppointmentButton } from './AppointmentButton';
+import { EmailLink } from './EmailLink';
 import { PlaceMeta } from './PlaceMeta';
 import { MerchantSocialSection } from './MerchantSocialSection';
+import { MerchantActionButtons } from './MerchantActionButtons';
 import { MerchantReviews } from './MerchantReviews';
 import { DailyMenuSection } from './DailyMenuSection';
-import { OrderModal } from './OrderModal';
 import { RestaurantMenu } from './RestaurantMenu';
 import { AdminDeleteButton } from './AdminDeleteButton';
 import { QrCodeDisplay } from './QrCodeDisplay';
@@ -48,9 +47,8 @@ export function MerchantCard({
   onGenerateQr,
 }: MerchantCardProps) {
   const { t } = useTranslation();
-  const vip = isVipMerchant(acteur);
+  const vip = isPremiumProMerchant(acteur);
   const [reviewSummary, setReviewSummary] = useState<ReviewSummary>(() => getAverageRating(acteur.id));
-  const [orderOpen, setOrderOpen] = useState(false);
 
   useEffect(() => {
     setReviewSummary(getAverageRating(acteur.id));
@@ -71,7 +69,7 @@ export function MerchantCard({
             <div className="flex flex-wrap gap-1.5 mt-1.5">
               <Badge variant="olive">{t(`acteurs.categories.${acteur.categorie}`)}</Badge>
               {vip && (
-                <Badge variant="vip" icon="⭐">{t('badges.vip')}</Badge>
+                <Badge variant="vip" icon="⭐">{t('badges.premiumPro')}</Badge>
               )}
               {reviewSummary.count > 0 && (
                 <Badge variant="gold">
@@ -97,26 +95,15 @@ export function MerchantCard({
           specialite={acteur.specialite}
         />
         <p className="text-xs text-chartrons-olive-dark/70 mt-2">📍 {acteur.adresse}</p>
-        <div className="mt-2">
+        <div className="mt-2 flex flex-col gap-1">
           <PhoneLink phone={acteur.telephone} />
+          <EmailLink email={acteur.merchantEmail} />
         </div>
         {vip && <DailyMenuSection acteur={acteur} />}
-        {canClickAndCollect(acteur) && (
-          <div className="mt-3" onClick={(event) => event.stopPropagation()}>
-            <Button
-              type="button"
-              variant="primary"
-              className="w-full"
-              onClick={() => setOrderOpen(true)}
-            >
-              {t('acteurs.clickCollect.cta')}
-            </Button>
-          </div>
-        )}
         <MerchantSocialSection acteur={acteur} onUpdated={onUpdated} />
+        <MerchantActionButtons acteur={acteur} />
         <MerchantReviews merchantId={acteur.id} onSummaryChange={setReviewSummary} />
         <div className="mt-2 space-y-2" onClick={(event) => event.stopPropagation()}>
-          <AppointmentButton acteur={acteur} />
           <Button
             variant="ghost"
             size="md"
@@ -187,9 +174,6 @@ export function MerchantCard({
           </div>
         )}
       </div>
-      {canClickAndCollect(acteur) && (
-        <OrderModal open={orderOpen} onClose={() => setOrderOpen(false)} acteur={acteur} />
-      )}
     </Card>
   );
 }

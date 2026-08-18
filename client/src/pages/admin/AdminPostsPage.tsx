@@ -95,7 +95,7 @@ export function AdminPostsPage() {
         description: form.description,
         type: form.type,
         prix:
-          form.type === PostType.Vente || form.type === PostType.PetitBoulot
+          form.type === PostType.Vente || form.type === PostType.PetitBoulot || form.type === PostType.OffrePro
             ? Number(form.prix) || 0
             : null,
         photos: form.photo ? [form.photo] : [],
@@ -284,7 +284,7 @@ export function AdminPostsPage() {
               }))}
             />
           </div>
-          {(form.type === PostType.Vente || form.type === PostType.PetitBoulot) && (
+          {(form.type === PostType.Vente || form.type === PostType.PetitBoulot || form.type === PostType.OffrePro) && (
             <Input
               label={t('posts.create.prix')}
               type="number"
