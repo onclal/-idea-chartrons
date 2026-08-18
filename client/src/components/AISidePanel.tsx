@@ -6,6 +6,7 @@ import { ConciergeBeretLoader } from './ConciergeBeretLoader';
 import { ConciergeRichResults } from './ConciergeRichResults';
 import { useConciergePanel } from '../context/ConciergePanelContext';
 import { PhoneLink } from './PhoneLink';
+import { AudioReader } from './AudioReader';
 
 const ConciergeMiniMap = lazy(() =>
   import('./ConciergeMiniMap').then((mod) => ({ default: mod.ConciergeMiniMap })),
@@ -107,10 +108,11 @@ export function AISidePanel() {
           )}
 
           {!pending && lastAssistant && (
-            <Card className="!p-3 bg-chartrons-stone/70">
+            <Card className="!p-3 bg-chartrons-stone/70 space-y-3">
               <p className="text-sm text-chartrons-olive-dark leading-relaxed whitespace-pre-wrap">
                 {lastAssistant.content}
               </p>
+              <AudioReader text={lastAssistant.content} className="w-full" />
             </Card>
           )}
 

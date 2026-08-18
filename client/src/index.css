@@ -220,3 +220,87 @@
     transform: scaleY(0.15);
   }
 }
+
+/* Mode Confort : contraste XXL, typo ≥ 20px, cibles ≥ 60px, sans réglages. */
+html.confort-mode {
+  font-size: 20px;
+  color-scheme: dark;
+  --color-chartrons-green: #ffffff;
+  --color-chartrons-green-light: #ffffff;
+  --color-chartrons-green-dark: #ffffff;
+  --color-chartrons-bordeaux: #ffffff;
+  --color-chartrons-bordeaux-light: #ffffff;
+  --color-chartrons-brick: #ffe14d;
+  --color-chartrons-brick-light: #ffe14d;
+  --color-chartrons-stone: #000000;
+  --color-chartrons-beige: #1a1a1a;
+  --color-chartrons-sand: #2a2a2a;
+  --color-chartrons-olive: #ffe14d;
+  --color-chartrons-olive-light: #ffe14d;
+  --color-chartrons-olive-dark: #ffffff;
+  --color-chartrons-brass: #ffe14d;
+  --color-chartrons-cream: #000000;
+  --color-chartrons-gold: #ffe14d;
+  --color-chartrons-warm-gray: #f2f2f2;
+}
+
+html.confort-mode body {
+  background-color: #000;
+  background-image: none;
+  color: #fff;
+  font-size: 20px;
+  line-height: 1.45;
+}
+
+html.confort-mode header,
+html.confort-mode nav,
+html.confort-mode aside,
+html.confort-mode footer {
+  background: #000 !important;
+  color: #fff !important;
+  border-color: #fff !important;
+}
+
+html.confort-mode .bg-white,
+html.confort-mode .bg-white\/95,
+html.confort-mode [class*="bg-gradient"] {
+  background: #111 !important;
+  background-image: none !important;
+  color: #fff !important;
+}
+
+html.confort-mode button,
+html.confort-mode a,
+html.confort-mode [role="button"],
+html.confort-mode input,
+html.confort-mode select,
+html.confort-mode textarea,
+html.confort-mode .touch-target {
+  min-height: 60px;
+  min-width: 60px;
+  font-size: 1rem;
+}
+
+html.confort-mode .audio-reader,
+html.confort-mode .confort-tile {
+  min-height: 60px;
+  border-width: 2px;
+  border-color: #ffe14d;
+  color: #000;
+  background: #ffe14d;
+}
+
+html.confort-mode .confort-tile-voice[aria-pressed="true"],
+html.confort-mode .audio-reader[aria-pressed="true"] {
+  background: #fff;
+  color: #000;
+  border-color: #fff;
+}
+
+html.confort-mode nav.fixed.bottom-0 a span {
+  font-size: 0.85rem;
+}
+
+html.confort-mode main {
+  padding-bottom: 6.5rem;
+}

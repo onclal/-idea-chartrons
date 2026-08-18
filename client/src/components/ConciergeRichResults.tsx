@@ -8,6 +8,7 @@ import {
   formatConciergeBudget,
 } from '../lib/concierge';
 import { walkingDirectionsUrl } from '../lib/itinerary';
+import { AudioReader } from './AudioReader';
 
 interface ConciergeRichResultsProps {
   recommendations: ConciergeRecommendation[];
@@ -146,6 +147,14 @@ function ConciergeRecommendationCard({
             <p className="text-xs text-chartrons-green-dark mt-1 leading-snug">{item.justification}</p>
           )}
           <p className="text-xs text-chartrons-warm-gray mt-1">📍 {item.address}</p>
+          <div className="mt-2">
+            <AudioReader
+              text={[item.name, item.specialty, item.justification, item.address, item.phone]
+                .filter(Boolean)
+                .join('. ')}
+              className="w-full"
+            />
+          </div>
           {item.openNow === true && (
             <p className="text-[11px] font-semibold text-chartrons-green mt-1">{t('conciergerie.ai.openNow')}</p>
           )}

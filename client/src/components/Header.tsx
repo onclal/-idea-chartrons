@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAdmin } from '../context/AdminContext';
 import { useFavorites } from '../context/FavoritesContext';
 import { usePwa } from '../context/PwaContext';
+import { useConfort } from '../context/ConfortContext';
 import { CategoryTabs } from './CategoryTabs';
 import { HeroSearch } from './HeroSearch';
 import { Badge } from './ui';
@@ -12,6 +13,7 @@ export function Header() {
   const { isAdminMode } = useAdmin();
   const { favorites } = useFavorites();
   const { online } = usePwa();
+  const { isConfortMode, toggleConfortMode } = useConfort();
 
   const setLanguage = (lang: 'fr' | 'en') => {
     i18n.changeLanguage(lang);
@@ -77,9 +79,26 @@ export function Header() {
             </div>
           </div>
 
-          <HeroSearch variant="header" />
+          <button
+            type="button"
+            onClick={toggleConfortMode}
+            aria-pressed={isConfortMode}
+            aria-label={isConfortMode ? t('confort.toggleAriaOn') : t('confort.toggleAria')}
+            className={`w-full min-h-[60px] px-4 rounded-2xl text-base font-bold touch-target ${
+              isConfortMode
+                ? 'bg-[#ffe14d] text-black border-2 border-black'
+                : 'bg-white text-chartrons-bordeaux'
+            }`}
+          >
+            {isConfortMode ? t('confort.toggleOn') : t('confort.toggle')}
+          </button>
 
-          <CategoryTabs />
+          {!isConfortMode && (
+            <>
+              <HeroSearch variant="header" />
+              <CategoryTabs />
+            </>
+          )}
         </div>
       </div>
       <div className="h-0.5 bg-gradient-to-r from-chartrons-brass/40 via-chartrons-beige to-chartrons-olive/30" />

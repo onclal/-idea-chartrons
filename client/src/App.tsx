@@ -6,6 +6,7 @@ import { RoutesProvider } from './context/RoutesContext';
 import { PwaProvider } from './context/PwaContext';
 import { AdminProvider } from './context/AdminContext';
 import { ToastProvider } from './context/ToastContext';
+import { ConfortProvider } from './context/ConfortContext';
 import { Layout } from './components/Layout';
 import { AdminDashboard } from './components/AdminDashboard';
 import { AdminLayout } from './components/admin/AdminLayout';
@@ -30,6 +31,7 @@ import { AdminRelaisPage } from './pages/admin/AdminRelaisPage';
 
 export function App() {
   return (
+    <ConfortProvider>
     <AdminProvider>
       <ToastProvider>
         <PwaProvider>
@@ -77,5 +79,6 @@ export function App() {
         </PwaProvider>
       </ToastProvider>
     </AdminProvider>
+    </ConfortProvider>
   );
 }

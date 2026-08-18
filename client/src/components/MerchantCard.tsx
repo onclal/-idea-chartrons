@@ -20,6 +20,7 @@ import { AdminDeleteButton } from './AdminDeleteButton';
 import { QrCodeDisplay } from './QrCodeDisplay';
 import { VipOfferCard } from './VipOfferCard';
 import { getAverageRating } from '../services/reviewService';
+import { AudioReader } from './AudioReader';
 
 interface MerchantCardProps {
   acteur: ActeurLocal;
@@ -97,6 +98,14 @@ export function MerchantCard({
           specialite={acteur.specialite}
         />
         <p className="text-xs text-chartrons-olive-dark/70 mt-2">📍 {acteur.adresse}</p>
+        <div className="mt-3" onClick={(event) => event.stopPropagation()}>
+          <AudioReader
+            text={[acteur.nomCommerce, acteur.specialite, acteur.description, acteur.adresse, acteur.telephone]
+              .filter(Boolean)
+              .join('. ')}
+            className="w-full"
+          />
+        </div>
         <div className="mt-2 flex flex-col gap-1">
           <PhoneLink phone={acteur.telephone} />
           <EmailLink email={acteur.merchantEmail} />

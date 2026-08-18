@@ -8,6 +8,8 @@ import { PageHelp } from '../components/PageHelp';
 import { PickupAlert } from '../components/PickupAlert';
 import { HeroSearch } from '../components/HeroSearch';
 import { FaqModal } from '../components/FaqModal';
+import { ConfortDashboard } from '../components/ConfortDashboard';
+import { useConfort } from '../context/ConfortContext';
 import { api } from '../lib/api';
 import { getDeviceId, getOwnedPostIds } from '../lib/guestCarnet';
 
@@ -21,6 +23,7 @@ function isUpcomingBrocante(event: AgendaEvenement): boolean {
 
 export function HomePage() {
   const { t } = useTranslation();
+  const { isConfortMode } = useConfort();
   const [stats, setStats] = useState({ posts: 0, acteurs: 0, events: 0 });
   const [carnetPoints, setCarnetPoints] = useState(0);
   const [relaisList, setRelaisList] = useState<LocalRelais[]>([]);
@@ -53,6 +56,17 @@ export function HomePage() {
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
+
+  if (isConfortMode) {
+    return (
+      <div className="space-y-6 animate-fade-in">
+        {!loading && (
+          <PickupAlert relaisList={relaisList} posts={posts} ownedPostIds={ownedPostIds} />
+        )}
+        <ConfortDashboard />
+      </div>
+    );
+  }
 
   if (loading) return <Loading message={t('common.loading')} />;
 

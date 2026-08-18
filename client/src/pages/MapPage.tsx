@@ -21,6 +21,7 @@ import { MerchantReviews } from '../components/MerchantReviews';
 import { DailyMenuSection } from '../components/DailyMenuSection';
 import { PhoneLink } from '../components/PhoneLink';
 import { EmailLink } from '../components/EmailLink';
+import { AudioReader } from '../components/AudioReader';
 import { FavoriteButton } from '../components/FavoriteButton';
 import { FavoritesDrawer } from '../components/FavoritesDrawer';
 import { DirectionsButton } from '../components/DirectionsButton';
@@ -604,6 +605,20 @@ export function MapPage() {
                   }
                 />
                 <p className="text-xs text-chartrons-warm-gray mt-2">📍 {selectedPin.adresse}</p>
+                <div className="mt-3">
+                  <AudioReader
+                    text={[
+                      selectedPin.title,
+                      selectedPin.specialite,
+                      selectedPin.adresse,
+                      selectedPin.openingHours,
+                      selectedPin.telephone,
+                    ]
+                      .filter(Boolean)
+                      .join('. ')}
+                    className="w-full"
+                  />
+                </div>
                 <div className="mt-1 space-y-1">
                   <PhoneLink phone={selectedPin.telephone} />
                   {selectedActeur && <EmailLink email={selectedActeur.merchantEmail} />}

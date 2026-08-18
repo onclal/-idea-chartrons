@@ -5,6 +5,7 @@ import { Badge, Button, Card } from './ui';
 import { CONCIERGE_LANG_OPTIONS, type ConciergeLangChoice } from '../lib/concierge';
 import { ConciergeBeretLoader } from './ConciergeBeretLoader';
 import { useConciergePanel } from '../context/ConciergePanelContext';
+import { AudioReader } from './AudioReader';
 
 interface VoiceRecognitionResult {
   0: { transcript: string };
@@ -207,6 +208,11 @@ export function AIConcierge() {
                   }`}
                 >
                   {message.content}
+                  {message.role === 'assistant' && (
+                    <div className="mt-3">
+                      <AudioReader text={message.content} className="w-full" />
+                    </div>
+                  )}
                   {message.role === 'assistant' && message.source && (
                     <span className="block mt-2">
                       <Badge variant={message.source === 'openai' ? 'green' : 'stone'} icon={message.source === 'openai' ? '✨' : '📴'}>
