@@ -7,9 +7,11 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 /** GitHub Pages project URL: https://onclal.github.io/idea-chartrons/ */
 const GITHUB_PAGES_BASE = '/idea-chartrons/';
+/** Vercel sert la SPA à la racine (`idea-chartrons.vercel.app/`). */
+const base = process.env.VITE_BASE ?? (process.env.VERCEL ? '/' : GITHUB_PAGES_BASE);
 
 export default defineConfig({
-  base: GITHUB_PAGES_BASE,
+  base,
   plugins: [
     react(),
     tailwindcss(),
@@ -26,8 +28,8 @@ export default defineConfig({
         background_color: '#F5F0E8',
         display: 'standalone',
         orientation: 'portrait-primary',
-        start_url: GITHUB_PAGES_BASE,
-        scope: GITHUB_PAGES_BASE,
+        start_url: base,
+        scope: base,
         lang: 'fr',
         icons: [
           {
