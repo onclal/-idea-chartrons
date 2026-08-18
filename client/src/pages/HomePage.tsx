@@ -10,6 +10,7 @@ import { HeroSearch } from '../components/HeroSearch';
 import { FaqModal } from '../components/FaqModal';
 import { ConfortDashboard } from '../components/ConfortDashboard';
 import { useConfort } from '../context/ConfortContext';
+import { quaisChartronsPhotoSrc } from '../lib/media';
 import { api } from '../lib/api';
 import { getDeviceId, getOwnedPostIds } from '../lib/guestCarnet';
 
@@ -95,17 +96,27 @@ export function HomePage() {
         </div>
       )}
 
-      <section className="text-center py-2 relative">
-        <div className="absolute top-0 right-0">
+      <section className="relative">
+        <div className="absolute top-2 right-2 z-10">
           <PageHelp page="home" />
         </div>
-        <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-br from-chartrons-beige to-chartrons-sand mb-4 shadow-card">
-          <span className="text-4xl" aria-hidden>🏘️</span>
+        <div className="overflow-hidden rounded-3xl shadow-card">
+          <div className="relative h-52 bg-gradient-to-br from-chartrons-green to-chartrons-beige">
+            <img
+              src={quaisChartronsPhotoSrc()}
+              alt={t('home.heroAlt')}
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-chartrons-green via-chartrons-green/45 to-chartrons-green/10" />
+            <div className="relative h-full flex flex-col justify-end p-5 text-white">
+              <h2 className="text-2xl font-bold leading-tight">{t('home.welcome')}</h2>
+              <p className="text-sm text-white/85 leading-relaxed mt-1.5 max-w-sm">
+                {t('home.description')}
+              </p>
+            </div>
+          </div>
         </div>
-        <h2 className="text-2xl font-bold text-chartrons-bordeaux mb-2">{t('home.welcome')}</h2>
-        <p className="text-chartrons-warm-gray text-sm leading-relaxed max-w-xs mx-auto">
-          {t('home.description')}
-        </p>
+        <p className="text-[10px] text-chartrons-warm-gray/80 mt-1.5 px-1">{t('home.heroCredit')}</p>
         <div className="flex items-center justify-center gap-2 mt-3 flex-wrap">
           <Badge variant="brass" icon="🙋">{t('guest.badge')}</Badge>
           <p className="text-xs text-chartrons-warm-gray">{t('guest.noAccount')}</p>
@@ -113,7 +124,7 @@ export function HomePage() {
         <button
           type="button"
           onClick={() => setFaqOpen(true)}
-          className="mt-2 text-xs font-semibold text-chartrons-green underline-offset-2 hover:underline"
+          className="mt-2 mx-auto block text-xs font-semibold text-chartrons-green underline-offset-2 hover:underline"
         >
           {t('faq.comparisonTitle')}
         </button>

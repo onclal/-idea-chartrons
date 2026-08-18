@@ -8,6 +8,8 @@ import {
   type ReviewSummary,
 } from '@idea-chartrons/shared';
 import { Badge, Button, Card } from './ui';
+import { BrandedCover, PlaceCover } from './PlaceCover';
+import { resolveMediaUrl } from '../lib/media';
 import { PhoneLink } from './PhoneLink';
 import { EmailLink } from './EmailLink';
 import { PlaceMeta } from './PlaceMeta';
@@ -58,14 +60,18 @@ export function MerchantCard({
     setReviewSummary(getAverageRating(acteur.id));
   }, [acteur.id]);
 
+  const coverSrc = resolveMediaUrl(acteur.photos[0]);
+
   return (
     <Card
       className="!p-0 overflow-hidden cursor-pointer bg-white text-chartrons-olive-dark"
       onClick={onToggle}
     >
-      {acteur.photos[0] && (
-        <img src={acteur.photos[0]} alt="" className="w-full h-40 object-cover" />
-      )}
+      {coverSrc ? (
+        <PlaceCover src={coverSrc} />
+      ) : acteur.id === 'acteur-poi-cult-002' ? (
+        <BrandedCover />
+      ) : null}
       <div className="p-4">
         <div className="flex items-start justify-between gap-2">
           <div>

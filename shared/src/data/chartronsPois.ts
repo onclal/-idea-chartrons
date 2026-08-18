@@ -10,6 +10,7 @@ import {
 import { hydrateChartronsPoi, poiPublicWebsite } from '../logic/poi.js';
 import { defaultRegleForCategory, generateQrVitrineCode } from '../logic/fidelite.js';
 import { OSM_CHARTRONS_POIS } from './osmChartronsPois.js';
+import { withoutRetiredStockPhotos } from './media.js';
 
 export const CHARTRONS_BOUNDING_BOX = {
   sw: { lat: 44.848, lng: -0.578 },
@@ -210,7 +211,6 @@ export const CHARTRONS_POIS: ChartronsPoiInput[] = [
     rating: 4.7,
     reviewsCount: 310,
     openingHours: 'Tous les jours : 09:00 - 18:00',
-    imageUrl: 'https://images.unsplash.com/photo-1548625361-1811e59543e3?auto=format&fit=crop&w=800&q=80',
   },
   {
     id: 'poi-cult-003',
@@ -326,7 +326,7 @@ export function chartronsPoiToActeur(poi: ChartronsPoi, now: string): ActeurLoca
     telephone: poi.phone ?? null,
     latitude: poi.coordinates.lat,
     longitude: poi.coordinates.lng,
-    photos: poi.imageUrl ? [poi.imageUrl] : [],
+    photos: withoutRetiredStockPhotos(poi.imageUrl ? [poi.imageUrl] : []),
     offreVip: null,
     pointsRequisVip: 0,
     qrCodeVitrine: poi.isMerchant ? generateQrVitrineCode(poi.name) : null,
@@ -402,7 +402,7 @@ export function culturePlacePois(): Array<{
     latitude: poi.coordinates.lat,
     longitude: poi.coordinates.lng,
     telephone: poi.phone ?? null,
-    imageUrl: poi.imageUrl,
+    imageUrl: withoutRetiredStockPhotos(poi.imageUrl ? [poi.imageUrl] : [])[0],
     rating: poi.rating,
     reviewsCount: poi.reviewsCount,
     openingHours: poi.openingHours,

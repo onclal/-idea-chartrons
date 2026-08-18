@@ -1,6 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { Input } from '../ui';
 import type { ChangeEvent } from 'react';
+import { isRetiredStockImage } from '@idea-chartrons/shared';
+import { resolveMediaUrl } from '../../lib/media';
 
 interface AdminPhotoFieldProps {
   label: string;
@@ -19,7 +21,8 @@ export function AdminPhotoField({ label, value, onChange }: AdminPhotoFieldProps
     reader.readAsDataURL(file);
   };
 
-  const urlValue = value.startsWith('data:') ? '' : value;
+  const preview = resolveMediaUrl(value);
+  const urlValue = !value || value.startsWith('data:') || isRetiredStockImage(value) ? '' : value;
 
   return (
     <div className="space-y-2">
@@ -30,8 +33,8 @@ export function AdminPhotoField({ label, value, onChange }: AdminPhotoFieldProps
         placeholder="https://…"
       />
       <label className="flex flex-col items-center justify-center w-full min-h-[7.5rem] rounded-xl border-2 border-dashed border-chartrons-beige bg-white cursor-pointer hover:border-chartrons-bordeaux/40 transition-colors overflow-hidden">
-        {value ? (
-          <img src={value} alt="" className="w-full h-36 object-cover" />
+        {preview ? (
+          <img src={preview} alt="" className="w-full h-36 object-cover" />
         ) : (
           <div className="text-center p-4">
             <span className="text-2xl block mb-1" aria-hidden>

@@ -17,7 +17,7 @@ import {
 import { createChartronsPoiActeurs } from './chartronsPois.js';
 
 /** Bump when seed acteurs / Chartrons POIs change so localStorage upserts the catalog. */
-export const SEED_CATALOG_VERSION = 6;
+export const SEED_CATALOG_VERSION = 7;
 import { defaultRegleForCategory } from '../logic/fidelite.js';
 import {
   ActeurLocalCategory,

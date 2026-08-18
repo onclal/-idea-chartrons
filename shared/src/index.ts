@@ -17,6 +17,7 @@ export * from './logic/search.js';
 export * from './logic/poi.js';
 export * from './data/seed.js';
 export * from './data/mapPois.js';
+export * from './data/media.js';
 export * from './data/chartronsPois.js';
 export * from './data/osmChartronsPois.js';
 export * from './data/chartronsHeritage.js';

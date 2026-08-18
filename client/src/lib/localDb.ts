@@ -28,6 +28,7 @@ import {
   normalizePlatformSettings,
   normalizePinCode,
   normalizeSocialLinks,
+  withoutRetiredStockPhotos,
   SEED_CATALOG_VERSION,
   socialLinksEqual,
   LocalRelaisRetraitStatus,
@@ -70,9 +71,21 @@ function isHeavyPhoto(url: string): boolean {
 }
 
 function stripHeavyPhotos(photos: string[] | undefined, aggressive: boolean): string[] {
-  const list = photos ?? [];
+  const list = withoutRetiredStockPhotos(photos);
   if (aggressive) return [];
   return list.filter((photo) => photo && !isHeavyPhoto(photo)).slice(0, 2);
+}
+
+function resolveCatalogPhotos(current: string[] | undefined, seed: string[] | undefined): string[] {
+  const kept = withoutRetiredStockPhotos(current);
+  if (kept.length) return kept;
+  return withoutRetiredStockPhotos(seed);
+}
+
+function photosChanged(current: string[] | undefined, next: string[]): boolean {
+  const left = current ?? [];
+  if (left.length !== next.length) return true;
+  return left.some((photo, index) => photo !== next[index]);
 }
 
 function compactSchema(data: DatabaseSchema, aggressive = false): DatabaseSchema {
@@ -122,7 +135,7 @@ function mergeCatalogActeur(current: ActeurLocal | undefined, seedActeur: Acteur
     categorie: seedActeur.categorie,
     latitude: seedActeur.latitude,
     longitude: seedActeur.longitude,
-    photos: current.photos?.length ? current.photos : seedActeur.photos,
+    photos: resolveCatalogPhotos(current.photos, seedActeur.photos),
     specialite: current.specialite ?? seedActeur.specialite,
     rating: current.rating ?? seedActeur.rating,
     reviewsCount: current.reviewsCount ?? seedActeur.reviewsCount,
@@ -244,7 +257,7 @@ class LocalDatabase {
             classifySubcategory(nextSpecialite ?? '', 'services_artisanat'));
       const nextArdoiseStatus =
         acteur.dailyMenuStatus ?? seedMatch?.dailyMenuStatus ?? ArdoiseStatus.Approved;
-      const nextPhotos = acteur.photos?.length ? acteur.photos : (seedMatch?.photos ?? []);
+      const nextPhotos = resolveCatalogPhotos(acteur.photos, seedMatch?.photos);
       const nextPin =
         normalizePinCode(acteur.pinCode) ??
         normalizePinCode(seedMatch?.pinCode) ??
@@ -282,7 +295,7 @@ class LocalDatabase {
         nextMerchantEmail !== acteur.merchantEmail ||
         nextMerchant !== acteur.isMerchant ||
         nextVip !== acteur.isVip ||
-        nextPhotos.length !== (acteur.photos?.length ?? 0) ||
+        photosChanged(acteur.photos, nextPhotos) ||
         !socialLinksEqual(nextSocial, acteur.socialLinks) ||
         nextMode !== acteur.regleFideliteMode ||
         nextValeur !== acteur.regleFideliteValeur ||

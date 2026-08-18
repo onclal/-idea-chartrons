@@ -9,6 +9,7 @@ import {
   matchesSearchQuery,
   merchantTierOf,
   merchantTierPatch,
+  withoutRetiredStockPhotos,
   type ActeurLocal,
   type ChartronsSubcategory,
   type MerchantTier,
@@ -17,6 +18,7 @@ import { AdminDataTable } from './AdminDataTable';
 import { AdminPageHeader } from './AdminPageHeader';
 import { AdminPhotoField } from './AdminPhotoField';
 import { Badge, Button, Card, EmptyState, Input, Loading, Modal, Select, Textarea } from '../ui';
+import { PlaceCover } from '../PlaceCover';
 import { StorefrontPoster } from '../StorefrontPoster';
 import { useToast } from '../../context/ToastContext';
 import { api } from '../../lib/api';
@@ -112,7 +114,7 @@ export function AdminPoiManager() {
       description: acteur.description,
       adresse: acteur.adresse,
       telephone: acteur.telephone ?? '',
-      photo: acteur.photos[0] ?? '',
+      photo: withoutRetiredStockPhotos(acteur.photos)[0] ?? '',
       offreVip: acteur.offreVip ?? '',
       pointsRequisVip: String(acteur.pointsRequisVip),
       activerFidelite: Boolean(acteur.qrCodeVitrine),
@@ -139,7 +141,7 @@ export function AdminPoiManager() {
         description: form.description,
         adresse: form.adresse,
         telephone: form.telephone.trim() || null,
-        photos: form.photo ? [form.photo] : [],
+        photos: withoutRetiredStockPhotos(form.photo ? [form.photo] : []),
         offreVip: form.offreVip.trim() || null,
         pointsRequisVip: Number(form.pointsRequisVip) || 0,
       };
@@ -257,7 +259,7 @@ export function AdminPoiManager() {
             render: (acteur) => (
               <div className="flex items-center gap-3 min-w-0">
                 {acteur.photos[0] && (
-                  <img src={acteur.photos[0]} alt="" className="w-12 h-12 rounded-xl object-cover shrink-0" />
+                  <PlaceCover src={acteur.photos[0]} className="w-12 h-12 rounded-xl object-cover shrink-0" />
                 )}
                 <div className="min-w-0">
                   <p className="font-medium text-chartrons-olive-dark truncate max-w-xs">{acteur.nomCommerce}</p>
@@ -314,7 +316,7 @@ export function AdminPoiManager() {
           <Card key={acteur.id} className="!p-4">
             <div className="flex gap-3">
               {acteur.photos[0] && (
-                <img src={acteur.photos[0]} alt="" className="w-16 h-16 rounded-xl object-cover shrink-0" />
+                <PlaceCover src={acteur.photos[0]} className="w-16 h-16 rounded-xl object-cover shrink-0" />
               )}
               <div className="min-w-0 flex-1">
                 <p className="font-semibold text-chartrons-olive-dark">{acteur.nomCommerce}</p>

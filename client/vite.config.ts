@@ -19,7 +19,7 @@ export default defineConfig({
       // Temporarily unregister the SW so stale hashed CSS cannot be served.
       selfDestroying: true,
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg'],
+      includeAssets: ['favicon.svg', 'images/quais-chartrons.jpg'],
       manifest: {
         name: 'IDÉA CHARTRONS',
         short_name: 'Chartrons',

@@ -13,6 +13,8 @@ import {
   type ReviewSummary,
 } from '@idea-chartrons/shared';
 import { Badge, Button, Card, Loading } from '../components/ui';
+import { PlaceCover, BrandedCover } from '../components/PlaceCover';
+import { resolveMediaUrl } from '../lib/media';
 import { PageHelp } from '../components/PageHelp';
 import { PlaceMeta } from '../components/PlaceMeta';
 import { MerchantSocialSection } from '../components/MerchantSocialSection';
@@ -177,7 +179,7 @@ export function MapPage() {
       longitude: acteur.longitude,
       href: acteurHref(),
       telephone: acteur.telephone,
-      imageUrl: acteur.photos[0],
+      imageUrl: resolveMediaUrl(acteur.photos[0]) ?? undefined,
       rating: acteur.rating,
       reviewsCount: acteur.reviewsCount,
       openingHours: acteur.openingHours,
@@ -589,9 +591,11 @@ export function MapPage() {
 
       {selectedPin ? (
         <Card className="!p-0 overflow-hidden bg-white text-chartrons-olive-dark">
-          {selectedPin.imageUrl && (
-            <img src={selectedPin.imageUrl} alt="" className="w-full h-40 object-cover" />
-          )}
+          {selectedPin.imageUrl ? (
+            <PlaceCover src={selectedPin.imageUrl} />
+          ) : selectedPin.id === 'acteur-poi-cult-002' ? (
+            <BrandedCover className="w-full h-40" />
+          ) : null}
           <div className="p-4">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
