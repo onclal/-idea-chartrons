@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { LocalRelaisRetraitStatus, PostType, type LocalRelais, type PostAnnonce } from '@idea-chartrons/shared';
+import { LocalRelaisRetraitStatus, PostStatus, PostType, type LocalRelais, type PostAnnonce } from '@idea-chartrons/shared';
 import { Badge, Button, Card, EmptyState, Loading } from '../components/ui';
 import { PageHelp } from '../components/PageHelp';
 import { PhoneLink } from '../components/PhoneLink';
@@ -59,6 +59,7 @@ export function PostsPage() {
   const filteredPosts = useMemo(() => {
     const filtered = posts
       .filter((post) => {
+        if (post.statut === PostStatus.EnAttente && !ownsPost(post.id)) return false;
         const matchesFilter = filter === 'all' || post.type === filter;
         const matchesQuery =
           matchesSearch(post.titre, query) || matchesSearch(post.description, query);
@@ -202,7 +203,15 @@ export function PostsPage() {
                     <h3 className="font-semibold text-chartrons-olive-dark text-base leading-snug">
                       {post.titre}
                     </h3>
-                    <Badge variant={post.statut === 'Disponible' ? 'olive' : 'stone'}>
+                    <Badge
+                      variant={
+                        post.statut === 'Disponible'
+                          ? 'olive'
+                          : post.statut === PostStatus.EnAttente
+                            ? 'gold'
+                            : 'stone'
+                      }
+                    >
                       {t(`posts.status.${post.statut}`)}
                     </Badge>
                   </div>
@@ -241,7 +250,8 @@ export function PostsPage() {
                     {!isOwner &&
                       post.type === PostType.Vente &&
                       post.prix !== null &&
-                      post.statut !== 'Clôturé' && (
+                      post.statut !== 'Clôturé' &&
+                      post.statut !== PostStatus.EnAttente && (
                         <Button
                           variant="bordeaux"
                           size="md"
@@ -251,7 +261,9 @@ export function PostsPage() {
                           🔒 {t('posts.buyOnline')}
                         </Button>
                       )}
-                    {post.statut !== 'Dépôt_Local' && post.statut !== 'Clôturé' && (
+                    {post.statut !== 'Dépôt_Local' &&
+                      post.statut !== 'Clôturé' &&
+                      post.statut !== PostStatus.EnAttente && (
                       <Button
                         variant="secondary"
                         size="md"
@@ -313,10 +325,20 @@ export function PostsPage() {
 
       <CheckoutModal
         open={!!checkoutPost}
-        post={checkoutPost}
-        sellerName={checkoutPost?.auteurNom ?? undefined}
+        item={
+          checkoutPost
+            ? {
+                id: checkoutPost.id,
+                title: checkoutPost.titre,
+                imageUrl: checkoutPost.photos[0] ?? null,
+                price: checkoutPost.prix ?? 0,
+                sellerName: checkoutPost.auteurNom ?? undefined,
+                kind: 'post',
+              }
+            : null
+        }
         onClose={() => setCheckoutPost(null)}
-        onConfirm={(_post, _total, orderId) => {
+        onConfirm={(_item, _total, orderId) => {
           showToast(t('toast.purchaseConfirmed', { orderId }));
         }}
       />

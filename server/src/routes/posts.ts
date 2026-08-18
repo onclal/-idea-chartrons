@@ -41,7 +41,7 @@ router.post('/', (req, res) => {
     description,
     type,
     prix: prix ?? null,
-    statut: PostStatus.Disponible,
+    statut: PostStatus.EnAttente,
     photos: photos ?? [],
     telephone: telephone?.trim() || null,
     createdAt: now,

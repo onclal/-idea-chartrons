@@ -1,20 +1,28 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  DEFAULT_TRANSACTION_FEE_EUR,
-  computeCheckoutTotal,
-  type PostAnnonce,
-} from '@idea-chartrons/shared';
+import { DEFAULT_TRANSACTION_FEE_EUR, computeCheckoutTotal } from '@idea-chartrons/shared';
 import { Button, Input, Modal } from './ui';
 import { api } from '../lib/api';
 import { formatEuro } from '../lib/format';
 
+export type CheckoutKind = 'post' | 'booking' | 'membership';
+
+export interface CheckoutItem {
+  id: string;
+  title: string;
+  imageUrl?: string | null;
+  price: number;
+  sellerName?: string | null;
+  icon?: string;
+  kind?: CheckoutKind;
+}
+
 interface CheckoutModalProps {
   open: boolean;
-  post: PostAnnonce | null;
-  sellerName?: string;
+  item: CheckoutItem | null;
+  nested?: boolean;
   onClose: () => void;
-  onConfirm: (post: PostAnnonce, total: number, orderId: string) => void;
+  onConfirm: (item: CheckoutItem, total: number, orderId: string) => void | Promise<void>;
 }
 
 function createOrderId() {
@@ -23,8 +31,8 @@ function createOrderId() {
 
 export function CheckoutModal({
   open,
-  post,
-  sellerName,
+  item,
+  nested = false,
   onClose,
   onConfirm,
 }: CheckoutModalProps) {
@@ -37,7 +45,7 @@ export function CheckoutModal({
   const [orderId, setOrderId] = useState<string | null>(null);
   const [transactionFee, setTransactionFee] = useState(DEFAULT_TRANSACTION_FEE_EUR);
 
-  const price = post?.prix ?? 0;
+  const price = item?.price ?? 0;
   const { total } = computeCheckoutTotal(price, transactionFee);
   const locale = i18n.language;
   const canPay =
@@ -58,7 +66,7 @@ export function CheckoutModal({
       .getPlatformSettings()
       .then((settings) => setTransactionFee(settings.transactionFee))
       .catch(() => setTransactionFee(DEFAULT_TRANSACTION_FEE_EUR));
-  }, [open, post?.id]);
+  }, [open, item?.id]);
 
   const handleClose = () => {
     setOrderId(null);
@@ -66,19 +74,26 @@ export function CheckoutModal({
   };
 
   const handlePay = () => {
-    if (!post || !canPay) return;
+    if (!item || !canPay) return;
     setPaying(true);
     window.setTimeout(() => {
       const nextOrderId = createOrderId();
       setOrderId(nextOrderId);
       setPaying(false);
-      onConfirm(post, total, nextOrderId);
+      void onConfirm(item, total, nextOrderId);
     }, 700);
   };
 
+  const priceLabel =
+    item?.kind === 'membership'
+      ? t('checkout.membershipPrice')
+      : item?.kind === 'booking'
+        ? t('checkout.bookingPrice')
+        : t('checkout.itemPrice');
+
   return (
-    <Modal open={open} onClose={handleClose} title={t('checkout.title')}>
-      {post && orderId ? (
+    <Modal open={open} onClose={handleClose} title={t('checkout.title')} nested={nested}>
+      {item && orderId ? (
         <div className="space-y-4 text-center">
           <p className="text-4xl" aria-hidden>
             ✅
@@ -94,27 +109,27 @@ export function CheckoutModal({
             {t('checkout.close')}
           </Button>
         </div>
-      ) : post ? (
+      ) : item ? (
         <div className="space-y-4">
           <p className="text-sm text-chartrons-olive-dark leading-relaxed">{t('checkout.secureHint')}</p>
 
           <div className="flex gap-3 rounded-xl border border-chartrons-beige bg-white p-3">
-            {post.photos[0] ? (
+            {item.imageUrl ? (
               <img
-                src={post.photos[0]}
+                src={item.imageUrl}
                 alt=""
                 className="w-16 h-16 rounded-lg object-cover shrink-0 bg-chartrons-beige"
               />
             ) : (
               <div className="w-16 h-16 rounded-lg bg-chartrons-beige shrink-0 flex items-center justify-center text-xl">
-                🛒
+                {item.icon ?? '🛒'}
               </div>
             )}
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-chartrons-olive-dark leading-snug">{post.titre}</p>
-              {sellerName ? (
+              <p className="text-sm font-semibold text-chartrons-olive-dark leading-snug">{item.title}</p>
+              {item.sellerName ? (
                 <p className="text-xs text-chartrons-warm-gray mt-1">
-                  {t('checkout.seller', { name: sellerName })}
+                  {t('checkout.seller', { name: item.sellerName })}
                 </p>
               ) : null}
             </div>
@@ -123,7 +138,7 @@ export function CheckoutModal({
           <div className="rounded-xl border border-chartrons-beige bg-chartrons-beige/40 p-3">
             <dl className="space-y-1.5">
               <div className="flex items-center justify-between gap-3 text-sm">
-                <dt className="text-chartrons-warm-gray">{t('checkout.itemPrice')}</dt>
+                <dt className="text-chartrons-warm-gray">{priceLabel}</dt>
                 <dd className="font-medium text-chartrons-olive-dark">{formatEuro(price, locale)}</dd>
               </div>
               <div className="flex items-center justify-between gap-3 text-sm">

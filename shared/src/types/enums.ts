@@ -26,10 +26,15 @@ export enum PostType {
 }
 
 export enum PostStatus {
+  EnAttente = 'En_attente',
   Disponible = 'Disponible',
   Reserve = 'Réservé',
   DepotLocal = 'Dépôt_Local',
   Cloture = 'Clôturé',
+}
+
+export function isPendingPostStatus(status: PostStatus | string): boolean {
+  return status === PostStatus.EnAttente;
 }
 
 export enum LocalRelaisRetraitStatus {

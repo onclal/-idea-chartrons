@@ -7,6 +7,7 @@ import { PageHelp } from '../components/PageHelp';
 import { MerchantCard } from '../components/MerchantCard';
 import { ContactForm } from '../components/ContactForm';
 import { ActeurCreateForm } from '../components/ActeurCreateForm';
+import { PremiumProModal } from '../components/PremiumProModal';
 import { FideliteScanner } from '../components/FideliteScanner';
 import { FideliteHistory } from '../components/FideliteHistory';
 import { useAdmin } from '../context/AdminContext';
@@ -32,6 +33,7 @@ export function ActeursPage() {
   const [showCreate, setShowCreate] = useState(searchParams.get('referencer') === '1');
   const [generatingQrId, setGeneratingQrId] = useState<string | null>(null);
   const [contactContext, setContactContext] = useState<string | null>(null);
+  const [proActeur, setProActeur] = useState<ActeurLocal | null>(null);
 
   const loadActeurs = () => {
     setLoading(true);
@@ -219,6 +221,7 @@ export function ActeursPage() {
                 }
                 onDelete={() => handleDeleteActeur(acteur.id)}
                 onGenerateQr={() => handleGenerateQr(acteur.id)}
+                onSubscribePro={() => setProActeur(acteur)}
               />
             );
           })}
@@ -228,7 +231,20 @@ export function ActeursPage() {
       <ActeurCreateForm
         open={showCreate}
         onClose={closeCreateForm}
-        onCreated={loadActeurs}
+        onCreated={(acteur, options) => {
+          loadActeurs();
+          if (options?.subscribePro) setProActeur(acteur);
+        }}
+      />
+
+      <PremiumProModal
+        open={!!proActeur}
+        acteur={proActeur}
+        onClose={() => setProActeur(null)}
+        onSubscribed={(updated) => {
+          setActeurs((list) => list.map((item) => (item.id === updated.id ? updated : item)));
+          setProActeur(null);
+        }}
       />
 
       <ContactForm

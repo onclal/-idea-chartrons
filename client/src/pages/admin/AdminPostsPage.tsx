@@ -57,7 +57,11 @@ export function AdminPostsPage() {
     const q = query.trim().toLowerCase();
     return [...posts]
       .filter((p) => !q || p.titre.toLowerCase().includes(q) || p.description.toLowerCase().includes(q))
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      .sort((a, b) => {
+        if (a.statut === PostStatus.EnAttente && b.statut !== PostStatus.EnAttente) return -1;
+        if (b.statut === PostStatus.EnAttente && a.statut !== PostStatus.EnAttente) return 1;
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      });
   }, [posts, query]);
 
   const openCreate = () => {
@@ -119,6 +123,12 @@ export function AdminPostsPage() {
     }
   };
 
+  const handleApprove = async (post: PostAnnonce) => {
+    await api.updatePost(post.id, { statut: PostStatus.Disponible });
+    load();
+    showToast(t('adminSpace.toasts.postApproved', { title: post.titre }));
+  };
+
   const handleDelete = async (post: PostAnnonce) => {
     if (!window.confirm(t('admin.deletePostConfirm', { title: post.titre }))) return;
     await api.deletePost(post.id);
@@ -131,7 +141,12 @@ export function AdminPostsPage() {
   const formOpen = creating || !!editing;
 
   const actions = (post: PostAnnonce) => (
-    <div className="flex gap-2">
+    <div className="flex flex-wrap gap-2">
+      {post.statut === PostStatus.EnAttente && (
+        <Button type="button" variant="primary" size="sm" onClick={() => void handleApprove(post)}>
+          {t('adminSpace.actions.approve')}
+        </Button>
+      )}
       <Button type="button" variant="secondary" size="sm" onClick={() => openEdit(post)}>
         {t('common.edit')}
       </Button>
@@ -199,7 +214,15 @@ export function AdminPostsPage() {
           {
             header: t('adminSpace.fields.status'),
             render: (post) => (
-              <Badge variant={post.statut === 'Disponible' ? 'olive' : 'stone'}>
+              <Badge
+                variant={
+                  post.statut === 'Disponible'
+                    ? 'olive'
+                    : post.statut === PostStatus.EnAttente
+                      ? 'gold'
+                      : 'stone'
+                }
+              >
                 {t(`posts.status.${post.statut}`)}
               </Badge>
             ),
@@ -233,7 +256,15 @@ export function AdminPostsPage() {
                 <p className="text-xs text-chartrons-warm-gray mt-0.5">{post.auteurNom ?? '—'}</p>
                 <div className="flex flex-wrap gap-1.5 mt-2">
                   <Badge variant="brick">{t(`posts.types.${post.type}`)}</Badge>
-                  <Badge variant={post.statut === 'Disponible' ? 'olive' : 'stone'}>
+                  <Badge
+                    variant={
+                      post.statut === 'Disponible'
+                        ? 'olive'
+                        : post.statut === PostStatus.EnAttente
+                          ? 'gold'
+                          : 'stone'
+                    }
+                  >
                     {t(`posts.status.${post.statut}`)}
                   </Badge>
                 </div>

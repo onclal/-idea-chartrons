@@ -32,6 +32,7 @@ interface MerchantCardProps {
   onAskQuestion: () => void;
   onDelete: () => Promise<void>;
   onGenerateQr: () => void;
+  onSubscribePro?: () => void;
 }
 
 export function MerchantCard({
@@ -45,6 +46,7 @@ export function MerchantCard({
   onAskQuestion,
   onDelete,
   onGenerateQr,
+  onSubscribePro,
 }: MerchantCardProps) {
   const { t } = useTranslation();
   const vip = isPremiumProMerchant(acteur);
@@ -102,6 +104,13 @@ export function MerchantCard({
         {vip && <DailyMenuSection acteur={acteur} />}
         <MerchantSocialSection acteur={acteur} onUpdated={onUpdated} />
         <MerchantActionButtons acteur={acteur} />
+        {!vip && onSubscribePro && (
+          <div className="mt-3" onClick={(event) => event.stopPropagation()}>
+            <Button type="button" variant="gold" className="w-full" onClick={onSubscribePro}>
+              {t('acteurs.premiumPro.cta')}
+            </Button>
+          </div>
+        )}
         <MerchantReviews merchantId={acteur.id} onSummaryChange={setReviewSummary} />
         <div className="mt-2 space-y-2" onClick={(event) => event.stopPropagation()}>
           <Button

@@ -1,10 +1,13 @@
 import {
   buildConciergeSystemPrompt,
+  buildPostEnhanceSystemPrompt,
   conciergePhrasebookLang,
   CONCIERGE_LANGUAGES,
   CONCIERGE_MAX_RESULTS,
   detectConciergeLang,
+  enhancePostDraft,
   isConciergeLang,
+  parseEnhancedDraft,
   runConciergeEngine,
   type ConciergeLang,
 } from '@idea-chartrons/shared';
@@ -137,6 +140,62 @@ router.get('/status', (_req, res) => {
     maxResults: CONCIERGE_MAX_RESULTS,
     languages: CONCIERGE_LANGUAGES,
   });
+});
+
+router.post('/enhance', async (req, res) => {
+  const body = (req.body ?? {}) as Record<string, unknown>;
+  const title = sanitizeMessage(body.title);
+  const description = String(body.description ?? '')
+    .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, ' ')
+    .trim()
+    .slice(0, MAX_MESSAGE_LENGTH);
+  const kind = body.kind === 'merchant' ? 'merchant' : 'post';
+  const lang = body.lang === 'en' ? 'en' : 'fr';
+
+  if (!title && !description) {
+    res.status(400).json({ error: 'draft_required' });
+    return;
+  }
+
+  const clientKey = req.ip ?? req.socket.remoteAddress ?? 'unknown';
+  if (isRateLimited(`${clientKey}:enhance`)) {
+    res.status(429).json({ error: 'rate_limited' });
+    return;
+  }
+
+  const local = enhancePostDraft({
+    title,
+    description,
+    kind,
+    postType: typeof body.postType === 'string' ? body.postType : null,
+    lang,
+  });
+
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (apiKey) {
+    const userMessage = [
+      `Type : ${kind}`,
+      title ? `Titre : ${title}` : null,
+      description ? `Texte : ${description}` : null,
+    ]
+      .filter(Boolean)
+      .join('\n');
+    const reply = await askOpenAI(
+      apiKey,
+      buildPostEnhanceSystemPrompt(lang),
+      'Réécris uniquement le brouillon fourni. JSON strict.',
+      [],
+      userMessage,
+      lang,
+    );
+    if (reply) {
+      const parsed = parseEnhancedDraft(reply, local);
+      res.json({ ...parsed, source: 'openai' });
+      return;
+    }
+  }
+
+  res.json({ ...local, source: 'local' });
 });
 
 router.post('/', async (req, res) => {

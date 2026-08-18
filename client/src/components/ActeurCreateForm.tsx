@@ -6,16 +6,18 @@ import {
   CHARTRONS_SUBCATEGORY_LABELS,
   DIRECTORY_CATEGORIES,
   isServiceCategory,
+  type ActeurLocal,
   type ChartronsSubcategory,
 } from '@idea-chartrons/shared';
 import { Button, Input, Modal, Select, Textarea } from './ui';
+import { EnhanceWithAiButton } from './EnhanceWithAiButton';
 import { useToast } from '../context/ToastContext';
 import { api } from '../lib/api';
 
 interface ActeurCreateFormProps {
   open: boolean;
   onClose: () => void;
-  onCreated: () => void;
+  onCreated: (acteur: ActeurLocal, options?: { subscribePro?: boolean }) => void;
 }
 
 export function ActeurCreateForm({ open, onClose, onCreated }: ActeurCreateFormProps) {
@@ -30,6 +32,7 @@ export function ActeurCreateForm({ open, onClose, onCreated }: ActeurCreateFormP
   const [subcategory, setSubcategory] = useState<ChartronsSubcategory>('boutiques');
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [activerFidelite, setActiverFidelite] = useState(false);
+  const [subscribePro, setSubscribePro] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -43,6 +46,7 @@ export function ActeurCreateForm({ open, onClose, onCreated }: ActeurCreateFormP
     setSubcategory('boutiques');
     setPhotoPreview(null);
     setActiverFidelite(false);
+    setSubscribePro(false);
     setError(null);
   };
 
@@ -59,7 +63,7 @@ export function ActeurCreateForm({ open, onClose, onCreated }: ActeurCreateFormP
     setSubmitting(true);
     setError(null);
     try {
-      await api.createActeur({
+      const created = await api.createActeur({
         nomCommerce: nomCommerce.trim(),
         categorie,
         subcategory,
@@ -72,8 +76,9 @@ export function ActeurCreateForm({ open, onClose, onCreated }: ActeurCreateFormP
         pointsRequisVip: 0,
         activerFidelite,
       });
+      const wantPro = subscribePro;
       reset();
-      onCreated();
+      onCreated(created, { subscribePro: wantPro });
       onClose();
       showToast(t('toast.acteurPublished'));
     } catch (err) {
@@ -123,6 +128,16 @@ export function ActeurCreateForm({ open, onClose, onCreated }: ActeurCreateFormP
           required
           rows={3}
           placeholder={t('acteurs.create.descriptionPlaceholder')}
+        />
+
+        <EnhanceWithAiButton
+          title={nomCommerce}
+          description={description}
+          kind="merchant"
+          onEnhanced={(next) => {
+            if (next.title) setNomCommerce(next.title);
+            if (next.description) setDescription(next.description);
+          }}
         />
 
         <Input
@@ -183,6 +198,23 @@ export function ActeurCreateForm({ open, onClose, onCreated }: ActeurCreateFormP
             </span>
             <span className="block text-xs text-chartrons-warm-gray mt-0.5">
               {t('acteurs.create.activateFideliteHint')}
+            </span>
+          </span>
+        </label>
+
+        <label className="flex items-start gap-3 p-3 rounded-xl bg-chartrons-brass/15 border border-chartrons-brass/30 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={subscribePro}
+            onChange={(e) => setSubscribePro(e.target.checked)}
+            className="mt-1 w-4 h-4 accent-chartrons-bordeaux"
+          />
+          <span>
+            <span className="block text-sm font-medium text-chartrons-olive-dark">
+              {t('acteurs.premiumPro.checkbox')}
+            </span>
+            <span className="block text-xs text-chartrons-warm-gray mt-0.5">
+              {t('acteurs.premiumPro.checkboxHint')}
             </span>
           </span>
         </label>

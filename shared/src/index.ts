@@ -8,6 +8,7 @@ export * from './types/admin.js';
 export * from './logic/relais.js';
 export * from './logic/fidelite.js';
 export * from './logic/commerce.js';
+export * from './logic/postEnhance.js';
 export * from './logic/tourDeControle.js';
 export * from './logic/concierge.js';
 export * from './logic/conciergeRecipes.js';

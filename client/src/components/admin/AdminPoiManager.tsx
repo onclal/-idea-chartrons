@@ -5,9 +5,13 @@ import {
   CHARTRONS_SUBCATEGORIES,
   CHARTRONS_SUBCATEGORY_LABELS,
   classifySubcategory,
+  isPremiumProMerchant,
   matchesSearchQuery,
+  merchantTierOf,
+  merchantTierPatch,
   type ActeurLocal,
   type ChartronsSubcategory,
+  type MerchantTier,
 } from '@idea-chartrons/shared';
 import { AdminDataTable } from './AdminDataTable';
 import { AdminPageHeader } from './AdminPageHeader';
@@ -28,6 +32,7 @@ interface ActeurForm {
   pointsRequisVip: string;
   telephone: string;
   activerFidelite: boolean;
+  tier: MerchantTier;
 }
 
 const emptyForm = (): ActeurForm => ({
@@ -41,6 +46,7 @@ const emptyForm = (): ActeurForm => ({
   offreVip: '',
   pointsRequisVip: '50',
   activerFidelite: false,
+  tier: 'free',
 });
 
 /** Les fiches créées avant la taxonomie unifiée peuvent ne pas porter de sous-catégorie. */
@@ -55,6 +61,7 @@ export function AdminPoiManager() {
   const [acteurs, setActeurs] = useState<ActeurLocal[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState('');
+  const [tierFilter, setTierFilter] = useState<MerchantTier | 'all'>('all');
   const [editing, setEditing] = useState<ActeurLocal | null>(null);
   const [creating, setCreating] = useState(false);
   const [form, setForm] = useState<ActeurForm>(emptyForm());
@@ -72,13 +79,14 @@ export function AdminPoiManager() {
   useEffect(load, []);
 
   const filtered = useMemo(() => {
-    return acteurs.filter((a) =>
-      matchesSearchQuery(
+    return acteurs.filter((a) => {
+      if (tierFilter !== 'all' && merchantTierOf(a) !== tierFilter) return false;
+      return matchesSearchQuery(
         `${a.nomCommerce} ${a.description} ${a.adresse} ${a.telephone ?? ''} ${a.specialite ?? ''}`,
         query,
-      ),
-    );
-  }, [acteurs, query]);
+      );
+    });
+  }, [acteurs, query, tierFilter]);
 
   const openCreate = () => {
     setEditing(null);
@@ -100,6 +108,7 @@ export function AdminPoiManager() {
       offreVip: acteur.offreVip ?? '',
       pointsRequisVip: String(acteur.pointsRequisVip),
       activerFidelite: Boolean(acteur.qrCodeVitrine),
+      tier: merchantTierOf(acteur),
     });
   };
 
@@ -124,12 +133,15 @@ export function AdminPoiManager() {
         pointsRequisVip: Number(form.pointsRequisVip) || 0,
       };
       if (editing) {
-        await api.updateActeur(editing.id, payload);
+        await api.updateActeur(editing.id, { ...payload, ...merchantTierPatch(form.tier) });
         if (form.activerFidelite && !editing.qrCodeVitrine) {
           await api.generateQrVitrine(editing.id);
         }
       } else {
-        await api.createActeur({ ...payload, activerFidelite: form.activerFidelite });
+        const created = await api.createActeur({ ...payload, activerFidelite: form.activerFidelite });
+        if (form.tier === 'premium_pro') {
+          await api.updateActeur(created.id, merchantTierPatch('premium_pro'));
+        }
       }
       showToast(t('adminSpace.saved'));
       closeModal();
@@ -138,6 +150,17 @@ export function AdminPoiManager() {
       showToast(err instanceof Error ? err.message : t('common.error'), 'error');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleToggleTier = async (acteur: ActeurLocal) => {
+    const next: MerchantTier = isPremiumProMerchant(acteur) ? 'free' : 'premium_pro';
+    try {
+      await api.updateActeur(acteur.id, merchantTierPatch(next));
+      showToast(t('adminSpace.toasts.tierUpdated', { name: acteur.nomCommerce }));
+      load();
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : t('common.error'), 'error');
     }
   };
 
@@ -151,9 +174,12 @@ export function AdminPoiManager() {
   if (loading) return <Loading message={t('common.loading')} />;
 
   const actions = (acteur: ActeurLocal) => (
-    <div className="flex gap-2">
+    <div className="flex flex-wrap gap-2">
       <Button type="button" variant="secondary" size="sm" onClick={() => openEdit(acteur)}>
         {t('common.edit')}
+      </Button>
+      <Button type="button" variant="gold" size="sm" onClick={() => void handleToggleTier(acteur)}>
+        {isPremiumProMerchant(acteur) ? t('adminSpace.actions.setFree') : t('adminSpace.actions.setPro')}
       </Button>
       <Button
         type="button"
@@ -179,8 +205,17 @@ export function AdminPoiManager() {
         }
       />
 
-      <div className="mb-4">
+      <div className="mb-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
         <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t('common.search')} />
+        <Select
+          value={tierFilter}
+          onChange={(e) => setTierFilter(e.target.value as MerchantTier | 'all')}
+          options={[
+            { value: 'all', label: t('adminSpace.tier.all') },
+            { value: 'free', label: t('adminSpace.tier.free') },
+            { value: 'premium_pro', label: t('adminSpace.tier.premium_pro') },
+          ]}
+        />
       </div>
 
       <AdminDataTable
@@ -220,6 +255,17 @@ export function AdminPoiManager() {
             ),
           },
           {
+            header: t('adminSpace.fields.tier'),
+            render: (acteur) =>
+              isPremiumProMerchant(acteur) ? (
+                <Badge variant="vip" icon="⭐">
+                  {t('adminSpace.tier.premium_pro')}
+                </Badge>
+              ) : (
+                <Badge variant="stone">{t('adminSpace.tier.free')}</Badge>
+              ),
+          },
+          {
             header: t('acteurs.vip'),
             render: (acteur) =>
               acteur.offreVip ? (
@@ -254,6 +300,11 @@ export function AdminPoiManager() {
                   <Badge variant="olive">{t(`acteurs.categories.${acteur.categorie}`)}</Badge>
                   <Badge variant="brass">
                     {loc(i18n.language, CHARTRONS_SUBCATEGORY_LABELS[resolveSubcategory(acteur)])}
+                  </Badge>
+                  <Badge variant={isPremiumProMerchant(acteur) ? 'vip' : 'stone'}>
+                    {isPremiumProMerchant(acteur)
+                      ? t('adminSpace.tier.premium_pro')
+                      : t('adminSpace.tier.free')}
                   </Badge>
                   {acteur.offreVip && (
                     <Badge variant="vip" icon="⭐">
@@ -324,6 +375,15 @@ export function AdminPoiManager() {
               }))}
             />
           </div>
+          <Select
+            label={t('adminSpace.fields.tier')}
+            value={form.tier}
+            onChange={(e) => setForm((f) => ({ ...f, tier: e.target.value as MerchantTier }))}
+            options={[
+              { value: 'free', label: t('adminSpace.tier.free') },
+              { value: 'premium_pro', label: t('adminSpace.tier.premium_pro') },
+            ]}
+          />
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input
               label={t('acteurs.vip')}

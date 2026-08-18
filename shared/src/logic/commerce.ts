@@ -1,5 +1,6 @@
 import { ActeurLocalCategory } from '../types/enums.js';
 import { isPremiumProMerchant } from '../types/merchant.js';
+import type { MerchantTier } from '../types/poi.js';
 import type {
   ActeurLocal,
   CommerceMenuItem,
@@ -9,8 +10,16 @@ import type {
 } from '../types/models.js';
 
 export const DEFAULT_TRANSACTION_FEE_EUR = 1;
+export const PREMIUM_PRO_MONTHLY_EUR = 29;
 export const PLATFORM_SETTINGS_ID = 'default';
 export const DEFAULT_MENU_SECTION_TITLES = ['Entrées', 'Plats', 'Desserts', 'Boissons'] as const;
+
+export function merchantTierPatch(tier: MerchantTier): { tier: MerchantTier; isVip: boolean } {
+  return {
+    tier,
+    isVip: tier === 'premium_pro',
+  };
+}
 
 export function createDefaultPlatformSettings(): PlatformSettings {
   return {

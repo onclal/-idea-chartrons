@@ -615,7 +615,7 @@ class LocalDatabase {
       description: data.description,
       type: data.type,
       prix: data.prix,
-      statut: data.statut ?? PostStatus.Disponible,
+      statut: data.statut ?? PostStatus.EnAttente,
       photos: data.photos,
       telephone: data.telephone?.trim() || null,
       createdAt: now,
@@ -690,6 +690,7 @@ class LocalDatabase {
       socialLinks: emptySocialLinks(),
       isMerchant: true,
       isVip: false,
+      tier: 'free',
       createdAt: now,
       updatedAt: now,
     });
