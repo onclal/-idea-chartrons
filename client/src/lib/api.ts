@@ -185,5 +185,7 @@ export const api = {
     resetLocalDb();
     return { ok: true };
   }),
+  seedDemoMerchants: () => withDelay(() => localDb.seedDemoData()),
+  wipeDemoMerchants: () => withDelay(() => localDb.wipeDemoData()),
   health: () => Promise.resolve({ status: 'ok', app: 'IDÉA CHARTRONS', version: '1.0.0' }),
 };

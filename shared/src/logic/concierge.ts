@@ -1,4 +1,5 @@
 import { allChartronsPois } from '../data/chartronsPois.js';
+import { includeDemoData, isDemoRecord } from './demoEnv.js';
 import type { ChartronsPoi, ChartronsPoiCategory } from '../types/poi.js';
 import {
   CHARTRONS_SUBCATEGORIES,
@@ -758,7 +759,7 @@ export function analyzeConciergeQuery(
 }
 
 export function conciergePoiPool(): ChartronsPoi[] {
-  return allChartronsPois();
+  return allChartronsPois().filter((poi) => includeDemoData() || !isDemoRecord(poi));
 }
 
 function intentById(id: string): ConciergeIntent | undefined {

@@ -6,6 +6,7 @@ import {
   CHARTRONS_SUBCATEGORY_LABELS,
   classifySubcategory,
   isPremiumProMerchant,
+  isDemoRecord,
   matchesSearchQuery,
   merchantTierOf,
   merchantTierPatch,
@@ -281,14 +282,18 @@ export function AdminPoiManager() {
           },
           {
             header: t('adminSpace.fields.tier'),
-            render: (acteur) =>
-              isPremiumProMerchant(acteur) ? (
-                <Badge variant="vip" icon="⭐">
-                  {t('adminSpace.tier.premium_pro')}
-                </Badge>
-              ) : (
-                <Badge variant="stone">{t('adminSpace.tier.free')}</Badge>
-              ),
+            render: (acteur) => (
+              <div className="flex flex-wrap gap-1.5">
+                {isPremiumProMerchant(acteur) ? (
+                  <Badge variant="vip" icon="⭐">
+                    {t('adminSpace.tier.premium_pro')}
+                  </Badge>
+                ) : (
+                  <Badge variant="stone">{t('adminSpace.tier.free')}</Badge>
+                )}
+                {isDemoRecord(acteur) ? <Badge variant="brass">{t('badges.demo')}</Badge> : null}
+              </div>
+            ),
           },
           {
             header: t('acteurs.vip'),
@@ -331,6 +336,7 @@ export function AdminPoiManager() {
                       ? t('adminSpace.tier.premium_pro')
                       : t('adminSpace.tier.free')}
                   </Badge>
+                  {isDemoRecord(acteur) ? <Badge variant="brass">{t('badges.demo')}</Badge> : null}
                   {acteur.offreVip && (
                     <Badge variant="vip" icon="⭐">
                       {t('badges.vip')}

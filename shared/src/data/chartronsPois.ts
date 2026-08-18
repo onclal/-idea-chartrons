@@ -1,5 +1,5 @@
 import { ActeurLocalCategory, ArdoiseStatus } from '../types/enums.js';
-import type { ActeurLocal } from '../types/models.js';
+import type { ActeurLocal, CommerceMenuSection } from '../types/models.js';
 import type { ChartronsPoi, ChartronsPoiInput } from '../types/poi.js';
 import {
   createCafeMarcheMenu,
@@ -11,6 +11,8 @@ import { hydrateChartronsPoi, poiPublicWebsite } from '../logic/poi.js';
 import { defaultRegleForCategory, generateQrVitrineCode } from '../logic/fidelite.js';
 import { OSM_CHARTRONS_POIS } from './osmChartronsPois.js';
 import { withoutRetiredStockPhotos } from './media.js';
+import { DEMO_CHARTRONS_POIS } from './demoMerchants.js';
+import { includeDemoData, isDemoRecord } from '../logic/demoEnv.js';
 
 export const CHARTRONS_BOUNDING_BOX = {
   sw: { lat: 44.848, lng: -0.578 },
@@ -317,6 +319,7 @@ export function chartronsPoiToActeur(poi: ChartronsPoi, now: string): ActeurLoca
   const rule = defaultRegleForCategory(categorie);
   const premium = poi.tier === 'premium_pro';
   const website = premium ? sanitizeExternalUrl(poiPublicWebsite(poi)) : null;
+  const isDemo = isDemoRecord(poi);
   return {
     id: `acteur-${poi.id}`,
     nomCommerce: poi.name,
@@ -332,7 +335,7 @@ export function chartronsPoiToActeur(poi: ChartronsPoi, now: string): ActeurLoca
     qrCodeVitrine: poi.isMerchant ? generateQrVitrineCode(poi.name) : null,
     regleFideliteMode: rule.mode,
     regleFideliteValeur: rule.valeur,
-    menu: poi.hasMenu ? createCafeMarcheMenu() : null,
+    menu: menuFromPoi(poi),
     appointmentUrl: premium && poi.hasBooking ? poi.bookingUrl ?? null : null,
     rating: poi.reputation.score ?? poi.rating ?? null,
     reviewsCount: poi.reputation.reviews ?? poi.reviewsCount ?? null,
@@ -359,6 +362,7 @@ export function chartronsPoiToActeur(poi: ChartronsPoi, now: string): ActeurLoca
     hasDelivery: Boolean(poi.hasDelivery),
     wheelchairAccessible: Boolean(poi.wheelchairAccessible),
     seniorFriendly: Boolean(poi.seniorFriendly),
+    isDemo,
     dailyMenuText: poi.id === 'poi-rest-001' ? 'Plat du jour : magret de canard, jus au poivre' : null,
     dailyMenuImage:
       poi.id === 'poi-rest-001'
@@ -371,9 +375,30 @@ export function chartronsPoiToActeur(poi: ChartronsPoi, now: string): ActeurLoca
   };
 }
 
-/** Fusion runtime : fiches curées d’abord, puis import OSM (`npm run fetch:pois`). */
+function menuFromPoi(poi: ChartronsPoi): CommerceMenuSection[] | null {
+  const items = poi.catalog?.items ?? [];
+  if (items.length > 0) {
+    return [
+      {
+        id: `menu-${poi.id}`,
+        titre: poi.catalog?.menus?.[0] ?? 'Carte',
+        items: items.map((item, index) => ({
+          id: `plat-${poi.id}-${index}`,
+          nom: item.name,
+          description: item.description ?? item.ingredients?.join(', ') ?? '',
+          prix: item.price ?? 0,
+        })),
+      },
+    ];
+  }
+  return poi.hasMenu ? createCafeMarcheMenu() : null;
+}
+
+/** Fusion runtime : fiches curées d’abord, puis import OSM (`npm run fetch:pois`), puis démo si le flag est actif. */
 export function allChartronsPois(): ChartronsPoi[] {
-  return [...CHARTRONS_POIS, ...OSM_CHARTRONS_POIS].map(hydrateChartronsPoi);
+  const base: ChartronsPoiInput[] = [...CHARTRONS_POIS, ...OSM_CHARTRONS_POIS];
+  const withDemo = includeDemoData() ? [...base, ...DEMO_CHARTRONS_POIS] : base;
+  return withDemo.map(hydrateChartronsPoi);
 }
 
 export function createChartronsPoiActeurs(now: string): ActeurLocal[] {

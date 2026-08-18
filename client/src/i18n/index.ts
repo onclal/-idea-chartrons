@@ -1057,6 +1057,13 @@ const resources = {
           reset: 'Réinitialiser les données démo',
           resetHint: 'Restaure annonces, commerces, signalements et points aux valeurs initiales.',
           resetConfirm: 'Réinitialiser toutes les données de démonstration ? Cette action est irréversible.',
+          seedDemo: 'Injecter les commerces démo',
+          seedDemoHint:
+            'Ajoute des fiches Chartrons simulées (is_demo, ~50 % Premium, livraison, menus) pour l’onboarding concierge.',
+          wipeDemo: 'Purger les fiches démo (is_demo)',
+          wipeDemoHint: 'Supprime uniquement les enregistrements tagués isDemo. Les vrais commerces sont conservés.',
+          wipeDemoConfirm:
+            'Supprimer toutes les fiches de démonstration (is_demo) ? Les commerces réels ne seront pas touchés.',
           messages: 'Messages reçus',
           noMessages: 'Aucun message pour le moment.',
         },
@@ -1147,6 +1154,7 @@ const resources = {
         premiumPro: 'Premium Pro',
         local: 'Disponible au local',
         brocante: 'Brocante ce week-end',
+        demo: 'Démo',
       },
       toast: {
         postPublished: 'Annonce publiée !',
@@ -1164,6 +1172,8 @@ const resources = {
         vipUnlocked: 'Offre VIP débloquée : {{offer}}',
         eventAdded: 'Événement ajouté à l\'agenda !',
         dataReset: 'Données de démo réinitialisées',
+        demoWiped: '{{acteurs}} commerce(s) démo et {{posts}} annonce(s) retirés',
+        demoSeeded: '{{acteurs}} commerce(s) démo et {{posts}} annonce(s) ajoutés',
         ruleSaved: 'Règle de fidélité enregistrée',
         pointsCredited: '+{{points}} pts crédités à {{name}}',
         boostRequested: 'Demande de mise en avant enregistrée — offerte pendant le lancement.',
@@ -2597,6 +2607,13 @@ const resources = {
           reset: 'Reset demo data',
           resetHint: 'Restores listings, shops, reports and points to their initial values.',
           resetConfirm: 'Reset all demo data? This cannot be undone.',
+          seedDemo: 'Inject demo merchants',
+          seedDemoHint:
+            'Adds simulated Chartrons listings (is_demo, ~50% Premium, delivery, menus) for concierge onboarding.',
+          wipeDemo: 'Wipe demo listings (is_demo)',
+          wipeDemoHint: 'Removes only records tagged isDemo. Real merchants are kept.',
+          wipeDemoConfirm:
+            'Delete all simulated demo listings (is_demo)? Real merchants will not be touched.',
           messages: 'Inbox',
           noMessages: 'No messages yet.',
         },
@@ -2687,6 +2704,7 @@ const resources = {
         premiumPro: 'Premium Pro',
         local: 'Available at hub',
         brocante: 'Flea market this weekend',
+        demo: 'Demo',
       },
       toast: {
         postPublished: 'Listing published!',
@@ -2704,6 +2722,8 @@ const resources = {
         vipUnlocked: 'VIP offer unlocked: {{offer}}',
         eventAdded: 'Event added to calendar!',
         dataReset: 'Demo data reset',
+        demoWiped: '{{acteurs}} demo merchant(s) and {{posts}} post(s) removed',
+        demoSeeded: '{{acteurs}} demo merchant(s) and {{posts}} post(s) added',
         ruleSaved: 'Loyalty rule saved',
         pointsCredited: '+{{points}} pts credited to {{name}}',
         boostRequested: 'Featured listing request saved — free during launch.',

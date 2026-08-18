@@ -15,9 +15,11 @@ import {
   normalizeSocialLinks,
 } from '../logic/commerce.js';
 import { createChartronsPoiActeurs } from './chartronsPois.js';
+import { createDemoPosts } from './demoMerchants.js';
+import { includeDemoData } from '../logic/demoEnv.js';
 
 /** Bump when seed acteurs / Chartrons POIs change so localStorage upserts the catalog. */
-export const SEED_CATALOG_VERSION = 7;
+export const SEED_CATALOG_VERSION = 8;
 import { defaultRegleForCategory } from '../logic/fidelite.js';
 import {
   ActeurLocalCategory,
@@ -694,6 +696,7 @@ export function createSeedData(): DatabaseSchema {
 
   return {
     ...seed,
+    postsAnnonces: [...seed.postsAnnonces, ...(includeDemoData() ? createDemoPosts(now) : [])],
     acteursLocaux: [
       ...seed.acteursLocaux.map(({ specialiteFine, ...acteur }): ActeurLocal => {
         const rule =

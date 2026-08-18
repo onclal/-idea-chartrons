@@ -38,6 +38,8 @@ export interface PostAnnonce {
   commerceNom?: string | null;
   /** Fin de validité ISO. Obligatoire pour Anti_Gaspi ; ignoré ailleurs. */
   expiresAt?: string | null;
+  /** Annonce simulée de staging (`is_demo`) — wipe ciblé sans toucher aux vraies publications. */
+  isDemo?: boolean;
 }
 
 export interface RelaisHorairesPlage {
@@ -153,6 +155,11 @@ export interface ActeurLocal {
   wheelchairAccessible?: boolean;
   /** Accueil senior (flag `senior_friendly`). */
   seniorFriendly?: boolean;
+  /**
+   * Commerce simulé de staging (`is_demo`). Isolé des vrais acteurs :
+   * `DELETE … WHERE is_demo = true` côté scripts / localDb.
+   */
+  isDemo?: boolean;
   createdAt: string;
   updatedAt: string;
 }

@@ -14,7 +14,12 @@ import {
   defaultMerchantEmail,
   defaultRegleForCategory,
   emptySocialLinks,
+  includeDemoData,
   isChartronsSubcategory,
+  mergeMissingDemoActeurs,
+  mergeMissingDemoPosts,
+  createDemoPosts,
+  wipeDemoFromSchema,
   parseCarnetToken,
   totalCarnetPoints,
   generateQrVitrineCode,
@@ -144,6 +149,7 @@ function mergeCatalogActeur(current: ActeurLocal | undefined, seedActeur: Acteur
     telephone: current.telephone ?? seedActeur.telephone,
     isMerchant: seedActeur.isMerchant,
     isVip: seedActeur.isVip,
+    isDemo: seedActeur.isDemo === true || current.isDemo === true,
     pinCode: current.pinCode ?? seedActeur.pinCode,
     merchantEmail: current.merchantEmail ?? seedActeur.merchantEmail,
     socialLinks: current.socialLinks ?? seedActeur.socialLinks,
@@ -376,7 +382,7 @@ class LocalDatabase {
       }
     }
 
-    const postsAnnonces = (data.postsAnnonces ?? []).map((post) => {
+    let postsAnnonces = (data.postsAnnonces ?? []).map((post) => {
       const seedMatch = seed.postsAnnonces.find((item) => item.id === post.id);
       const telephone = post.telephone ?? seedMatch?.telephone ?? null;
       if (telephone !== post.telephone) changed = true;
@@ -397,6 +403,27 @@ class LocalDatabase {
       postsAnnonces.length = 0;
       postsAnnonces.push(...archivedPosts.posts);
       changed = true;
+    }
+
+    const nowIso = new Date().toISOString();
+    if (!includeDemoData()) {
+      const wiped = wipeDemoFromSchema({ ...data, acteursLocaux, postsAnnonces });
+      if (wiped.report.acteurs > 0 || wiped.report.posts > 0) {
+        acteursLocaux = wiped.data.acteursLocaux;
+        postsAnnonces = wiped.data.postsAnnonces;
+        changed = true;
+      }
+    } else {
+      const nextActeurs = mergeMissingDemoActeurs(acteursLocaux, nowIso);
+      if (nextActeurs.added > 0) {
+        acteursLocaux = nextActeurs.acteurs;
+        changed = true;
+      }
+      const nextPosts = mergeMissingDemoPosts(postsAnnonces, createDemoPosts(nowIso));
+      if (nextPosts.added > 0) {
+        postsAnnonces = nextPosts.posts;
+        changed = true;
+      }
     }
 
     const marcheCutoff = Date.now() - 2 * 86400000;
@@ -560,6 +587,33 @@ class LocalDatabase {
     const seed = createSeedData();
     this.persist(seed);
     writeSeedCatalogVersion(SEED_CATALOG_VERSION);
+  }
+
+  /** Injecte les commerces `isDemo` (staging / onboarding concierge). */
+  seedDemoData(): { acteurs: number; posts: number } {
+    const now = new Date().toISOString();
+    const nextActeurs = mergeMissingDemoActeurs(this.data.acteursLocaux, now);
+    const nextPosts = mergeMissingDemoPosts(this.data.postsAnnonces, createDemoPosts(now));
+    this.persist({
+      ...this.data,
+      acteursLocaux: nextActeurs.acteurs,
+      postsAnnonces: nextPosts.posts,
+    });
+    const report = { acteurs: nextActeurs.added, posts: nextPosts.added };
+    console.info(
+      `[idea-chartrons] seeded demo records: ${report.acteurs} merchant(s), ${report.posts} post(s).`,
+    );
+    return report;
+  }
+
+  /** `DELETE FROM businesses WHERE is_demo = true` + annonces liées. */
+  wipeDemoData(): { acteurs: number; posts: number } {
+    const { data, report } = wipeDemoFromSchema(this.data);
+    this.persist(data);
+    console.info(
+      `[idea-chartrons] wiped demo records: ${report.acteurs} merchant(s), ${report.posts} post(s).`,
+    );
+    return report;
   }
 
   getAll<K extends keyof DatabaseSchema>(collection: K): DatabaseSchema[K] {

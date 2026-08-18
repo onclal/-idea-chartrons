@@ -19,6 +19,8 @@
     "start": "npm run start --workspace=server",
     "import:osm": "node scripts/import-osm-chartrons.mjs",
     "fetch:pois": "npx tsx scripts/fetchChartronsPois.ts",
+    "seed:demo": "npx tsx scripts/seed-demo-data.ts",
+    "clean:demo": "npx tsx scripts/clean-demo-data.ts",
     "deploy": "npm run build && gh-pages -d client/dist -t -b gh-pages"
   },
   "devDependencies": {

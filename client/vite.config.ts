@@ -12,6 +12,12 @@ const base = process.env.VITE_BASE ?? (process.env.VERCEL ? '/' : GITHUB_PAGES_B
 
 export default defineConfig({
   base,
+  define: {
+    'process.env.INCLUDE_DEMO_DATA': JSON.stringify(
+      process.env.INCLUDE_DEMO_DATA ?? process.env.VITE_INCLUDE_DEMO_DATA ?? '',
+    ),
+    'process.env.VITE_INCLUDE_DEMO_DATA': JSON.stringify(process.env.VITE_INCLUDE_DEMO_DATA ?? ''),
+  },
   plugins: [
     react(),
     tailwindcss(),

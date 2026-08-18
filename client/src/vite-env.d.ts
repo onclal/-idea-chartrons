@@ -5,6 +5,11 @@ interface ImportMetaEnv {
   readonly VITE_ADMIN_PASSCODE?: string;
   /** Backend concierge IA ; absent sur GitHub Pages, le moteur local prend alors le relais. */
   readonly VITE_CONCIERGE_API_URL?: string;
+  /**
+   * Inclure les commerces `isDemo` dans l’annuaire et le concierge IA.
+   * Staging / démo onboarding : `true`. Production : absent ou `false`.
+   */
+  readonly VITE_INCLUDE_DEMO_DATA?: string;
 }
 
 declare module 'virtual:pwa-register' {

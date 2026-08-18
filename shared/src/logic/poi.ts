@@ -186,6 +186,7 @@ export function hydrateChartronsPoi(poi: ChartronsPoiInput): ChartronsPoi {
     wheelchairAccessible,
     seniorFriendly,
     accessible: inferAccessible(poi, wheelchairAccessible, seniorFriendly),
+    isDemo: poi.isDemo === true,
   };
 }
 

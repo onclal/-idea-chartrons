@@ -21,6 +21,8 @@ export function AdminDashboardPage() {
   const { showToast } = useToast();
   const [loading, setLoading] = useState(true);
   const [resetting, setResetting] = useState(false);
+  const [wipingDemo, setWipingDemo] = useState(false);
+  const [seedingDemo, setSeedingDemo] = useState(false);
   const [posts, setPosts] = useState<PostAnnonce[]>([]);
   const [events, setEvents] = useState<AgendaEvenement[]>([]);
   const [relais, setRelais] = useState<LocalRelais[]>([]);
@@ -64,6 +66,33 @@ export function AdminDashboardPage() {
       showToast(err instanceof Error ? err.message : t('common.error'), 'error');
     } finally {
       setResetting(false);
+    }
+  };
+
+  const handleWipeDemo = async () => {
+    if (!window.confirm(t('adminSpace.dashboard.wipeDemoConfirm'))) return;
+    setWipingDemo(true);
+    try {
+      const report = await api.wipeDemoMerchants();
+      load();
+      showToast(t('toast.demoWiped', { acteurs: report.acteurs, posts: report.posts }));
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : t('common.error'), 'error');
+    } finally {
+      setWipingDemo(false);
+    }
+  };
+
+  const handleSeedDemo = async () => {
+    setSeedingDemo(true);
+    try {
+      const report = await api.seedDemoMerchants();
+      load();
+      showToast(t('toast.demoSeeded', { acteurs: report.acteurs, posts: report.posts }));
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : t('common.error'), 'error');
+    } finally {
+      setSeedingDemo(false);
     }
   };
 
@@ -423,6 +452,19 @@ export function AdminDashboardPage() {
             ))}
           </ul>
         )}
+      </Card>
+
+      <Card className="!p-4 lg:!p-5">
+        <p className="text-sm text-chartrons-warm-gray mb-3">{t('adminSpace.dashboard.seedDemoHint')}</p>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Button variant="secondary" disabled={seedingDemo} onClick={handleSeedDemo} className="w-full sm:w-auto">
+            {seedingDemo ? t('common.loading') : t('adminSpace.dashboard.seedDemo')}
+          </Button>
+          <Button variant="secondary" disabled={wipingDemo} onClick={handleWipeDemo} className="w-full sm:w-auto">
+            {wipingDemo ? t('common.loading') : t('adminSpace.dashboard.wipeDemo')}
+          </Button>
+        </div>
+        <p className="text-xs text-chartrons-warm-gray mt-2">{t('adminSpace.dashboard.wipeDemoHint')}</p>
       </Card>
 
       <Card className="!p-4 lg:!p-5">

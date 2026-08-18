@@ -95,6 +95,11 @@ export interface ChartronsPoi {
   seniorFriendly?: boolean;
   /** Raccourci : PMR ou senior. Conservé pour le concierge. */
   accessible?: boolean;
+  /**
+   * Fiche simulée de staging (`is_demo`). Jamais un vrai commerçant.
+   * Permet un wipe ciblé sans toucher aux enregistrements production.
+   */
+  isDemo?: boolean;
 }
 
 /** Forme stockée (OSM / fiches curées) : les champs d’annuaire peuvent être inférés. */
