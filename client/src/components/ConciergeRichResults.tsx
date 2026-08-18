@@ -9,6 +9,7 @@ import {
 } from '../lib/concierge';
 import { walkingDirectionsUrl } from '../lib/itinerary';
 import { AudioReader } from './AudioReader';
+import { AccessibilityBadges } from './AccessibilityBadges';
 
 interface ConciergeRichResultsProps {
   recommendations: ConciergeRecommendation[];
@@ -147,6 +148,16 @@ function ConciergeRecommendationCard({
             <p className="text-xs text-chartrons-green-dark mt-1 leading-snug">{item.justification}</p>
           )}
           <p className="text-xs text-chartrons-warm-gray mt-1">📍 {item.address}</p>
+          <div className="mt-2">
+            <AccessibilityBadges
+              source={{
+                hasDelivery: item.hasDelivery,
+                wheelchairAccessible: item.wheelchairAccessible,
+                seniorFriendly: item.seniorFriendly,
+                accessible: item.accessible,
+              }}
+            />
+          </div>
           <div className="mt-2">
             <AudioReader
               text={[item.name, item.specialty, item.justification, item.address, item.phone]

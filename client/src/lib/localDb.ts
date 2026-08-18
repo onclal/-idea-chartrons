@@ -139,6 +139,9 @@ function mergeCatalogActeur(current: ActeurLocal | undefined, seedActeur: Acteur
     dailyMenuImage: current.dailyMenuImage ?? seedActeur.dailyMenuImage,
     dailyMenuText: current.dailyMenuText ?? seedActeur.dailyMenuText,
     phoneForOrders: current.phoneForOrders ?? seedActeur.phoneForOrders,
+    hasDelivery: current.hasDelivery ?? seedActeur.hasDelivery,
+    wheelchairAccessible: current.wheelchairAccessible ?? seedActeur.wheelchairAccessible,
+    seniorFriendly: current.seniorFriendly ?? seedActeur.seniorFriendly,
   };
 }
 

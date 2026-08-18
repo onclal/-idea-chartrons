@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { EmergencySafety } from './EmergencySafety';
 import { AudioReader } from './AudioReader';
+import { AccessibilityBadges } from './AccessibilityBadges';
 import { CallButton } from './CallButton';
 import { Card } from './ui';
 import { useConciergePanel } from '../context/ConciergePanelContext';
@@ -171,6 +172,7 @@ function ConfortPoiList({ pois, empty, extra }: { pois: ChartronsPoi[]; empty: s
           <p className="text-xl font-bold leading-snug">{poi.name}</p>
           <p className="leading-relaxed">{poi.specialty}</p>
           <p className="leading-relaxed">📍 {poi.address}</p>
+          <AccessibilityBadges source={poi} />
           <div className="flex flex-col gap-2">
             {poi.phone && <CallButton phone={poi.phone} className="w-full min-h-[60px] text-base" />}
             <AudioReader text={poiListenText(poi)} className="w-full" />

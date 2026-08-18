@@ -89,7 +89,11 @@ export interface ChartronsPoi {
   catalog: PoiCatalog;
   /** Livraison à domicile ou en partenariat (flag `has_delivery`). */
   hasDelivery?: boolean;
-  /** Accès PMR / accueil senior. */
+  /** Accès PMR / fauteuil (flag `wheelchair_accessible`). */
+  wheelchairAccessible?: boolean;
+  /** Accueil senior, sans stigmate (flag `senior_friendly`). */
+  seniorFriendly?: boolean;
+  /** Raccourci : PMR ou senior. Conservé pour le concierge. */
   accessible?: boolean;
 }
 

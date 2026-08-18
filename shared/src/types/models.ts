@@ -139,6 +139,12 @@ export interface ActeurLocal {
   dailyMenuStatus?: ArdoiseStatus;
   dailyMenuSubmittedAt?: string | null;
   phoneForOrders?: string | null;
+  /** Livraison à domicile (flag `has_delivery`). */
+  hasDelivery?: boolean;
+  /** Accès PMR (flag `wheelchair_accessible`). */
+  wheelchairAccessible?: boolean;
+  /** Accueil senior (flag `senior_friendly`). */
+  seniorFriendly?: boolean;
   createdAt: string;
   updatedAt: string;
 }

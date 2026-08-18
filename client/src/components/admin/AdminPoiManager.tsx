@@ -17,6 +17,7 @@ import { AdminDataTable } from './AdminDataTable';
 import { AdminPageHeader } from './AdminPageHeader';
 import { AdminPhotoField } from './AdminPhotoField';
 import { Badge, Button, Card, EmptyState, Input, Loading, Modal, Select, Textarea } from '../ui';
+import { StorefrontPoster } from '../StorefrontPoster';
 import { useToast } from '../../context/ToastContext';
 import { api } from '../../lib/api';
 import { loc } from '../../lib/locale';
@@ -33,6 +34,9 @@ interface ActeurForm {
   telephone: string;
   activerFidelite: boolean;
   tier: MerchantTier;
+  hasDelivery: boolean;
+  wheelchairAccessible: boolean;
+  seniorFriendly: boolean;
 }
 
 const emptyForm = (): ActeurForm => ({
@@ -47,6 +51,9 @@ const emptyForm = (): ActeurForm => ({
   pointsRequisVip: '50',
   activerFidelite: false,
   tier: 'free',
+  hasDelivery: false,
+  wheelchairAccessible: false,
+  seniorFriendly: false,
 });
 
 /** Les fiches créées avant la taxonomie unifiée peuvent ne pas porter de sous-catégorie. */
@@ -66,6 +73,7 @@ export function AdminPoiManager() {
   const [creating, setCreating] = useState(false);
   const [form, setForm] = useState<ActeurForm>(emptyForm());
   const [saving, setSaving] = useState(false);
+  const [posterActeur, setPosterActeur] = useState<ActeurLocal | null>(null);
 
   const load = () => {
     setLoading(true);
@@ -109,6 +117,9 @@ export function AdminPoiManager() {
       pointsRequisVip: String(acteur.pointsRequisVip),
       activerFidelite: Boolean(acteur.qrCodeVitrine),
       tier: merchantTierOf(acteur),
+      hasDelivery: Boolean(acteur.hasDelivery),
+      wheelchairAccessible: Boolean(acteur.wheelchairAccessible),
+      seniorFriendly: Boolean(acteur.seniorFriendly),
     });
   };
 
@@ -133,15 +144,24 @@ export function AdminPoiManager() {
         pointsRequisVip: Number(form.pointsRequisVip) || 0,
       };
       if (editing) {
-        await api.updateActeur(editing.id, { ...payload, ...merchantTierPatch(form.tier) });
+        await api.updateActeur(editing.id, {
+          ...payload,
+          ...merchantTierPatch(form.tier),
+          hasDelivery: form.hasDelivery,
+          wheelchairAccessible: form.wheelchairAccessible,
+          seniorFriendly: form.seniorFriendly,
+        });
         if (form.activerFidelite && !editing.qrCodeVitrine) {
           await api.generateQrVitrine(editing.id);
         }
       } else {
         const created = await api.createActeur({ ...payload, activerFidelite: form.activerFidelite });
-        if (form.tier === 'premium_pro') {
-          await api.updateActeur(created.id, merchantTierPatch('premium_pro'));
-        }
+        await api.updateActeur(created.id, {
+          ...merchantTierPatch(form.tier === 'premium_pro' ? 'premium_pro' : 'free'),
+          hasDelivery: form.hasDelivery,
+          wheelchairAccessible: form.wheelchairAccessible,
+          seniorFriendly: form.seniorFriendly,
+        });
       }
       showToast(t('adminSpace.saved'));
       closeModal();
@@ -177,6 +197,9 @@ export function AdminPoiManager() {
     <div className="flex flex-wrap gap-2">
       <Button type="button" variant="secondary" size="sm" onClick={() => openEdit(acteur)}>
         {t('common.edit')}
+      </Button>
+      <Button type="button" variant="gold" size="sm" onClick={() => setPosterActeur(acteur)}>
+        {t('poster.open')}
       </Button>
       <Button type="button" variant="gold" size="sm" onClick={() => void handleToggleTier(acteur)}>
         {isPremiumProMerchant(acteur) ? t('adminSpace.actions.setFree') : t('adminSpace.actions.setPro')}
@@ -404,6 +427,28 @@ export function AdminPoiManager() {
             value={form.photo}
             onChange={(photo) => setForm((f) => ({ ...f, photo }))}
           />
+          <div className="space-y-2">
+            <p className="text-xs font-semibold text-chartrons-olive-dark uppercase tracking-wide">
+              {t('access.title')}
+            </p>
+            {(
+              [
+                ['hasDelivery', 'access.delivery'] as const,
+                ['wheelchairAccessible', 'access.wheelchair'] as const,
+                ['seniorFriendly', 'access.senior'] as const,
+              ]
+            ).map(([field, labelKey]) => (
+              <label key={field} className="flex items-center gap-3 p-3 rounded-xl bg-chartrons-beige/50 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={form[field]}
+                  onChange={(e) => setForm((current) => ({ ...current, [field]: e.target.checked }))}
+                  className="w-4 h-4 accent-chartrons-bordeaux"
+                />
+                <span className="text-sm font-medium text-chartrons-olive-dark">{t(labelKey)}</span>
+              </label>
+            ))}
+          </div>
           <label className="flex items-start gap-3 p-3 rounded-xl bg-chartrons-beige/50 cursor-pointer">
             <input
               type="checkbox"
@@ -432,6 +477,15 @@ export function AdminPoiManager() {
             </Button>
           </div>
         </form>
+      </Modal>
+
+      <Modal
+        open={Boolean(posterActeur)}
+        onClose={() => setPosterActeur(null)}
+        title={t('poster.open')}
+        size="lg"
+      >
+        {posterActeur && <StorefrontPoster acteur={posterActeur} />}
       </Modal>
     </div>
   );

@@ -15,6 +15,7 @@ import { useToast } from '../context/ToastContext';
 import { matchesSearch, useSearch } from '../context/SearchContext';
 import { api, type FideliteScanResult } from '../lib/api';
 import { getDeviceId } from '../lib/guestCarnet';
+import { useConfort } from '../context/ConfortContext';
 
 type CategoryFilter = 'all' | (typeof DIRECTORY_CATEGORIES)[number];
 
@@ -22,6 +23,7 @@ export function ActeursPage() {
   const { t } = useTranslation();
   const { query } = useSearch();
   const { isAdminMode } = useAdmin();
+  const { setConfortMode } = useConfort();
   const { showToast } = useToast();
   const [acteurs, setActeurs] = useState<ActeurLocal[]>([]);
   const [carnetPoints, setCarnetPoints] = useState(0);
@@ -41,7 +43,10 @@ export function ActeursPage() {
       .then(([acteursData, points]) => {
         setActeurs(acteursData);
         setCarnetPoints(points);
-        if (acteursData[0]) setExpandedId((current) => current ?? acteursData[0].id);
+        if (acteursData[0]) {
+          const fiche = new URLSearchParams(window.location.search).get('fiche');
+          setExpandedId((current) => current ?? fiche ?? acteursData[0].id);
+        }
       })
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -54,7 +59,10 @@ export function ActeursPage() {
 
   useEffect(() => {
     if (searchParams.get('referencer') === '1') setShowCreate(true);
-  }, [searchParams]);
+    const fiche = searchParams.get('fiche');
+    if (fiche) setExpandedId(fiche);
+    if (searchParams.get('confort') === '1') setConfortMode(true);
+  }, [searchParams, setConfortMode]);
 
   const closeCreateForm = () => {
     setShowCreate(false);

@@ -304,3 +304,29 @@ html.confort-mode nav.fixed.bottom-0 a span {
 html.confort-mode main {
   padding-bottom: 6.5rem;
 }
+
+@media print {
+  header,
+  nav,
+  footer,
+  .no-print,
+  .leaflet-container {
+    display: none !important;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  .storefront-poster,
+  .storefront-poster * {
+    visibility: visible;
+  }
+
+  .storefront-poster {
+    position: absolute;
+    inset: 0;
+    background: #fff;
+    color: #000;
+  }
+}

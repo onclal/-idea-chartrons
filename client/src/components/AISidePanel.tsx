@@ -7,6 +7,7 @@ import { ConciergeRichResults } from './ConciergeRichResults';
 import { useConciergePanel } from '../context/ConciergePanelContext';
 import { PhoneLink } from './PhoneLink';
 import { AudioReader } from './AudioReader';
+import { SafeCheckIn } from './SafeCheckIn';
 
 const ConciergeMiniMap = lazy(() =>
   import('./ConciergeMiniMap').then((mod) => ({ default: mod.ConciergeMiniMap })),
@@ -130,6 +131,21 @@ export function AISidePanel() {
               heritage={heritage}
               lang={answerLang}
               compact
+            />
+          )}
+
+          {!pending && recommendations.length > 0 && (
+            <SafeCheckIn
+              stops={recommendations.map((item) => ({
+                id: item.poiId,
+                title: item.name,
+                adresse: item.address,
+                latitude: item.coordinates.lat,
+                longitude: item.coordinates.lng,
+              }))}
+              routeName={t('conciergerie.ai.topTitle', { count: recommendations.length })}
+              sharePath="/conciergerie"
+              showMap={false}
             />
           )}
 

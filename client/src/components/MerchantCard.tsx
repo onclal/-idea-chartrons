@@ -21,6 +21,7 @@ import { QrCodeDisplay } from './QrCodeDisplay';
 import { VipOfferCard } from './VipOfferCard';
 import { getAverageRating } from '../services/reviewService';
 import { AudioReader } from './AudioReader';
+import { AccessibilityBadges } from './AccessibilityBadges';
 
 interface MerchantCardProps {
   acteur: ActeurLocal;
@@ -98,6 +99,9 @@ export function MerchantCard({
           specialite={acteur.specialite}
         />
         <p className="text-xs text-chartrons-olive-dark/70 mt-2">📍 {acteur.adresse}</p>
+        <div className="mt-2">
+          <AccessibilityBadges source={acteur} />
+        </div>
         <div className="mt-3" onClick={(event) => event.stopPropagation()}>
           <AudioReader
             text={[acteur.nomCommerce, acteur.specialite, acteur.description, acteur.adresse, acteur.telephone]

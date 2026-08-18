@@ -27,6 +27,8 @@ import { FavoritesDrawer } from '../components/FavoritesDrawer';
 import { DirectionsButton } from '../components/DirectionsButton';
 import { ShareButton } from '../components/ShareButton';
 import { SaveRouteModal } from '../components/SaveRouteModal';
+import { SafeCheckIn } from '../components/SafeCheckIn';
+import { AccessibilityBadges } from '../components/AccessibilityBadges';
 import type { MapPin, MapPinKind } from '../components/NeighborhoodMap';
 import { useFavorites } from '../context/FavoritesContext';
 import { useSavedRoutes } from '../context/RoutesContext';
@@ -571,6 +573,20 @@ export function MapPage() {
         </Card>
       )}
 
+      {showRoute && orderedFavorites.length >= 2 && (
+        <SafeCheckIn
+          stops={orderedFavorites.map((place) => ({
+            id: place.id,
+            title: place.title,
+            adresse: place.adresse,
+            latitude: place.latitude,
+            longitude: place.longitude,
+          }))}
+          routeName={savedRoute?.name ?? t('map.itinerary.title')}
+          sharePath={savedRoute ? `/carte?parcours=${encodeURIComponent(savedRoute.id)}` : '/carte?parcours=1'}
+        />
+      )}
+
       {selectedPin ? (
         <Card className="!p-0 overflow-hidden bg-white text-chartrons-olive-dark">
           {selectedPin.imageUrl && (
@@ -605,6 +621,15 @@ export function MapPage() {
                   }
                 />
                 <p className="text-xs text-chartrons-warm-gray mt-2">📍 {selectedPin.adresse}</p>
+                <div className="mt-2">
+                  <AccessibilityBadges
+                    source={{
+                      hasDelivery: selectedActeur?.hasDelivery,
+                      wheelchairAccessible: selectedActeur?.wheelchairAccessible,
+                      seniorFriendly: selectedActeur?.seniorFriendly,
+                    }}
+                  />
+                </div>
                 <div className="mt-3">
                   <AudioReader
                     text={[

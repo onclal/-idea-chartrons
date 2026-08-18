@@ -94,6 +94,8 @@ export interface ConciergeRecommendation {
   heritageId: string | null;
   hasDelivery: boolean;
   accessible: boolean;
+  wheelchairAccessible: boolean;
+  seniorFriendly: boolean;
 }
 
 interface ConciergeIntent {
@@ -862,7 +864,8 @@ function scorePoi(poi: ChartronsPoi, analysis: ConciergeQueryAnalysis) {
   } else if (analysis.askedDelivery) {
     score -= 10;
   }
-  if (poi.accessible) {
+  const accessibleSpot = Boolean(poi.accessible || poi.wheelchairAccessible || poi.seniorFriendly);
+  if (accessibleSpot) {
     score += analysis.askedAccessible ? 24 : 3;
     if (analysis.askedAccessible) rationale.push({ kind: 'accessible' });
   } else if (analysis.askedAccessible) {
@@ -1029,7 +1032,9 @@ function toRecommendation(
     street: heritage?.street ?? null,
     heritageId: heritage?.id ?? null,
     hasDelivery: Boolean(poi.hasDelivery),
-    accessible: Boolean(poi.accessible),
+    accessible: Boolean(poi.accessible || poi.wheelchairAccessible || poi.seniorFriendly),
+    wheelchairAccessible: Boolean(poi.wheelchairAccessible),
+    seniorFriendly: Boolean(poi.seniorFriendly),
   };
 }
 

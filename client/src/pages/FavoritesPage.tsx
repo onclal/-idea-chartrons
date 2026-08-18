@@ -5,6 +5,7 @@ import { Badge, Button, Card, EmptyState } from '../components/ui';
 import { PageHelp } from '../components/PageHelp';
 import { DirectionsButton } from '../components/DirectionsButton';
 import { ShareButton } from '../components/ShareButton';
+import { SafeCheckIn } from '../components/SafeCheckIn';
 import { useFavorites } from '../context/FavoritesContext';
 import { useSavedRoutes } from '../context/RoutesContext';
 import { useToast } from '../context/ToastContext';
@@ -144,6 +145,23 @@ export function FavoritesPage() {
               {alertSettings.notificationsEnabled ? t('alerts.disable') : t('alerts.enable')}
             </Button>
           </Card>
+
+          {geoCount > 0 && (
+            <SafeCheckIn
+              stops={favorites
+                .filter(hasCoordinates)
+                .map((place) => ({
+                  id: place.id,
+                  title: place.title,
+                  adresse: place.adresse,
+                  latitude: place.latitude,
+                  longitude: place.longitude,
+                }))}
+              routeName={t('favorites.title')}
+              sharePath={geoCount >= 2 ? '/carte?parcours=1' : '/favoris'}
+              showMap
+            />
+          )}
 
           {routes.length > 0 && (
             <section id="parcours" className="space-y-3">

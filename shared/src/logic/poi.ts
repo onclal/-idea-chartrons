@@ -143,12 +143,24 @@ function inferHasDelivery(poi: ChartronsPoiInput): boolean {
   return /livraison|delivery|deliveroo|uber ?eats|a domicile|click.?collect|emporter|takeaway|take away/.test(blob);
 }
 
-function inferAccessible(poi: ChartronsPoiInput): boolean {
-  if (poi.accessible != null) return poi.accessible;
+function inferWheelchairAccessible(poi: ChartronsPoiInput): boolean {
+  if (poi.wheelchairAccessible != null) return poi.wheelchairAccessible;
   const hay = haystackOf({ ...poi, name: poi.name });
   const blob = `${hay} ${normalizeSearchText(poi.description ?? '')}`;
-  if (/pmr|fauteuil|wheelchair|accessib|senior|personne agee|rampe|malvoyant/.test(blob)) return true;
+  return /pmr|fauteuil|wheelchair|accessib|rampe|malvoyant/.test(blob);
+}
+
+function inferSeniorFriendly(poi: ChartronsPoiInput): boolean {
+  if (poi.seniorFriendly != null) return poi.seniorFriendly;
+  const hay = haystackOf({ ...poi, name: poi.name });
+  const blob = `${hay} ${normalizeSearchText(poi.description ?? '')}`;
+  if (/senior|personne agee|accueil senior|age-friendly|elderly/.test(blob)) return true;
   return /pharmacie|medecin|docteur|hopital|optique|laboratoire|maison de quartier/.test(hay);
+}
+
+function inferAccessible(poi: ChartronsPoiInput, wheelchair: boolean, senior: boolean): boolean {
+  if (poi.accessible != null) return poi.accessible;
+  return wheelchair || senior;
 }
 
 export function defaultPoiTier(poi: ChartronsPoiInput): MerchantTier {
@@ -158,6 +170,8 @@ export function defaultPoiTier(poi: ChartronsPoiInput): MerchantTier {
 
 /** Complète une fiche OSM/curée sans supprimer les champs existants. */
 export function hydrateChartronsPoi(poi: ChartronsPoiInput): ChartronsPoi {
+  const wheelchairAccessible = inferWheelchairAccessible(poi);
+  const seniorFriendly = inferSeniorFriendly(poi);
   return {
     ...poi,
     businessType: poi.businessType ?? classifyBusinessType(poi),
@@ -169,7 +183,9 @@ export function hydrateChartronsPoi(poi: ChartronsPoiInput): ChartronsPoi {
     reputation: poi.reputation ?? emptyReputation(poi),
     catalog: poi.catalog ?? emptyCatalog(poi.hasMenu),
     hasDelivery: inferHasDelivery(poi),
-    accessible: inferAccessible(poi),
+    wheelchairAccessible,
+    seniorFriendly,
+    accessible: inferAccessible(poi, wheelchairAccessible, seniorFriendly),
   };
 }
 
