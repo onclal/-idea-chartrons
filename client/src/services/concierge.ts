@@ -2,6 +2,7 @@ import {
   conciergePhrasebookLang,
   detectConciergeLang,
   runConciergeEngine,
+  sanitizeConciergeReply,
   type ConciergeLang,
   type ConciergeRecommendation,
   type LocalBasket,
@@ -136,7 +137,7 @@ async function requestConcierge(
     if (typeof data.reply !== 'string' || !data.reply.trim()) return fallback;
 
     return {
-      reply: data.reply,
+      reply: sanitizeConciergeReply(data.reply, fallback.reply),
       source: data.source === 'openai' ? 'openai' : 'local',
       lang: data.lang ?? fallback.lang,
       isLocalQuery: data.isLocalQuery ?? fallback.isLocalQuery,
@@ -145,7 +146,7 @@ async function requestConcierge(
         settings.maxResults,
       ),
       heritage: Array.isArray(data.heritage) ? data.heritage : fallback.heritage,
-      posts: Array.isArray(data.posts) ? data.posts : fallback.posts,
+      posts: fallback.posts,
       basket: data.basket ?? fallback.basket,
       checklist: Array.isArray(data.checklist) ? data.checklist : fallback.checklist,
     };

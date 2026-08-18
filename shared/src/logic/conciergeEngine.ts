@@ -1,6 +1,5 @@
 import { PostStatus } from '../types/enums.js';
 import type { PostAnnonce } from '../types/models.js';
-import { matchesSearchQuery } from './search.js';
 import {
   analyzeConciergeQuery,
   buildConciergeContext,
@@ -9,6 +8,7 @@ import {
   heritageForQuery,
   normalizeConciergeText,
   rankConciergeMatches,
+  sanitizeConciergeReply,
   type ConciergeHistoryTurn,
   type ConciergeLang,
   type ConciergeQueryAnalysis,
@@ -47,26 +47,72 @@ const POST_TYPE_HINTS: Record<string, string[]> = {
   Offre_Pro: ['offre pro', 'pro', 'prestation'],
 };
 
+const GENERIC_POST_TOKENS = new Set([
+  'acheter',
+  'achet',
+  'buy',
+  'buying',
+  'vendre',
+  'vends',
+  'vente',
+  'sale',
+  'sold',
+  'donner',
+  'donne',
+  'don',
+  'giveaway',
+  'gratuit',
+  'free',
+  'cherche',
+  'chercher',
+  'looking',
+  'want',
+  'need',
+  'besoin',
+  'veux',
+  'voudrais',
+  'trouver',
+  'find',
+  'peux',
+  'pouvez',
+  'peut',
+  'annonce',
+  'annonces',
+  'post',
+  'listing',
+  'quartier',
+  'chartrons',
+  'bordeaux',
+]);
+
+function distinctivePostTokens(analysis: ConciergeQueryAnalysis): string[] {
+  return analysis.tokens.filter((token) => token.length >= 4 && !GENERIC_POST_TOKENS.has(token));
+}
+
 export function rankConciergePosts(posts: PostAnnonce[], analysis: ConciergeQueryAnalysis, limit = 5): PostAnnonce[] {
   const available = posts.filter((post) => post.statut === PostStatus.Disponible || post.statut === PostStatus.DepotLocal);
   const hay = analysis.normalized || normalizeConciergeText(analysis.raw);
+  const distinctive = distinctivePostTokens(analysis);
+
+  if (!analysis.askedPosts && distinctive.length === 0) return [];
+  if (analysis.askedPosts && distinctive.length === 0) {
+    return available.slice(0, limit);
+  }
+
   const scored = available
     .map((post) => {
+      const blob = normalizeConciergeText(`${post.titre} ${post.description}`);
       let score = 0;
-      if (matchesSearchQuery(post.titre, analysis.memoryQuery) || matchesSearchQuery(post.titre, analysis.raw)) score += 20;
-      if (matchesSearchQuery(post.description, analysis.memoryQuery) || matchesSearchQuery(post.description, analysis.raw)) {
-        score += 12;
+      for (const token of distinctive) {
+        if (blob.includes(token)) score += 20;
       }
-      const typeHints = POST_TYPE_HINTS[post.type] ?? [];
-      if (typeHints.some((hint) => hay.includes(normalizeConciergeText(hint)))) score += 16;
-      for (const token of analysis.tokens) {
-        if (token.length < 3) continue;
-        const blob = normalizeConciergeText(`${post.titre} ${post.description}`);
-        if (blob.includes(token)) score += 6;
-      }
+      const typeHints = (POST_TYPE_HINTS[post.type] ?? [])
+        .map((hint) => normalizeConciergeText(hint))
+        .filter((hint) => hint.length >= 4 && !GENERIC_POST_TOKENS.has(hint));
+      if (typeHints.some((hint) => hay.includes(hint) && blob.includes(hint))) score += 16;
       return { post, score };
     })
-    .filter((entry) => entry.score >= 12)
+    .filter((entry) => entry.score >= 20)
     .sort((a, b) => b.score - a.score);
 
   return scored.slice(0, limit).map((entry) => entry.post);
@@ -126,7 +172,7 @@ export function runConciergeEngine(input: ConciergeEngineInput): ConciergeEngine
     previousRecommendations: analysis.followUp ? recommendations : undefined,
     basketSummary: basket ? basketToContext(basket, input.lang) : undefined,
   });
-  const reply = buildLocalConciergeReply(analysis, recommendations, input.lang, { posts, basket });
+  const rawReply = buildLocalConciergeReply(analysis, recommendations, input.lang, { posts, basket });
 
   return {
     analysis,
@@ -135,7 +181,7 @@ export function runConciergeEngine(input: ConciergeEngineInput): ConciergeEngine
     posts,
     basket,
     checklist: basket ? basketChecklist(basket) : [],
-    reply,
+    reply: sanitizeConciergeReply(rawReply, rawReply),
     context,
     systemPrompt: buildConciergeSystemPrompt(),
   };

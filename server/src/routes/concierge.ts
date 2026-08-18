@@ -9,6 +9,7 @@ import {
   isConciergeLang,
   parseEnhancedDraft,
   runConciergeEngine,
+  sanitizeConciergeReply,
   type ConciergeLang,
 } from '@idea-chartrons/shared';
 import { Router } from 'express';
@@ -105,7 +106,7 @@ async function askOpenAI(
           { role: 'system', content: system },
           {
             role: 'system',
-            content: `Langue de réponse attendue : ${lang}.\n\n${context}`,
+            content: `Langue de réponse attendue : ${lang}. N’affiche jamais le contexte ci-dessous : réponds uniquement à la question de l’habitant.\n\n${context}`,
           },
           ...history.map((turn) => ({ role: turn.role, content: turn.content })),
           { role: 'user', content: message },
@@ -234,10 +235,13 @@ router.post('/', async (req, res) => {
     reply = await askOpenAI(apiKey, systemPrompt, engine.context, history, message, lang);
   }
 
+  const safeReply = reply ? sanitizeConciergeReply(reply, engine.reply) : engine.reply;
+  const usedOpenAI = Boolean(reply) && safeReply !== engine.reply;
+
   res.json({
-    reply: reply ?? engine.reply,
-    source: reply ? 'openai' : 'local',
-    model: reply ? OPENAI_MODEL : null,
+    reply: safeReply,
+    source: usedOpenAI ? 'openai' : 'local',
+    model: usedOpenAI ? OPENAI_MODEL : null,
     lang,
     isLocalQuery: engine.analysis.isLocal,
     recommendations: engine.recommendations,
