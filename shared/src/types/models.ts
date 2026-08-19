@@ -7,6 +7,7 @@ import {
   CivicReportStatus,
   EventType,
   FideliteRegleMode,
+  type AntiqueItemStatus,
   LocalRelaisRetraitStatus,
   PostStatus,
   PostType,
@@ -181,6 +182,20 @@ export interface AgendaEvenement {
   updatedAt: string;
 }
 
+/** Objet exposé dans la vitrine « Pépites & Arrivages » des brocanteurs Premium. */
+export interface AntiqueItem {
+  id: string;
+  title: string;
+  description: string;
+  style: string;
+  era: string;
+  photoUrl: string | null;
+  status: AntiqueItemStatus;
+  merchantId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 /** Passage en caisse enregistré pour l'appareil courant (jamais pour une personne). */
 export interface CarteFideliteScan {
   id: string;
@@ -220,6 +235,7 @@ export interface DatabaseSchema {
   platformSettings: PlatformSettings[];
   acteursLocaux: ActeurLocal[];
   agendaEvenements: AgendaEvenement[];
+  antiqueItems: AntiqueItem[];
   cartesFideliteScans: CarteFideliteScan[];
   privilegeConsommations: PrivilegeConsommation[];
   civicReports: CivicReport[];

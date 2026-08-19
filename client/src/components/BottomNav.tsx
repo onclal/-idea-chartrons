@@ -7,6 +7,7 @@ const navItems = [
   { path: '/carte', icon: '🗺️', key: 'carte' },
   { path: '/decouvrir', icon: '🚶', key: 'decouvrir' },
   { path: '/acteurs', icon: '🏪', key: 'acteurs' },
+  { path: '/brocanteurs', icon: '🏺', key: 'brocanteurs' },
   { path: '/carnet', icon: '📔', key: 'carnet' },
 ] as const;
 
@@ -43,7 +44,7 @@ export function BottomNav() {
                 {icon}
               </span>
               <span
-                className={`text-[10px] font-semibold leading-tight text-center px-0.5 ${
+                className={`text-[9px] font-semibold leading-tight text-center px-0.5 ${
                   isActive ? 'text-chartrons-bordeaux' : ''
                 }`}
               >

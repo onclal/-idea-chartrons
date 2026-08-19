@@ -1,13 +1,15 @@
-import { lazy, Suspense, useEffect } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Badge, Button, Card } from './ui';
 import { ConciergeBeretLoader } from './ConciergeBeretLoader';
 import { ConciergeRichResults } from './ConciergeRichResults';
+import { ConciergeOrderModal } from './ConciergeOrderModal';
 import { useConciergePanel } from '../context/ConciergePanelContext';
 import { PhoneLink } from './PhoneLink';
 import { AudioReader } from './AudioReader';
 import { SafeCheckIn } from './SafeCheckIn';
+import { orderLinesFromBasket, orderShopFromBasket } from '../lib/concierge';
 
 const ConciergeMiniMap = lazy(() =>
   import('./ConciergeMiniMap').then((mod) => ({ default: mod.ConciergeMiniMap })),
@@ -27,6 +29,7 @@ export function AISidePanel() {
     toggleCollapsed,
     ask,
   } = useConciergePanel();
+  const [orderBasket, setOrderBasket] = useState(false);
 
   useEffect(() => {
     if (!open || collapsed) return;
@@ -134,6 +137,21 @@ export function AISidePanel() {
             />
           )}
 
+          {!pending && (lastAssistant?.antiqueItems?.length ?? 0) > 0 && (
+            <section className="space-y-2">
+              <h4 className="text-sm font-bold text-chartrons-bordeaux">{t('brocanteurs.pepitesTitle')}</h4>
+              {lastAssistant?.antiqueItems?.map((item) => (
+                <Card key={item.id} className="!p-3">
+                  <p className="font-semibold text-chartrons-olive-dark text-sm">{item.title}</p>
+                  <p className="text-xs text-chartrons-brass mt-0.5">
+                    {item.style} · {item.era}
+                  </p>
+                  <p className="text-xs text-chartrons-warm-gray mt-1 line-clamp-2">{item.description}</p>
+                </Card>
+              ))}
+            </section>
+          )}
+
           {!pending && recommendations.length > 0 && (
             <SafeCheckIn
               stops={recommendations.map((item) => ({
@@ -173,6 +191,9 @@ export function AISidePanel() {
                 <p className="text-sm font-semibold text-chartrons-green">
                   {t('conciergePanel.basketTotal', { total: lastAssistant.basket.totalEstimate.toFixed(2) })}
                 </p>
+                <Button type="button" variant="primary" className="w-full" onClick={() => setOrderBasket(true)}>
+                  {t('conciergePanel.orderBasket')}
+                </Button>
               </Card>
             </section>
           )}
@@ -223,6 +244,14 @@ export function AISidePanel() {
           )}
         </div>
       </aside>
+      {lastAssistant?.basket && (
+        <ConciergeOrderModal
+          open={orderBasket}
+          shop={orderShopFromBasket(lastAssistant.basket)}
+          lines={orderLinesFromBasket(lastAssistant.basket)}
+          onClose={() => setOrderBasket(false)}
+        />
+      )}
     </div>
   );
 }

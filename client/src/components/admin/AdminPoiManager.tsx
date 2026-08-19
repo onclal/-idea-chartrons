@@ -20,7 +20,7 @@ import { AdminPageHeader } from './AdminPageHeader';
 import { AdminPhotoField } from './AdminPhotoField';
 import { Badge, Button, Card, EmptyState, Input, Loading, Modal, Select, Textarea } from '../ui';
 import { PlaceCover } from '../PlaceCover';
-import { StorefrontPoster } from '../StorefrontPoster';
+import { QRCodeGenerator } from '../QRCodeGenerator';
 import { useToast } from '../../context/ToastContext';
 import { api } from '../../lib/api';
 import { loc } from '../../lib/locale';
@@ -202,7 +202,7 @@ export function AdminPoiManager() {
         {t('common.edit')}
       </Button>
       <Button type="button" variant="gold" size="sm" onClick={() => setPosterActeur(acteur)}>
-        {t('poster.open')}
+        {t('proSpace.tabs.kit')}
       </Button>
       <Button type="button" variant="gold" size="sm" onClick={() => void handleToggleTier(acteur)}>
         {isPremiumProMerchant(acteur) ? t('adminSpace.actions.setFree') : t('adminSpace.actions.setPro')}
@@ -490,10 +490,10 @@ export function AdminPoiManager() {
       <Modal
         open={Boolean(posterActeur)}
         onClose={() => setPosterActeur(null)}
-        title={t('poster.open')}
+        title={t('qrKit.title')}
         size="lg"
       >
-        {posterActeur && <StorefrontPoster acteur={posterActeur} />}
+        {posterActeur && <QRCodeGenerator acteur={posterActeur} />}
       </Modal>
     </div>
   );

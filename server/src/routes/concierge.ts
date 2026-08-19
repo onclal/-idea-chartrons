@@ -9,9 +9,11 @@ import {
   enhancePostDraft,
   isConciergeLang,
   parseEnhancedDraft,
+  resolveUserOrigin,
   runConciergeEngine,
   sanitizeConciergeReply,
   type ConciergeLang,
+  type GeoOriginSource,
 } from '@idea-chartrons/shared';
 import { Router } from 'express';
 import { store } from '../data/store.js';
@@ -223,12 +225,20 @@ router.post('/', async (req, res) => {
 
   const lang = resolveLang(body.lang, message, body.uiLang);
   const history = parseHistory(body.history);
+  const origin = resolveUserOrigin(body.origin);
+  const originSource: GeoOriginSource = body.originSource === 'gps' ? 'gps' : 'fallback';
+  const persona = body.persona === 'chineur' ? 'chineur' as const : 'default' as const;
   const { posts } = archiveExpiredAntiGaspiOffers(store.getAll('postsAnnonces'));
   const engine = runConciergeEngine({
     message,
     history,
     posts,
+    antiqueItems: store.getAll('antiqueItems') ?? [],
+    acteurs: store.getAll('acteursLocaux'),
+    persona,
     lang,
+    origin,
+    originSource,
   });
   const apiKey = process.env.OPENAI_API_KEY;
 
@@ -254,8 +264,10 @@ router.post('/', async (req, res) => {
     recommendations: engine.recommendations,
     heritage: engine.heritage,
     posts: engine.posts,
+    antiqueItems: engine.antiqueItems,
     basket: engine.basket,
     checklist: engine.checklist,
+    persona: engine.persona,
   });
 });
 

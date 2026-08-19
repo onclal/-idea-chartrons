@@ -4,8 +4,8 @@ import { useAdmin } from '../context/AdminContext';
 import { useFavorites } from '../context/FavoritesContext';
 import { usePwa } from '../context/PwaContext';
 import { useConfort } from '../context/ConfortContext';
-import { CategoryTabs } from './CategoryTabs';
 import { HeroSearch } from './HeroSearch';
+import { SmartBanner } from './SmartBanner';
 import { Badge } from './ui';
 
 export function Header() {
@@ -93,13 +93,9 @@ export function Header() {
             {isConfortMode ? t('confort.toggleOn') : t('confort.toggle')}
           </button>
 
-          {!isConfortMode && (
-            <>
-              <HeroSearch variant="header" />
-              <CategoryTabs />
-            </>
-          )}
+          {!isConfortMode && <HeroSearch />}
         </div>
+        <SmartBanner />
       </div>
       <div className="h-0.5 bg-gradient-to-r from-chartrons-brass/40 via-chartrons-beige to-chartrons-olive/30" />
     </header>

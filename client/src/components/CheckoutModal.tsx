@@ -4,6 +4,7 @@ import { DEFAULT_TRANSACTION_FEE_EUR, computeCheckoutTotal, computeAntiGaspiChec
 import { Button, Input, Modal } from './ui';
 import { api } from '../lib/api';
 import { formatEuro } from '../lib/format';
+import { rememberCheckoutReceipt } from '../lib/receipts';
 
 export type CheckoutKind = 'post' | 'booking' | 'membership' | 'anti_gaspi';
 
@@ -91,6 +92,7 @@ export function CheckoutModal({
       const nextOrderId = createOrderId();
       setOrderId(nextOrderId);
       setPaying(false);
+      rememberCheckoutReceipt(item, total, nextOrderId);
       void onConfirm(item, total, nextOrderId);
     }, 700);
   };

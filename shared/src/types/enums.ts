@@ -72,7 +72,10 @@ export enum EventType {
   AnimationAsso = 'Animation_Asso',
   PromoFlash = 'Promo_Flash',
   Marche = 'Marché',
+  Atelier = 'Atelier',
 }
+
+export type AntiqueItemStatus = 'active' | 'sold';
 
 export enum FideliteNiveau {
   Bronze = 'Bronze',

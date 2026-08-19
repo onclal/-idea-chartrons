@@ -18,8 +18,8 @@ import { createChartronsPoiActeurs } from './chartronsPois.js';
 import { createDemoPosts } from './demoMerchants.js';
 import { includeDemoData } from '../logic/demoEnv.js';
 
-/** Bump when seed acteurs / Chartrons POIs change so localStorage upserts the catalog. */
-export const SEED_CATALOG_VERSION = 8;
+/** Bump when seed acteurs / Chartrons POIs / pépites change so localStorage upserts the catalog. */
+export const SEED_CATALOG_VERSION = 9;
 import { defaultRegleForCategory } from '../logic/fidelite.js';
 import {
   ActeurLocalCategory,
@@ -36,6 +36,7 @@ import {
 import type {
   ActeurLocal,
   AgendaEvenement,
+  AntiqueItem,
   DatabaseSchema,
   LocalRelais,
   RelaisCreneau,
@@ -199,6 +200,203 @@ export function createUpcomingMarcheChartronsEvents(
   }
 
   return events;
+}
+
+export const COURS_PORTAL_BROCANTE = {
+  titre: 'Grande Brocante du Cours Portal',
+  description:
+    'Grande foire d’antiquaires et de brocanteurs sur le Cours Portal. Meubles, curiosités et pépites du quartier, premier dimanche du mois.',
+  lieu: 'Cours Portal, 33000 Bordeaux',
+  latitude: 44.8539,
+  longitude: -0.572,
+  image: 'https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?w=400&h=300&fit=crop',
+} as const;
+
+export const PUCES_DIMANCHE = {
+  titre: 'Puces du dimanche',
+  description:
+    'Marché aux puces hebdomadaire des brocanteurs des Chartrons. Arrivages, chine à pied et stands de rue autour du Cours Portal.',
+  lieu: 'Cours Portal, 33000 Bordeaux',
+  latitude: 44.8539,
+  longitude: -0.572,
+  image: 'https://images.unsplash.com/photo-1464146072230-91cabc968266?w=400&h=300&fit=crop',
+} as const;
+
+function nextFirstSunday(from: Date): Date {
+  const candidate = new Date(from);
+  candidate.setDate(1);
+  candidate.setHours(8, 0, 0, 0);
+  while (candidate.getDay() !== 0) {
+    candidate.setDate(candidate.getDate() + 1);
+  }
+  const end = new Date(candidate);
+  end.setHours(18, 0, 0, 0);
+  if (end.getTime() <= from.getTime()) {
+    candidate.setMonth(candidate.getMonth() + 1, 1);
+    candidate.setHours(8, 0, 0, 0);
+    while (candidate.getDay() !== 0) {
+      candidate.setDate(candidate.getDate() + 1);
+    }
+  }
+  return candidate;
+}
+
+export function createUpcomingCoursPortalBrocanteEvents(
+  organisateurNom: string,
+  nowIso: string,
+  months = 6,
+): AgendaEvenement[] {
+  const now = new Date(nowIso);
+  const events: AgendaEvenement[] = [];
+  let cursor = nextFirstSunday(now);
+
+  for (let index = 0; index < months; index += 1) {
+    const dateDebut = new Date(cursor);
+    dateDebut.setHours(8, 0, 0, 0);
+    const dateFin = new Date(dateDebut);
+    dateFin.setHours(18, 0, 0, 0);
+    const ymd = localYmd(dateDebut);
+    events.push({
+      id: `event-brocante-portal-${ymd}`,
+      organisateurNom,
+      titre: COURS_PORTAL_BROCANTE.titre,
+      description: COURS_PORTAL_BROCANTE.description,
+      dateDebut: dateDebut.toISOString(),
+      dateFin: dateFin.toISOString(),
+      image: COURS_PORTAL_BROCANTE.image,
+      type: EventType.Brocante,
+      lieu: COURS_PORTAL_BROCANTE.lieu,
+      latitude: COURS_PORTAL_BROCANTE.latitude,
+      longitude: COURS_PORTAL_BROCANTE.longitude,
+      createdAt: nowIso,
+      updatedAt: nowIso,
+    });
+    cursor = new Date(cursor);
+    cursor.setMonth(cursor.getMonth() + 1, 1);
+    cursor.setHours(8, 0, 0, 0);
+    while (cursor.getDay() !== 0) {
+      cursor.setDate(cursor.getDate() + 1);
+    }
+  }
+
+  return events;
+}
+
+export function createUpcomingSundayPucesEvents(
+  organisateurNom: string,
+  nowIso: string,
+  weeks = 6,
+): AgendaEvenement[] {
+  const now = new Date(nowIso);
+  const events: AgendaEvenement[] = [];
+  const start = nextMarcheStart(now);
+  const grandeIds = new Set(
+    createUpcomingCoursPortalBrocanteEvents(organisateurNom, nowIso).map((event) => localYmd(new Date(event.dateDebut))),
+  );
+
+  for (let index = 0; index < weeks; index += 1) {
+    const dateDebut = new Date(start);
+    dateDebut.setDate(start.getDate() + index * 7);
+    dateDebut.setHours(9, 0, 0, 0);
+    const ymd = localYmd(dateDebut);
+    if (grandeIds.has(ymd)) continue;
+    const dateFin = new Date(dateDebut);
+    dateFin.setHours(14, 0, 0, 0);
+    events.push({
+      id: `event-puces-dimanche-${ymd}`,
+      organisateurNom,
+      titre: PUCES_DIMANCHE.titre,
+      description: PUCES_DIMANCHE.description,
+      dateDebut: dateDebut.toISOString(),
+      dateFin: dateFin.toISOString(),
+      image: PUCES_DIMANCHE.image,
+      type: EventType.Brocante,
+      lieu: PUCES_DIMANCHE.lieu,
+      latitude: PUCES_DIMANCHE.latitude,
+      longitude: PUCES_DIMANCHE.longitude,
+      createdAt: nowIso,
+      updatedAt: nowIso,
+    });
+  }
+
+  return events;
+}
+
+function createSeedAntiqueItems(now: string): AntiqueItem[] {
+  return [
+    {
+      id: 'pepite-1',
+      title: 'Commode Art déco en palissandre',
+      description: 'Commode trois tiroirs, bronzes d’origine, plateau marbre restauré. Pièce de salon prête à chiner.',
+      style: 'Art déco',
+      era: 'Années 1930',
+      photoUrl: 'https://images.unsplash.com/photo-1555041469-a586c12ebb9a?w=800&h=600&fit=crop',
+      status: 'active',
+      merchantId: 'acteur-1',
+      createdAt: now,
+      updatedAt: now,
+    },
+    {
+      id: 'pepite-2',
+      title: 'Fauteuil cabriolet Louis XVI',
+      description: 'Dossier médaillon, tapisserie neuve au petit point. Idéal paire de salon.',
+      style: 'Louis XVI',
+      era: 'Fin XVIIIe',
+      photoUrl: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&h=600&fit=crop',
+      status: 'active',
+      merchantId: 'acteur-1',
+      createdAt: now,
+      updatedAt: now,
+    },
+    {
+      id: 'pepite-3',
+      title: 'Miroir soleil doré',
+      description: 'Miroir œil-de-bœuf, bois doré, patine d’origine. Accroche murale prête.',
+      style: 'Vintage',
+      era: 'Années 1950',
+      photoUrl: 'https://images.unsplash.com/photo-1615529328331-f8917597711b?w=800&h=600&fit=crop',
+      status: 'sold',
+      merchantId: 'acteur-1',
+      createdAt: now,
+      updatedAt: now,
+    },
+    {
+      id: 'pepite-4',
+      title: 'Console Directoire en acajou',
+      description: 'Lignes droites, pieds en fuseau, plateau marbre blanc. Arrivage de la semaine.',
+      style: 'Directoire',
+      era: 'Début XIXe',
+      photoUrl: 'https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?w=800&h=600&fit=crop',
+      status: 'active',
+      merchantId: 'acteur-poi-deco-001',
+      createdAt: now,
+      updatedAt: now,
+    },
+    {
+      id: 'pepite-5',
+      title: 'Bureau ministre Napoléon III',
+      description: 'Plateau cuir, bronzes, caissons. Pièce d’étude pour un intérieur Notre-Dame.',
+      style: 'Napoléon III',
+      era: 'XIXe',
+      photoUrl: 'https://images.unsplash.com/photo-1518455027359-f3ff07ba9cda?w=800&h=600&fit=crop',
+      status: 'active',
+      merchantId: 'acteur-poi-deco-001',
+      createdAt: now,
+      updatedAt: now,
+    },
+    {
+      id: 'pepite-6',
+      title: 'Lampadaire mid-century',
+      description: 'Laiton et abat-jour tissu, pied tripode. Parfait pour un salon vintage.',
+      style: 'Mid-century',
+      era: 'Années 1960',
+      photoUrl: 'https://images.unsplash.com/photo-1507473883500-c54978f3e2e6?w=800&h=600&fit=crop',
+      status: 'active',
+      merchantId: 'acteur-poi-deco-001',
+      createdAt: now,
+      updatedAt: now,
+    },
+  ];
 }
 
 export function createSeedData(): DatabaseSchema {
@@ -565,6 +763,8 @@ export function createSeedData(): DatabaseSchema {
     ],
     agendaEvenements: [
       ...createUpcomingMarcheChartronsEvents('Ville de Bordeaux', now),
+      ...createUpcomingCoursPortalBrocanteEvents('Brocante des Chartrons', now),
+      ...createUpcomingSundayPucesEvents('Brocanteurs des Chartrons', now),
       {
         id: 'event-1',
         organisateurNom: 'Brocante des Chartrons',
@@ -596,6 +796,21 @@ export function createSeedData(): DatabaseSchema {
         updatedAt: now,
       },
       {
+        id: 'event-atelier-1',
+        organisateurNom: 'Atelier Céramique Chartrons',
+        titre: 'Atelier restauration de meubles',
+        description: 'Atelier associatif : apprendre à poncer, coller et patiner un petit meuble chiné. Places limitées.',
+        dateDebut: '2026-08-26T14:00:00.000Z',
+        dateFin: '2026-08-26T17:00:00.000Z',
+        image: 'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=400&h=300&fit=crop',
+        type: EventType.Atelier,
+        lieu: '5 Rue Josephine, 33000 Bordeaux',
+        latitude: 44.85055,
+        longitude: -0.57185,
+        createdAt: now,
+        updatedAt: now,
+      },
+      {
         id: 'event-3',
         organisateurNom: 'Café du Marché',
         titre: 'Happy Hour -50%',
@@ -611,6 +826,7 @@ export function createSeedData(): DatabaseSchema {
         updatedAt: now,
       },
     ],
+    antiqueItems: createSeedAntiqueItems(now),
     cartesFideliteScans: [
       {
         id: 'scan-1',

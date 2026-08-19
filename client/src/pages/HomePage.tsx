@@ -1,18 +1,17 @@
 import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { EventType, getFideliteNiveau, isResidentFeedPost } from '@idea-chartrons/shared';
+import { EventType, isCommunityEvent, isResidentFeedPost } from '@idea-chartrons/shared';
 import type { AgendaEvenement, LocalRelais, PostAnnonce } from '@idea-chartrons/shared';
 import { Badge, Card, Loading } from '../components/ui';
 import { PageHelp } from '../components/PageHelp';
 import { PickupAlert } from '../components/PickupAlert';
-import { HeroSearch } from '../components/HeroSearch';
 import { FaqModal } from '../components/FaqModal';
 import { ConfortDashboard } from '../components/ConfortDashboard';
 import { useConfort } from '../context/ConfortContext';
 import { quaisChartronsPhotoSrc } from '../lib/media';
 import { api } from '../lib/api';
-import { getDeviceId, getOwnedPostIds } from '../lib/guestCarnet';
+import { getOwnedPostIds } from '../lib/guestCarnet';
 
 function isUpcomingBrocante(event: AgendaEvenement): boolean {
   if (event.type !== EventType.Brocante) return false;
@@ -26,7 +25,6 @@ export function HomePage() {
   const { t } = useTranslation();
   const { isConfortMode } = useConfort();
   const [stats, setStats] = useState({ posts: 0, acteurs: 0, events: 0 });
-  const [carnetPoints, setCarnetPoints] = useState(0);
   const [relaisList, setRelaisList] = useState<LocalRelais[]>([]);
   const [posts, setPosts] = useState<PostAnnonce[]>([]);
   const [weekendBrocante, setWeekendBrocante] = useState(false);
@@ -41,17 +39,15 @@ export function HomePage() {
       api.getActeurs(),
       api.getEvents(),
       api.getRelais(),
-      api.getCarnetPoints(getDeviceId()),
     ])
-      .then(([postsData, acteurs, events, relais, points]) => {
+      .then(([postsData, acteurs, events, relais]) => {
         setStats({
           posts: postsData.filter((p) => p.statut === 'Disponible' && isResidentFeedPost(p)).length,
           acteurs: acteurs.length,
-          events: events.filter((e) => new Date(e.dateFin) >= new Date()).length,
+          events: events.filter((e) => isCommunityEvent(e) && new Date(e.dateFin) >= new Date()).length,
         });
         setRelaisList(relais);
         setPosts(postsData);
-        setCarnetPoints(points);
         setWeekendBrocante(events.some(isUpcomingBrocante));
       })
       .catch(console.error)
@@ -71,8 +67,6 @@ export function HomePage() {
 
   if (loading) return <Loading message={t('common.loading')} />;
 
-  const niveau = getFideliteNiveau(carnetPoints);
-
   const ctaLinks = [
     { to: '/posts', label: t('home.cta.posts'), icon: '📋', gradient: 'from-chartrons-bordeaux to-chartrons-brick' },
     { to: '/anti-gaspi', label: t('home.cta.antigaspi'), icon: '♻️', gradient: 'from-chartrons-olive to-chartrons-green-light' },
@@ -81,6 +75,7 @@ export function HomePage() {
     { to: '/conciergerie', label: t('home.cta.conciergerie'), icon: '🔑', gradient: 'from-chartrons-brass to-chartrons-olive' },
     { to: '/carte', label: t('home.cta.carte'), icon: '🗺️', gradient: 'from-chartrons-olive to-chartrons-olive-light' },
     { to: '/acteurs', label: t('home.cta.acteurs'), icon: '🏪', gradient: 'from-chartrons-brass to-chartrons-brick-light' },
+    { to: '/brocanteurs', label: t('home.cta.brocanteurs'), icon: '🏺', gradient: 'from-chartrons-brass to-chartrons-olive-dark' },
     { to: '/favoris', label: t('home.cta.favoris'), icon: '♥', gradient: 'from-chartrons-bordeaux to-chartrons-olive-dark' },
     { to: '/favoris#parcours', label: t('home.cta.parcours'), icon: '🗺️', gradient: 'from-chartrons-brass to-chartrons-bordeaux' },
     { to: '/events', label: t('home.cta.events'), icon: '📅', gradient: 'from-chartrons-bordeaux-light to-chartrons-bordeaux' },
@@ -93,7 +88,9 @@ export function HomePage() {
 
       {weekendBrocante && (
         <div className="flex justify-center">
-          <Badge variant="brocante" icon="🎪">{t('badges.brocante')}</Badge>
+          <Link to="/brocanteurs">
+            <Badge variant="brocante" icon="🎪">{t('badges.brocante')}</Badge>
+          </Link>
         </div>
       )}
 
@@ -131,14 +128,11 @@ export function HomePage() {
         </button>
       </section>
 
-      <HeroSearch variant="hero" />
-
-      <section className="grid grid-cols-2 gap-3">
+      <section className="grid grid-cols-3 gap-3">
         {[
           { value: stats.posts, label: t('home.stats.posts'), color: 'text-chartrons-bordeaux' },
           { value: stats.acteurs, label: t('home.stats.acteurs'), color: 'text-chartrons-olive' },
           { value: stats.events, label: t('home.stats.events'), color: 'text-chartrons-brick' },
-          { value: carnetPoints, label: t('fidelite.yourPoints'), color: 'text-chartrons-brass' },
         ].map(({ value, label, color }) => (
           <Card key={label} className="text-center !p-4">
             <p className={`text-2xl font-bold ${color}`}>{value}</p>
@@ -148,11 +142,6 @@ export function HomePage() {
           </Card>
         ))}
       </section>
-
-      <Card className="!p-4 flex items-center justify-between bg-gradient-to-r from-chartrons-beige/50 to-white">
-        <span className="text-sm text-chartrons-warm-gray">{t('fidelite.level')}</span>
-        <Badge variant="brass">{t(`fidelite.levels.${niveau}`)}</Badge>
-      </Card>
 
       <section className="space-y-3">
         {ctaLinks.map(({ to, label, icon, gradient }) => (

@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { LOCAL_RELAIS_PHONE, STATIC_MAP_POIS, isActiveAntiGaspiOffer, isResidentFeedPost, type ActeurLocal, type AgendaEvenement, type PostAnnonce } from '@idea-chartrons/shared';
+import { LOCAL_RELAIS_PHONE, STATIC_MAP_POIS, isActiveAntiGaspiOffer, isCommunityEvent, isFleaMarketEvent, isResidentFeedPost, type ActeurLocal, type AgendaEvenement, type PostAnnonce } from '@idea-chartrons/shared';
 import { Badge, Card, EmptyState, Loading } from '../components/ui';
 import { PhoneLink } from '../components/PhoneLink';
+import { DistanceBadge } from '../components/DistanceBadge';
 import { matchesSearch, useSearch } from '../context/SearchContext';
 import { api } from '../lib/api';
 
@@ -84,9 +85,10 @@ export function SearchPage() {
       q
         ? events.filter(
             (event) =>
-              matchesSearch(event.titre, q) ||
-              matchesSearch(event.description, q) ||
-              matchesSearch(event.lieu ?? '', q),
+              (isCommunityEvent(event) || isFleaMarketEvent(event)) &&
+              (matchesSearch(event.titre, q) ||
+                matchesSearch(event.description, q) ||
+                matchesSearch(event.lieu ?? '', q)),
           )
         : [],
     [events, q],
@@ -182,6 +184,7 @@ export function SearchPage() {
                   <Card className="!p-4 hover:shadow-card-hover">
                     <p className="font-semibold text-chartrons-olive-dark">{acteur.nomCommerce}</p>
                     <p className="text-xs text-chartrons-warm-gray mt-1 line-clamp-2">{acteur.description}</p>
+                    <DistanceBadge latitude={acteur.latitude} longitude={acteur.longitude} className="mt-1" />
                     <div className="mt-2 flex flex-wrap items-center gap-2">
                       <Badge variant="olive">{t(`acteurs.categories.${acteur.categorie}`)}</Badge>
                       <PhoneLink phone={acteur.telephone} />
@@ -198,7 +201,7 @@ export function SearchPage() {
                 {t('search.sectionEvents')}
               </h3>
               {matchedEvents.map((event) => (
-                <Link key={event.id} to="/events">
+                <Link key={event.id} to={isFleaMarketEvent(event) ? '/brocanteurs' : '/events'}>
                   <Card className="!p-4 hover:shadow-card-hover">
                     <p className="font-semibold text-chartrons-olive-dark">{event.titre}</p>
                     <p className="text-xs text-chartrons-warm-gray mt-1 line-clamp-2">{event.description}</p>

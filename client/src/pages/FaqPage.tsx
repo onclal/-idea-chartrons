@@ -120,7 +120,7 @@ export function FaqPage() {
                 id={buttonId}
                 type="button"
                 onClick={() => setOpenId(open ? '' : item.id)}
-                className="w-full flex items-center gap-3 px-4 py-3.5 min-h-[52px] text-left"
+                className="w-full flex items-center gap-3 px-4 py-3.5 min-h-[52px] text-left hover:bg-chartrons-stone/40 transition-colors"
                 aria-expanded={open}
                 aria-controls={panelId}
               >
@@ -128,9 +128,9 @@ export function FaqPage() {
                   {loc(lang, item.q)}
                 </span>
                 <span
-                  className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-lg font-bold transition-colors ${
+                  className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-lg font-bold transition-all duration-200 ${
                     open
-                      ? 'bg-chartrons-green text-white'
+                      ? 'bg-chartrons-green text-white rotate-180'
                       : 'bg-chartrons-beige text-chartrons-green'
                   }`}
                   aria-hidden
@@ -142,12 +142,16 @@ export function FaqPage() {
                 id={panelId}
                 role="region"
                 aria-labelledby={buttonId}
-                className={`grid transition-[grid-template-rows] duration-200 ease-out ${
+                className={`grid transition-[grid-template-rows] duration-300 ease-out ${
                   open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
                 }`}
               >
                 <div className="overflow-hidden">
-                  <p className="px-4 pb-4 text-sm text-chartrons-warm-gray leading-relaxed">
+                  <p
+                    className={`px-4 pb-4 text-sm text-chartrons-warm-gray leading-relaxed transition-opacity duration-300 ${
+                      open ? 'opacity-100' : 'opacity-0'
+                    }`}
+                  >
                     {loc(lang, item.a)}
                   </p>
                 </div>

@@ -9,6 +9,7 @@ interface FideliteScannerProps {
   /** Carnet de cet appareil : aucun compte n'est requis pour cumuler des points. */
   deviceId: string;
   carnetPoints?: number;
+  compact?: boolean;
   onScanSuccess?: (result: FideliteScanResult) => void;
 }
 
@@ -16,6 +17,7 @@ export function FideliteScanner({
   acteurs,
   deviceId,
   carnetPoints = 0,
+  compact = false,
   onScanSuccess,
 }: FideliteScannerProps) {
   const { t } = useTranslation();
@@ -65,25 +67,27 @@ export function FideliteScanner({
 
   return (
     <Card className="!p-0 overflow-hidden">
-      <div className="bg-chartrons-gold/15 p-4 border-b border-chartrons-gold/20">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="font-bold text-chartrons-green-dark">{t('fidelite.title')}</h3>
-            <p className="text-xs text-chartrons-warm-gray mt-0.5">{t('fidelite.subtitle')}</p>
-          </div>
-          <div className="text-right">
-            <p className="text-xs text-chartrons-warm-gray">{t('fidelite.yourPoints')}</p>
-            <p className="text-2xl font-bold text-chartrons-gold">{displayPoints}</p>
-            {result && (
-              <Badge variant="gold">{t(`fidelite.levels.${result.niveau}`)}</Badge>
-            )}
+      {!compact && (
+        <div className="bg-chartrons-gold/15 p-4 border-b border-chartrons-gold/20">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-bold text-chartrons-green-dark">{t('fidelite.title')}</h3>
+              <p className="text-xs text-chartrons-warm-gray mt-0.5">{t('fidelite.subtitle')}</p>
+            </div>
+            <div className="text-right">
+              <p className="text-xs text-chartrons-warm-gray">{t('fidelite.yourPoints')}</p>
+              <p className="text-2xl font-bold text-chartrons-gold">{displayPoints}</p>
+              {result && (
+                <Badge variant="gold">{t(`fidelite.levels.${result.niveau}`)}</Badge>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       <div className="p-4 space-y-4">
         <div
-          className={`relative aspect-video rounded-2xl border-2 overflow-hidden transition-colors ${
+          className={`relative ${compact ? 'aspect-[16/9]' : 'aspect-video'} rounded-2xl border-2 overflow-hidden transition-colors ${
             scanning
               ? 'border-chartrons-green bg-chartrons-green/5'
               : 'border-chartrons-gold/30 bg-chartrons-green-dark/5'

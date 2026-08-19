@@ -14,6 +14,7 @@ const QUICK_LINKS = [
   { to: '/admin/annonces', key: 'posts', icon: '📋' },
   { to: '/admin/agenda', key: 'events', icon: '📅' },
   { to: '/admin/relais', key: 'relais', icon: '📦' },
+  { to: '/admin/qr', key: 'qr', icon: '▦' },
 ] as const;
 
 export function AdminDashboardPage() {

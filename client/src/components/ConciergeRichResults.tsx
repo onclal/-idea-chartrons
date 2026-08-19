@@ -1,15 +1,28 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { BudgetUnit, ConciergeLang, ConciergeRationale, ConciergeRecommendation, StreetHeritage } from '@idea-chartrons/shared';
-import { Badge, Card } from './ui';
 import {
+  formatDistanceMeters,
+  type BudgetUnit,
+  type ConciergeLang,
+  type ConciergeRationale,
+  type ConciergeRecommendation,
+  type StreetHeritage,
+} from '@idea-chartrons/shared';
+import { Badge, Card } from './ui';
+import { ConciergeOrderModal } from './ConciergeOrderModal';
+import {
+  canPlaceConciergeOrder,
   conciergeSmsHref,
   conciergeWalkingRouteUrl,
   conciergeWhatsAppHref,
   formatConciergeBudget,
+  orderLinesFromRecommendation,
+  orderShopFromRecommendation,
 } from '../lib/concierge';
 import { walkingDirectionsUrl } from '../lib/itinerary';
 import { AudioReader } from './AudioReader';
 import { AccessibilityBadges } from './AccessibilityBadges';
+import { DistanceBadge } from './DistanceBadge';
 
 interface ConciergeRichResultsProps {
   recommendations: ConciergeRecommendation[];
@@ -27,6 +40,7 @@ export function ConciergeRichResults({
   const { t, i18n } = useTranslation();
   const uiLang = i18n.language;
   const routeUrl = conciergeWalkingRouteUrl(recommendations);
+  const [orderItem, setOrderItem] = useState<ConciergeRecommendation | null>(null);
 
   const unitLabel = (unit: BudgetUnit) => t(`conciergerie.ai.units.${unit}`);
   const rationaleLabel = (rationale: ConciergeRationale) => {
@@ -73,6 +87,7 @@ export function ConciergeRichResults({
               compact={compact}
               unitLabel={unitLabel}
               rationaleLabel={rationaleLabel}
+              onOrder={() => setOrderItem(item)}
             />
           ))}
         </section>
@@ -105,6 +120,13 @@ export function ConciergeRichResults({
           ))}
         </section>
       )}
+
+      <ConciergeOrderModal
+        open={Boolean(orderItem)}
+        shop={orderItem ? orderShopFromRecommendation(orderItem) : null}
+        lines={orderItem ? orderLinesFromRecommendation(orderItem) : []}
+        onClose={() => setOrderItem(null)}
+      />
     </div>
   );
 }
@@ -116,6 +138,7 @@ interface RecommendationCardProps {
   compact: boolean;
   unitLabel: (unit: BudgetUnit) => string;
   rationaleLabel: (rationale: ConciergeRationale) => string;
+  onOrder: () => void;
 }
 
 function ConciergeRecommendationCard({
@@ -125,8 +148,9 @@ function ConciergeRecommendationCard({
   compact,
   unitLabel,
   rationaleLabel,
+  onOrder,
 }: RecommendationCardProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const budget = formatConciergeBudget(item.budget, unitLabel);
   const whatsapp = conciergeWhatsAppHref(item, lang);
   const sms = conciergeSmsHref(item, lang);
@@ -148,6 +172,16 @@ function ConciergeRecommendationCard({
             <p className="text-xs text-chartrons-green-dark mt-1 leading-snug">{item.justification}</p>
           )}
           <p className="text-xs text-chartrons-warm-gray mt-1">📍 {item.address}</p>
+          {typeof item.distanceMeters === 'number' ? (
+            <p className="text-xs font-semibold text-chartrons-green mt-1">
+              📍 {formatDistanceMeters(item.distanceMeters, i18n.language)}
+            </p>
+          ) : (
+            <DistanceBadge latitude={item.coordinates.lat} longitude={item.coordinates.lng} className="mt-1" />
+          )}
+          {item.withinRadius === false && (
+            <p className="text-[11px] text-chartrons-brass mt-0.5">{t('conciergerie.ai.outsideRadius')}</p>
+          )}
           <div className="mt-2">
             <AccessibilityBadges
               source={{
@@ -231,10 +265,14 @@ function ConciergeRecommendationCard({
             {t('conciergerie.ai.actionAppointment')}
           </span>
         )}
-        {item.action === 'click_collect' && (
-          <span className="flex-1 min-w-[110px] inline-flex items-center justify-center min-h-[40px] px-3 rounded-xl bg-chartrons-green text-white text-xs font-semibold">
-            {t('conciergerie.ai.actionCollect')}
-          </span>
+        {canPlaceConciergeOrder(item) && (
+          <button
+            type="button"
+            onClick={onOrder}
+            className="flex-1 min-w-[110px] inline-flex items-center justify-center min-h-[40px] px-3 rounded-xl bg-chartrons-green text-white text-xs font-semibold"
+          >
+            {t('conciergerie.order.cta')}
+          </button>
         )}
         {whatsapp && (
           <a

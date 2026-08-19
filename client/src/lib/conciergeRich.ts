@@ -58,12 +58,14 @@ export function hasRichConciergeContent(input: {
   checklist: string[];
   posts: PostAnnonce[];
   basket?: boolean;
+  antiqueItems?: number;
 }): boolean {
   return (
     input.recommendations.length > 0 ||
     input.heritageCount > 0 ||
     input.checklist.length > 0 ||
     input.posts.length > 0 ||
-    Boolean(input.basket)
+    Boolean(input.basket) ||
+    (input.antiqueItems ?? 0) > 0
   );
 }

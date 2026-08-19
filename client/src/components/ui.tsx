@@ -236,9 +236,18 @@ interface ModalProps {
   children: ReactNode;
   size?: 'md' | 'lg';
   nested?: boolean;
+  className?: string;
 }
 
-export function Modal({ open, onClose, title, children, size = 'md', nested = false }: ModalProps) {
+export function Modal({
+  open,
+  onClose,
+  title,
+  children,
+  size = 'md',
+  nested = false,
+  className = '',
+}: ModalProps) {
   if (!open) return null;
 
   const width = size === 'lg' ? 'max-w-2xl' : 'max-w-lg';
@@ -246,7 +255,7 @@ export function Modal({ open, onClose, title, children, size = 'md', nested = fa
   return (
     <div className={`fixed inset-0 ${nested ? 'z-[70]' : 'z-50'} flex items-end sm:items-center justify-center p-0 sm:p-4`}>
       <div className="absolute inset-0 bg-chartrons-olive-dark/20" onClick={onClose} />
-      <div className={`relative w-full ${width} max-h-[92dvh] overflow-y-auto bg-white rounded-t-3xl sm:rounded-3xl shadow-card-hover border border-chartrons-beige mx-auto animate-slide-down`}>
+      <div className={`relative w-full ${width} max-h-[92dvh] overflow-y-auto bg-white rounded-t-3xl sm:rounded-3xl shadow-card-hover border border-chartrons-beige mx-auto animate-slide-down ${className}`}>
         <div className="sticky top-0 bg-white px-5 py-4 border-b border-chartrons-beige flex items-center justify-between">
           <h3 className="text-lg font-bold text-chartrons-olive-dark">{title}</h3>
           <button

@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { EventType, type AgendaEvenement } from '@idea-chartrons/shared';
+import { EventType, isCommunityEvent, type AgendaEvenement } from '@idea-chartrons/shared';
 import { Badge, Button, Card, EmptyState, Loading } from '../components/ui';
 import { AdminDeleteButton } from '../components/AdminDeleteButton';
 import { matchesSearch, useSearch } from '../context/SearchContext';
 import { useToast } from '../context/ToastContext';
 import { api } from '../lib/api';
 
-const EVENT_FILTERS = ['all', ...Object.values(EventType)] as const;
+const EVENT_FILTERS = ['all', EventType.AnimationAsso, EventType.Atelier] as const;
 type EventFilter = (typeof EVENT_FILTERS)[number];
 
 function formatDate(dateStr: string, locale: string) {
@@ -53,14 +53,6 @@ function isUpcoming(event: AgendaEvenement): boolean {
   return new Date(event.dateFin).getTime() >= Date.now();
 }
 
-function isUpcomingBrocante(event: AgendaEvenement): boolean {
-  if (event.type !== EventType.Brocante) return false;
-  const start = new Date(event.dateDebut);
-  const now = new Date();
-  const inSevenDays = new Date(now.getTime() + 7 * 86400000);
-  return start >= now && start <= inSevenDays;
-}
-
 export function EventsPage() {
   const { t, i18n } = useTranslation();
   const { query } = useSearch();
@@ -82,7 +74,8 @@ export function EventsPage() {
     const now = Date.now();
     return events
       .filter((e) => {
-        const matchesType = typeFilter === 'all' || e.type === typeFilter;
+        const matchesType =
+          typeFilter === 'all' ? isCommunityEvent(e) : e.type === typeFilter && isCommunityEvent(e);
         const matchesQuery =
           matchesSearch(e.titre, query) || matchesSearch(e.description, query);
         return matchesType && matchesQuery;
@@ -144,7 +137,6 @@ export function EventsPage() {
         <div className="space-y-3">
           {filteredEvents.map((event) => {
             const upcoming = isUpcoming(event);
-            const brocanteSoon = isUpcomingBrocante(event);
             return (
               <Card
                 key={event.id}
@@ -153,26 +145,18 @@ export function EventsPage() {
                 {event.image && (
                   <div className="relative">
                     <img src={event.image} alt="" className="w-full h-40 object-cover" />
-                    {brocanteSoon && (
-                      <div className="absolute top-3 left-3">
-                        <Badge variant="brocante" icon="🎪">{t('badges.brocante')}</Badge>
-                      </div>
-                    )}
                   </div>
                 )}
                 <div className="p-4">
                   <div className="flex items-start justify-between gap-2 mb-1">
                     <h3 className="font-semibold text-chartrons-olive-dark text-base">{event.titre}</h3>
                     <div className="flex flex-col items-end gap-1 shrink-0">
-                      <Badge variant={event.type === EventType.Brocante ? 'brocante' : event.type === EventType.Marche ? 'olive' : 'brick'}>
+                      <Badge variant={event.type === EventType.Atelier ? 'olive' : 'brick'}>
                         {t(`events.types.${event.type}`)}
                       </Badge>
                       {!upcoming && <Badge variant="stone">{t('events.past')}</Badge>}
                     </div>
                   </div>
-                  {!event.image && brocanteSoon && (
-                    <Badge variant="brocante" icon="🎪" className="mb-2">{t('badges.brocante')}</Badge>
-                  )}
                   <p className="text-sm text-chartrons-warm-gray mb-2 leading-relaxed">{event.description}</p>
                   {event.lieu && (
                     <p className="text-xs text-chartrons-warm-gray mb-2">📍 {event.lieu}</p>

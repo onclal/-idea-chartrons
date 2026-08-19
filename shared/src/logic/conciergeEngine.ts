@@ -1,11 +1,14 @@
 import { PostStatus } from '../types/enums.js';
-import type { PostAnnonce } from '../types/models.js';
+import type { ActeurLocal, AntiqueItem, PostAnnonce } from '../types/models.js';
 import { isActiveAntiGaspiOffer, isResidentFeedPost } from './antiGaspi.js';
 import {
   analyzeConciergeQuery,
+  buildChineurReply,
+  buildChineurSystemPrompt,
   buildConciergeContext,
   buildConciergeSystemPrompt,
   buildLocalConciergeReply,
+  conciergePoiPool,
   CONCIERGE_SPOKEN_RESULTS,
   heritageForQuery,
   normalizeConciergeText,
@@ -18,15 +21,30 @@ import {
 } from './concierge.js';
 import { basketChecklist, buildLocalBasket, isRecipeQueryText, type LocalBasket } from './conciergeRecipes.js';
 import type { StreetHeritage } from '../data/chartronsHeritage.js';
+import type { GeoCoordinates, GeoOriginSource } from './geo.js';
+import {
+  matchingPepitesForPoi,
+  mergeAntiquePoiPool,
+  pepiteScoreForPoi,
+  publicPepites,
+  searchAntiqueItems,
+} from './antiques.js';
+
+export type ConciergePersona = 'default' | 'chineur';
 
 export interface ConciergeEngineInput {
   message: string;
   history?: ConciergeHistoryTurn[];
   previousRecommendations?: ConciergeRecommendation[];
   posts?: PostAnnonce[];
+  antiqueItems?: AntiqueItem[];
+  acteurs?: ActeurLocal[];
+  persona?: ConciergePersona;
   lang: ConciergeLang;
   now?: Date;
   maxResults?: number;
+  origin?: GeoCoordinates | null;
+  originSource?: GeoOriginSource;
 }
 
 export interface ConciergeEngineResult {
@@ -34,11 +52,13 @@ export interface ConciergeEngineResult {
   recommendations: ConciergeRecommendation[];
   heritage: StreetHeritage[];
   posts: PostAnnonce[];
+  antiqueItems: AntiqueItem[];
   basket: LocalBasket | null;
   checklist: string[];
   reply: string;
   context: string;
   systemPrompt: string;
+  persona: ConciergePersona;
 }
 
 const POST_TYPE_HINTS: Record<string, string[]> = {
@@ -204,12 +224,45 @@ function basketToContext(basket: LocalBasket, lang: ConciergeLang): string {
 
 export function runConciergeEngine(input: ConciergeEngineInput): ConciergeEngineResult {
   const now = input.now ?? new Date();
-  const analysis = analyzeConciergeQuery(input.message, input.history);
-  const recipeQuery = analysis.askedRecipe || isRecipeQueryText(input.message);
-  const basket = recipeQuery ? buildLocalBasket(analysis.memoryQuery || input.message, input.lang === 'en' ? 'en' : 'fr') : null;
+  const geo = { origin: input.origin, originSource: input.originSource };
+  const persona: ConciergePersona = input.persona === 'chineur' ? 'chineur' : 'default';
+  const analysis = analyzeConciergeQuery(input.message, input.history, geo);
+  const chineurAnalysis: ConciergeQueryAnalysis =
+    persona === 'chineur'
+      ? {
+          ...analysis,
+          isLocal: true,
+          intentIds: analysis.intentIds.includes('antiques')
+            ? analysis.intentIds
+            : ['antiques', ...analysis.intentIds],
+        }
+      : analysis;
 
-  let recommendations = rankConciergeMatches(analysis, input.maxResults, now);
-  if (analysis.followUp && input.previousRecommendations?.length) {
+  const recipeQuery = analysis.askedRecipe || isRecipeQueryText(input.message);
+  const basket =
+    persona === 'chineur'
+      ? null
+      : recipeQuery
+        ? buildLocalBasket(analysis.memoryQuery || input.message, input.lang === 'en' ? 'en' : 'fr')
+        : null;
+
+  const showcase = publicPepites(input.antiqueItems ?? [], input.acteurs ?? []);
+  const matchedPepites =
+    persona === 'chineur' ? searchAntiqueItems(input.message, showcase) : [];
+
+  const antiquePool = persona === 'chineur' ? mergeAntiquePoiPool(conciergePoiPool(), input.acteurs) : [];
+  let recommendations = rankConciergeMatches(
+    chineurAnalysis,
+    input.maxResults,
+    now,
+    persona === 'chineur'
+      ? {
+          poiPool: antiquePool,
+          extraScore: (poi) => pepiteScoreForPoi(poi, showcase, input.message),
+        }
+      : undefined,
+  );
+  if (analysis.followUp && !analysis.askedExpandRadius && input.previousRecommendations?.length) {
     const remembered = input.previousRecommendations;
     recommendations =
       analysis.focusOrdinal && remembered[analysis.focusOrdinal - 1]
@@ -220,7 +273,7 @@ export function runConciergeEngine(input: ConciergeEngineInput): ConciergeEngine
   if (basket && recommendations.length === 0) {
     recommendations = basket.stops.slice(0, input.maxResults ?? 5).map((stop) => {
       const match = rankConciergeMatches(
-        analyzeConciergeQuery(stop.name),
+        analyzeConciergeQuery(stop.name, undefined, geo),
         1,
         now,
       )[0];
@@ -228,32 +281,72 @@ export function runConciergeEngine(input: ConciergeEngineInput): ConciergeEngine
     }).filter((item): item is ConciergeRecommendation => Boolean(item));
   }
 
-  const posts = rankConciergePosts(
-    input.posts ?? [],
-    analysis,
-    CONCIERGE_SPOKEN_RESULTS,
-    now.getTime(),
-  );
+  const posts =
+    persona === 'chineur'
+      ? []
+      : rankConciergePosts(
+          input.posts ?? [],
+          analysis,
+          CONCIERGE_SPOKEN_RESULTS,
+          now.getTime(),
+        );
+  const antiqueItems =
+    persona === 'chineur'
+      ? (() => {
+          const fromQuery = matchedPepites.length > 0 ? matchedPepites : [];
+          const fromShops =
+            fromQuery.length > 0
+              ? fromQuery
+              : recommendations.flatMap((rec) => {
+                  const poi = antiquePool.find((entry) => entry.id === rec.poiId);
+                  return poi ? matchingPepitesForPoi(poi, showcase, input.message) : [];
+                });
+          const seen = new Set<string>();
+          return fromShops.filter((item) => {
+            if (seen.has(item.id)) return false;
+            seen.add(item.id);
+            return true;
+          }).slice(0, CONCIERGE_SPOKEN_RESULTS);
+        })()
+      : [];
   const heritage = analysis.askedHistory || analysis.streets.length > 0 ? heritageForQuery(analysis) : [];
-  const context = buildConciergeContext(analysis, {
+  const pepiteNotes =
+    antiqueItems.length > 0
+      ? [
+          'Pépites encore en vitrine (seconde source autorisée) :',
+          ...antiqueItems.map(
+            (item) =>
+              `- ${item.title} (${item.style}, ${item.era}) — boutique ${item.merchantId}. ${item.description}`,
+          ),
+        ].join('\n')
+      : undefined;
+  const context = buildConciergeContext(chineurAnalysis, {
     posts: posts.length > 0 ? posts : undefined,
     previousRecommendations: analysis.followUp ? recommendations : undefined,
-    basketSummary: basket ? basketToContext(basket, input.lang) : undefined,
+    basketSummary: basket
+      ? basketToContext(basket, input.lang)
+      : pepiteNotes,
   });
-  const rawReply = buildLocalConciergeReply(analysis, recommendations, input.lang, {
-    posts: posts.length > 0 ? posts : undefined,
-    basket,
-  });
+  const rawReply =
+    persona === 'chineur'
+      ? buildChineurReply(chineurAnalysis, recommendations, antiqueItems, input.lang)
+      : buildLocalConciergeReply(analysis, recommendations, input.lang, {
+          posts: posts.length > 0 ? posts : undefined,
+          basket,
+          antiqueItems,
+        });
 
   return {
-    analysis,
+    analysis: chineurAnalysis,
     recommendations,
     heritage,
     posts,
+    antiqueItems,
     basket,
     checklist: basket ? basketChecklist(basket) : [],
     reply: sanitizeConciergeReply(rawReply, rawReply),
     context,
-    systemPrompt: buildConciergeSystemPrompt(),
+    systemPrompt: persona === 'chineur' ? buildChineurSystemPrompt() : buildConciergeSystemPrompt(),
+    persona,
   };
 }

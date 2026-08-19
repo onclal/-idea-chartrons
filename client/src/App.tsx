@@ -1,5 +1,6 @@
 import { BrowserRouter, Navigate, Routes, Route } from 'react-router-dom';
 import { SearchProvider } from './context/SearchContext';
+import { UserLocationProvider } from './context/UserLocationContext';
 import { ConciergePanelProvider } from './context/ConciergePanelContext';
 import { FavoritesProvider } from './context/FavoritesContext';
 import { RoutesProvider } from './context/RoutesContext';
@@ -15,6 +16,7 @@ import { PostsPage } from './pages/PostsPage';
 import { AntiGaspiPage } from './pages/AntiGaspiPage';
 import { RelaisPage } from './pages/RelaisPage';
 import { ActeursPage } from './pages/ActeursPage';
+import { BrocanteursPage } from './pages/BrocanteursPage';
 import { MapPage } from './pages/MapPage';
 import { DecouvrirPage } from './pages/DecouvrirPage';
 import { PratiquePage } from './pages/PratiquePage';
@@ -29,6 +31,9 @@ import { AdminDashboardPage } from './pages/admin/AdminDashboardPage';
 import { AdminPostsPage } from './pages/admin/AdminPostsPage';
 import { AdminEventsPage } from './pages/admin/AdminEventsPage';
 import { AdminRelaisPage } from './pages/admin/AdminRelaisPage';
+import { AdminBannersPage } from './pages/admin/AdminBannersPage';
+import { AdminQrPage } from './pages/admin/AdminQrPage';
+import { ProDashboardPage } from './pages/ProDashboardPage';
 
 export function App() {
   return (
@@ -39,6 +44,7 @@ export function App() {
         <FavoritesProvider>
         <RoutesProvider>
         <SearchProvider>
+          <UserLocationProvider>
           <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '')}>
             <ConciergePanelProvider>
             <Routes>
@@ -48,6 +54,8 @@ export function App() {
                 <Route path="annonces" element={<AdminPostsPage />} />
                 <Route path="agenda" element={<AdminEventsPage />} />
                 <Route path="relais" element={<AdminRelaisPage />} />
+                <Route path="banners" element={<AdminBannersPage />} />
+                <Route path="qr" element={<AdminQrPage />} />
                 <Route path="commerces" element={<Navigate to="/admin/panneau" replace />} />
               </Route>
               <Route element={<Layout />}>
@@ -56,6 +64,7 @@ export function App() {
                 <Route path="/anti-gaspi" element={<AntiGaspiPage />} />
                 <Route path="/relais" element={<RelaisPage />} />
                 <Route path="/acteurs" element={<ActeursPage />} />
+                <Route path="/brocanteurs" element={<BrocanteursPage />} />
                 <Route path="/carte" element={<MapPage />} />
                 <Route path="/decouvrir" element={<DecouvrirPage />} />
                 <Route path="/pratique" element={<PratiquePage />} />
@@ -69,12 +78,13 @@ export function App() {
                 <Route path="/faq" element={<FaqPage />} />
                 {/* Anciennes URL de comptes : redirigées vers le carnet local. */}
                 <Route path="/profile" element={<Navigate to="/carnet" replace />} />
-                <Route path="/pro" element={<Navigate to="/acteurs" replace />} />
+                <Route path="/pro" element={<ProDashboardPage />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Route>
             </Routes>
             </ConciergePanelProvider>
           </BrowserRouter>
+          </UserLocationProvider>
         </SearchProvider>
         </RoutesProvider>
         </FavoritesProvider>

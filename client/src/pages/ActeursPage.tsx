@@ -1,23 +1,19 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { DIRECTORY_CATEGORIES, type ActeurLocal } from '@idea-chartrons/shared';
-import { Button, EmptyState, Loading, Select } from '../components/ui';
+import { type ActeurLocal } from '@idea-chartrons/shared';
+import { Button, EmptyState, Loading } from '../components/ui';
 import { PageHelp } from '../components/PageHelp';
 import { MerchantCard } from '../components/MerchantCard';
 import { ContactForm } from '../components/ContactForm';
 import { ActeurCreateForm } from '../components/ActeurCreateForm';
 import { PremiumProModal } from '../components/PremiumProModal';
-import { FideliteScanner } from '../components/FideliteScanner';
-import { FideliteHistory } from '../components/FideliteHistory';
 import { useAdmin } from '../context/AdminContext';
 import { useToast } from '../context/ToastContext';
 import { matchesSearch, useSearch } from '../context/SearchContext';
-import { api, type FideliteScanResult } from '../lib/api';
+import { api } from '../lib/api';
 import { getDeviceId } from '../lib/guestCarnet';
 import { useConfort } from '../context/ConfortContext';
-
-type CategoryFilter = 'all' | (typeof DIRECTORY_CATEGORIES)[number];
 
 export function ActeursPage() {
   const { t } = useTranslation();
@@ -30,7 +26,6 @@ export function ActeursPage() {
   const deviceId = getDeviceId();
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('all');
   const [searchParams, setSearchParams] = useSearchParams();
   const [showCreate, setShowCreate] = useState(searchParams.get('referencer') === '1');
   const [generatingQrId, setGeneratingQrId] = useState<string | null>(null);
@@ -75,37 +70,16 @@ export function ActeursPage() {
 
   const filteredActeurs = useMemo(
     () =>
-      acteurs.filter((a) => {
-        const matchesCategory = categoryFilter === 'all' || a.categorie === categoryFilter;
-        const matchesQuery =
+      acteurs.filter(
+        (a) =>
           matchesSearch(a.nomCommerce, query) ||
           matchesSearch(a.description, query) ||
           matchesSearch(a.adresse, query) ||
           matchesSearch(a.telephone ?? '', query) ||
-          matchesSearch(a.specialite ?? '', query);
-        return matchesCategory && matchesQuery;
-      }),
-    [acteurs, query, categoryFilter],
+          matchesSearch(a.specialite ?? '', query),
+      ),
+    [acteurs, query],
   );
-
-  const categoryOptions = useMemo(
-    () => [
-      { value: 'all', label: t('acteurs.filters.all') },
-      ...DIRECTORY_CATEGORIES.map((cat) => ({
-        value: cat,
-        label: t(`acteurs.categories.${cat}`),
-      })),
-    ],
-    [t],
-  );
-
-  const handleScanSuccess = async (result: FideliteScanResult) => {
-    setCarnetPoints(result.totalPoints);
-    showToast(t('toast.pointsEarned', { points: result.pointsGagnes }));
-    if (result.vipUnlocked) {
-      setTimeout(() => showToast(t('toast.vipUnlocked', { offer: result.vipUnlocked }), 'info'), 400);
-    }
-  };
 
   const handleDeleteActeur = async (acteurId: string) => {
     await api.deleteActeur(acteurId);
@@ -148,54 +122,17 @@ export function ActeursPage() {
           </div>
           <PageHelp page="acteurs" />
         </div>
-        <Button size="sm" variant="bordeaux" onClick={() => setShowCreate(true)} className="shrink-0">
-          + {t('acteurs.create.button')}
-        </Button>
+        <div className="flex flex-col items-stretch gap-2 shrink-0">
+          <Link to="/pro?tab=kit">
+            <Button size="sm" variant="gold" className="w-full">
+              {t('proSpace.open')}
+            </Button>
+          </Link>
+          <Button size="sm" variant="bordeaux" onClick={() => setShowCreate(true)}>
+            + {t('acteurs.create.button')}
+          </Button>
+        </div>
       </div>
-
-      <FideliteScanner
-        acteurs={acteurs}
-        deviceId={deviceId}
-        carnetPoints={carnetPoints}
-        onScanSuccess={handleScanSuccess}
-      />
-
-      <FideliteHistory deviceId={deviceId} carnetPoints={carnetPoints} />
-
-      <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
-        <button
-          type="button"
-          onClick={() => setCategoryFilter('all')}
-          className={`shrink-0 touch-target px-4 py-2 rounded-full text-xs font-semibold border transition-all ${
-            categoryFilter === 'all'
-              ? 'bg-chartrons-bordeaux text-white border-chartrons-bordeaux shadow-sm'
-              : 'bg-white text-chartrons-olive-dark border-chartrons-beige hover:border-chartrons-bordeaux/30'
-          }`}
-        >
-          {t('acteurs.filters.all')}
-        </button>
-        {DIRECTORY_CATEGORIES.map((cat) => (
-          <button
-            key={cat}
-            type="button"
-            onClick={() => setCategoryFilter(cat)}
-            className={`shrink-0 touch-target px-4 py-2 rounded-full text-xs font-semibold border transition-all ${
-              categoryFilter === cat
-                ? 'bg-chartrons-bordeaux text-white border-chartrons-bordeaux shadow-sm'
-                : 'bg-white text-chartrons-olive-dark border-chartrons-beige hover:border-chartrons-bordeaux/30'
-            }`}
-          >
-            {t(`acteurs.categories.${cat}`)}
-          </button>
-        ))}
-      </div>
-
-      <Select
-        label={t('acteurs.filters.label')}
-        value={categoryFilter}
-        onChange={(e) => setCategoryFilter(e.target.value as CategoryFilter)}
-        options={categoryOptions}
-      />
 
       {filteredActeurs.length === 0 ? (
         <EmptyState

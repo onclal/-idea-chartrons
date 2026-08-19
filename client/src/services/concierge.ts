@@ -5,9 +5,14 @@ import {
   sanitizeConciergeReply,
   type ConciergeLang,
   type ConciergeRecommendation,
+  type GeoCoordinates,
+  type GeoOriginSource,
   type LocalBasket,
   type PostAnnonce,
   type StreetHeritage,
+  type AntiqueItem,
+  type ActeurLocal,
+  type ConciergePersona,
 } from '@idea-chartrons/shared';
 import { api } from '../lib/api';
 import {
@@ -36,8 +41,10 @@ export interface ConciergeAnswer {
   recommendations: ConciergeRecommendation[];
   heritage: StreetHeritage[];
   posts: PostAnnonce[];
+  antiqueItems: AntiqueItem[];
   basket: LocalBasket | null;
   checklist: string[];
+  persona: ConciergePersona;
 }
 
 export interface AskConciergeInput {
@@ -45,6 +52,9 @@ export interface AskConciergeInput {
   history: ConciergeTurn[];
   lang: ConciergeLangChoice;
   uiLang: string;
+  origin?: GeoCoordinates | null;
+  originSource?: GeoOriginSource;
+  persona?: ConciergePersona;
 }
 
 function resolveLang(choice: ConciergeLangChoice, message: string, uiLang: string): ConciergeLang {
@@ -63,6 +73,8 @@ function lastRecommendations(history: ConciergeTurn[]): ConciergeRecommendation[
 function engineToAnswer(
   input: AskConciergeInput,
   posts: PostAnnonce[],
+  antiqueItems: AntiqueItem[],
+  acteurs: ActeurLocal[],
   source: ConciergeSource,
   reply?: string,
 ): ConciergeAnswer {
@@ -72,8 +84,13 @@ function engineToAnswer(
     history: input.history.map((turn) => ({ role: turn.role, content: turn.content })),
     previousRecommendations: lastRecommendations(input.history),
     posts,
+    antiqueItems,
+    acteurs,
+    persona: input.persona,
     lang,
     maxResults: loadConciergeSettings().maxResults,
+    origin: input.origin,
+    originSource: input.originSource,
   });
   return {
     reply: reply?.trim() || engine.reply,
@@ -83,19 +100,42 @@ function engineToAnswer(
     recommendations: engine.recommendations,
     heritage: engine.heritage,
     posts: engine.posts,
+    antiqueItems: engine.antiqueItems,
     basket: engine.basket,
     checklist: engine.checklist,
+    persona: engine.persona,
   };
 }
 
 /** Moteur multi-sources 100 % local (POI + annonces + recettes). */
-export function localConciergeAnswer(input: AskConciergeInput, posts: PostAnnonce[] = []): ConciergeAnswer {
-  return engineToAnswer(input, posts, 'local');
+export function localConciergeAnswer(
+  input: AskConciergeInput,
+  posts: PostAnnonce[] = [],
+  antiqueItems: AntiqueItem[] = [],
+  acteurs: ActeurLocal[] = [],
+): ConciergeAnswer {
+  return engineToAnswer(input, posts, antiqueItems, acteurs, 'local');
 }
 
 async function loadPosts(): Promise<PostAnnonce[]> {
   try {
     return await api.getPosts();
+  } catch {
+    return [];
+  }
+}
+
+async function loadAntiqueItems(): Promise<AntiqueItem[]> {
+  try {
+    return await api.getAntiqueItems();
+  } catch {
+    return [];
+  }
+}
+
+async function loadActeurs(): Promise<ActeurLocal[]> {
+  try {
+    return await api.getActeurs();
   } catch {
     return [];
   }
@@ -107,8 +147,8 @@ async function loadPosts(): Promise<PostAnnonce[]> {
  */
 export async function askConcierge(input: AskConciergeInput): Promise<ConciergeAnswer> {
   const settings = loadConciergeSettings();
-  const posts = await loadPosts();
-  const answer = await requestConcierge(input, settings, posts);
+  const [posts, antiqueItems, acteurs] = await Promise.all([loadPosts(), loadAntiqueItems(), loadActeurs()]);
+  const answer = await requestConcierge(input, settings, posts, antiqueItems, acteurs);
   recordConciergeUsage(answer);
   return answer;
 }
@@ -117,8 +157,10 @@ async function requestConcierge(
   input: AskConciergeInput,
   settings: ConciergeSettings,
   posts: PostAnnonce[],
+  antiqueItems: AntiqueItem[],
+  acteurs: ActeurLocal[],
 ): Promise<ConciergeAnswer> {
-  const fallback = localConciergeAnswer(input, posts);
+  const fallback = localConciergeAnswer(input, posts, antiqueItems, acteurs);
   try {
     const response = await fetch(CONCIERGE_ENDPOINT, {
       method: 'POST',
@@ -127,8 +169,11 @@ async function requestConcierge(
         message: input.message,
         lang: input.lang,
         uiLang: input.uiLang,
+        persona: input.persona ?? 'default',
         instructions: buildConciergeInstructions(settings),
         history: input.history.slice(-6).map((turn) => ({ role: turn.role, content: turn.content })),
+        origin: input.origin ?? undefined,
+        originSource: input.originSource ?? 'fallback',
       }),
     });
     if (!response.ok) return fallback;
@@ -147,8 +192,10 @@ async function requestConcierge(
       ),
       heritage: Array.isArray(data.heritage) ? data.heritage : fallback.heritage,
       posts: fallback.posts,
+      antiqueItems: Array.isArray(data.antiqueItems) ? data.antiqueItems : fallback.antiqueItems,
       basket: data.basket ?? fallback.basket,
       checklist: Array.isArray(data.checklist) ? data.checklist : fallback.checklist,
+      persona: data.persona === 'chineur' || fallback.persona === 'chineur' ? 'chineur' : 'default',
     };
   } catch {
     return fallback;

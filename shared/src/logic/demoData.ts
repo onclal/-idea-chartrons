@@ -23,11 +23,13 @@ export function wipeDemoFromSchema(data: DatabaseSchema): { data: DatabaseSchema
   const postsAnnonces = data.postsAnnonces.filter(
     (post) => !isDemoRecord(post) && !demoActeurIds.has(post.acteurId ?? ''),
   );
+  const antiqueItems = (data.antiqueItems ?? []).filter((item) => !demoActeurIds.has(item.merchantId));
   return {
     data: {
       ...data,
       acteursLocaux,
       postsAnnonces,
+      antiqueItems,
     },
     report: {
       acteurs: data.acteursLocaux.length - acteursLocaux.length,

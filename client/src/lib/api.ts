@@ -3,6 +3,7 @@ import type {
   ActeurLocalCategory,
   CommerceMenuSection,
   AgendaEvenement,
+  AntiqueItem,
   CarteFideliteScan,
   EventType,
   FideliteNiveau,
@@ -129,6 +130,23 @@ export const api = {
   ) => withDelay(() => localDb.updateEvent(eventId, patch)),
   deleteEvent: (eventId: string) => withDelay(() => {
     localDb.deleteEvent(eventId);
+    return { ok: true };
+  }),
+  getAntiqueItems: () => withDelay(() => localDb.getAntiqueItems()),
+  createAntiqueItem: (data: {
+    title: string;
+    description: string;
+    style: string;
+    era: string;
+    photoUrl?: string | null;
+    merchantId: string;
+  }) => withDelay(() => localDb.createAntiqueItem(data)),
+  updateAntiqueItem: (
+    itemId: string,
+    patch: Partial<Omit<AntiqueItem, 'id' | 'createdAt' | 'merchantId'>>,
+  ) => withDelay(() => localDb.updateAntiqueItem(itemId, patch)),
+  deleteAntiqueItem: (itemId: string) => withDelay(() => {
+    localDb.deleteAntiqueItem(itemId);
     return { ok: true };
   }),
   getRelais: () => withDelay(() => localDb.getRelais()),

@@ -25,8 +25,8 @@ export const FAQ_PAGE = {
   kicker: { fr: 'Aide & questions', en: 'Help & questions' },
   title: { fr: 'FAQ IDÉA CHARTRONS', en: 'IDÉA CHARTRONS FAQ' },
   subtitle: {
-    fr: 'Plateforme civique de l’association du quartier : habitants 100 % gratuits, commerces visibles avec contacts cliquables, Premium Pro pour le site web, la priorité IA et les modules d’action.',
-    en: 'Civic platform of the neighborhood association: residents 100% free, businesses listed with clickable contacts, Premium Pro for the website, AI priority and action modules.',
+    fr: 'Assistant intelligent et vitrine hyper-locale des Chartrons : Concierge IA, IA Chineur, Marché des Brocanteurs et annuaire — gratuits pour les habitants, sans téléchargement obligatoire.',
+    en: 'An intelligent assistant and hyper-local storefront for the Chartrons: AI Concierge, Hunter AI, the Antique Dealers’ Market and the directory — free for residents, with no mandatory download.',
   },
 } as const satisfies Record<string, LocaleText>;
 
@@ -37,8 +37,8 @@ export const FAQ_AUDIENCES: FaqAudience[] = [
     label: { fr: 'Pour les Habitants', en: 'For residents' },
     kicker: { fr: 'Habitants & visiteurs', en: 'Residents & visitors' },
     intro: {
-      fr: 'L’annuaire, les avis et les annonces du quartier sont 100 % gratuits, sans compte. Un code à 4 chiffres (e-mail ou SMS) valide seulement la première publication.',
-      en: 'The directory, reviews and neighborhood posts are 100% free, with no account. A 4-digit code (email or SMS) only validates the first post.',
+      fr: 'IDÉA CHARTRONS est 100 % gratuite pour les habitants et les visiteurs, sans compte et sans application à télécharger. La barre de recherche unifiée ouvre le Concierge IA, l’annuaire, les annonces et l’agenda du quartier.',
+      en: 'IDÉA CHARTRONS is 100% free for residents and visitors, with no account and no app to download. The unified search bar opens the AI Concierge, the directory, listings and the neighborhood calendar.',
     },
     cta: {
       to: '/acteurs',
@@ -47,10 +47,54 @@ export const FAQ_AUDIENCES: FaqAudience[] = [
     items: [
       {
         id: 'what-is',
-        q: { fr: 'Qu’est-ce qu’IDÉA CHARTRONS ?', en: 'What is IDÉA CHARTRONS?' },
+        q: { fr: 'Qu’est-ce qu’IDÉA Chartrons ?', en: 'What is IDÉA Chartrons?' },
         a: {
-          fr: 'C’est le concierge civique et l’annuaire hyper-local du quartier des Chartrons à Bordeaux, porté par l’association. Habitants, visiteurs et commerces de proximité y trouvent 362 adresses réelles, des annonces d’entraide et un assistant IA cantonné au quartier.',
-          en: 'It is the civic concierge and hyper-local directory for the Chartrons district in Bordeaux, run by the association. Residents, visitors and local businesses find 362 real addresses, mutual-aid posts and an AI assistant scoped to the neighborhood.',
+          fr: 'Un assistant intelligent et une vitrine hyper-locale dédiés au quartier des Chartrons pour les résidents, visiteurs et commerçants. Vous y trouvez l’annuaire, les annonces, l’agenda associatif, le Marché des Brocanteurs et un concierge IA cantonné au quartier.',
+          en: 'An intelligent assistant and a hyper-local storefront dedicated to the Chartrons district, for residents, visitors and shopkeepers. You will find the directory, listings, the community calendar, the Antique Dealers’ Market and an AI concierge scoped to the neighborhood.',
+        },
+      },
+      {
+        id: 'concierge-chineur',
+        q: {
+          fr: 'Comment fonctionne l’IA Concierge & IA Chineur ?',
+          en: 'How do the AI Concierge and Hunter AI work?',
+        },
+        a: {
+          fr: 'Une recherche unifiée par langage naturel, dans la barre du haut. Le Concierge IA recommande des commerces, oriente vers les événements locaux et peut préparer un parcours à pied. Sur l’onglet Brocanteurs, il devient l’IA Chineur : styles, époques, meubles, pépites en vitrine et boutiques d’antiquaires du quartier.',
+          en: 'A unified natural-language search, from the top bar. The AI Concierge recommends shops, points you to local events and can sketch a walking route. On the Brocanteurs tab it becomes Hunter AI: styles, eras, furniture, window finds and antique shops in the neighborhood.',
+        },
+      },
+      {
+        id: 'brocanteurs',
+        q: {
+          fr: 'Qu’est-ce que le Marché des Brocanteurs ?',
+          en: 'What is the Antique Dealers’ Market?',
+        },
+        a: {
+          fr: 'Un espace dédié aux antiquaires et brocanteurs de la rue Notre-Dame et des Chartrons pour exposer leurs pépites et arrivages en temps réel. Vous y voyez la carte, l’annuaire Antiquaires, le calendrier des puces du dimanche et des foires du Cours Portal, et la vitrine Pépites & Arrivages.',
+          en: 'A dedicated space for antique dealers and flea shops on rue Notre-Dame and in the Chartrons, to show their finds and new arrivals in real time. You get the map, the Antiquaires directory, the Sunday flea and Cours Portal fair calendar, and the Finds & Arrivals showcase.',
+        },
+      },
+      {
+        id: 'add-shop',
+        q: {
+          fr: 'Comment ajouter mon commerce ou mes pépites ?',
+          en: 'How do I add my shop or my finds?',
+        },
+        a: {
+          fr: 'Les commerçants et brocanteurs peuvent ouvrir un espace Pro pour enregistrer leur boutique, publier leurs arrivages ou proposer des offres. La fiche gratuite apparaît sur la carte et dans l’annuaire. En Premium Pro, un brocanteur publie jusqu’à 10 pépites actives, est prioritaire dans l’IA Chineur et affiche le badge Boutique Certifiée Notre-Dame.',
+          en: 'Shopkeepers and antique dealers can open a Pro space to register their shop, publish new arrivals or offer deals. A free listing appears on the map and in the directory. With Premium Pro, a dealer can publish up to 10 active finds, ranks higher in Hunter AI and shows the Notre-Dame Certified Shop badge.',
+        },
+      },
+      {
+        id: 'free-residents',
+        q: {
+          fr: 'L’application est-elle gratuite pour les habitants ?',
+          en: 'Is the app free for residents?',
+        },
+        a: {
+          fr: 'Oui, 100 % gratuite et accessible sans téléchargement obligatoire. Vous pouvez chercher, parcourir l’annuaire, poser une question à l’IA et consulter l’agenda dans le navigateur, sans créer de compte. L’installation en raccourci (PWA) reste optionnelle.',
+          en: 'Yes — 100% free, with no mandatory download. You can search, browse the directory, ask the AI and check the calendar in the browser, with no account. Installing it as a shortcut (PWA) is optional.',
         },
       },
       {
@@ -127,14 +171,25 @@ export const FAQ_AUDIENCES: FaqAudience[] = [
     label: { fr: 'Pour les Commerçants', en: 'For merchants' },
     kicker: { fr: 'Commerçants & Premium Pro', en: 'Merchants & Premium Pro' },
     intro: {
-      fr: 'Chaque commerce est référencé gratuitement avec téléphone, e-mail et réseaux. L’adhésion Premium Pro, perçue par l’association, débloque le site web, la priorité IA et les modules d’action.',
-      en: 'Every business is listed for free with phone, email and social links. Premium Pro, paid to the association, unlocks the website, AI priority and action modules.',
+      fr: 'Chaque commerce est référencé gratuitement sur la carte et dans l’annuaire. L’espace Pro / Premium Pro débloque le site web, la priorité IA, les modules d’action et, pour les brocanteurs, jusqu’à 10 pépites en vitrine.',
+      en: 'Every business is listed for free on the map and in the directory. Pro / Premium Pro unlocks the website, AI priority, action modules and, for antique dealers, up to 10 finds in the showcase.',
     },
     cta: {
       to: '/acteurs?referencer=1',
       label: { fr: 'Référencer mon commerce', en: 'List my business' },
     },
     items: [
+      {
+        id: 'add-shop-pro',
+        q: {
+          fr: 'Comment ajouter mon commerce ou mes pépites ?',
+          en: 'How do I add my shop or my finds?',
+        },
+        a: {
+          fr: 'Les commerçants et brocanteurs peuvent ouvrir un espace Pro pour enregistrer leur boutique, publier leurs arrivages ou proposer des offres. Utilisez « Référencer mon commerce » : la fiche gratuite suffit pour apparaître sur la carte et dans l’annuaire. En Premium Pro, un antiquaire publie jusqu’à 10 pépites actives dans Pépites & Arrivages, est mis en avant par l’IA Chineur et affiche le badge Boutique Certifiée Notre-Dame.',
+          en: 'Shopkeepers and antique dealers can open a Pro space to register their shop, publish new arrivals or offer deals. Use “List my business”: a free listing is enough to appear on the map and in the directory. With Premium Pro, an antique dealer publishes up to 10 active finds in Finds & Arrivals, is featured by Hunter AI and shows the Notre-Dame Certified Shop badge.',
+        },
+      },
       {
         id: 'listed',
         q: {
@@ -153,8 +208,8 @@ export const FAQ_AUDIENCES: FaqAudience[] = [
           en: 'What does the free listing include, and what is Premium Pro for?',
         },
         a: {
-          fr: 'Gratuit pour tous : présence dans l’annuaire, téléphone cliquable, e-mail cliquable, liens Instagram / Facebook / WhatsApp, qualifications (diplômes, Maître artisan) et catalogue indicatif. Premium Pro, adhésion à l’association : lien direct vers votre site, priorité dans les recommandations du concierge IA, et modules d’action (Click & Collect, prise de rendez-vous, ardoise du jour). Aucune commission sur vos ventes.',
-          en: 'Free for everyone: directory presence, clickable phone, clickable email, Instagram / Facebook / WhatsApp links, qualifications (degrees, Master Craftsman) and a sample catalog. Premium Pro, the association membership: a direct website link, priority in the AI concierge, and action modules (Click & Collect, booking, daily specials). No commission on your sales.',
+          fr: 'Gratuit pour tous : présence dans l’annuaire et sur la carte, téléphone cliquable, e-mail cliquable, liens Instagram / Facebook / WhatsApp. Premium Pro : lien vers votre site, priorité dans le Concierge IA et l’IA Chineur, modules d’action (Click & Collect, rendez-vous, ardoise) et, pour les brocanteurs, jusqu’à 10 pépites actives avec le badge Boutique Certifiée Notre-Dame. Aucune commission sur vos ventes.',
+          en: 'Free for everyone: directory and map presence, clickable phone, clickable email, Instagram / Facebook / WhatsApp links. Premium Pro: a website link, priority in the AI Concierge and Hunter AI, action modules (Click & Collect, booking, daily specials) and, for antique dealers, up to 10 active finds with the Notre-Dame Certified Shop badge. No commission on your sales.',
         },
       },
       {
@@ -198,8 +253,8 @@ export const FAQ_AUDIENCES: FaqAudience[] = [
     label: { fr: 'Services & Sécurité', en: 'Services & safety' },
     kicker: { fr: 'Concierge IA, patrimoine & urgences', en: 'AI concierge, heritage & emergencies' },
     intro: {
-      fr: 'Le concierge multilingue, l’histoire des rues, les signalements Mairie / Police Municipale et les consignes d’urgence du quartier, réunis au même endroit.',
-      en: 'The multilingual concierge, street history, City / Municipal Police reports and neighborhood emergency instructions, all in one place.',
+      fr: 'Le Concierge IA et l’IA Chineur, l’histoire des rues, les signalements Mairie / Police Municipale et les consignes d’urgence du quartier, réunis au même endroit.',
+      en: 'The AI Concierge and Hunter AI, street history, City / Municipal Police reports and neighborhood emergency instructions, all in one place.',
     },
     cta: {
       to: '/conciergerie',
@@ -209,12 +264,12 @@ export const FAQ_AUDIENCES: FaqAudience[] = [
       {
         id: 'concierge-ai',
         q: {
-          fr: 'Comment fonctionne le concierge IA multilingue ?',
-          en: 'How does the multilingual AI concierge work?',
+          fr: 'Comment fonctionne l’IA Concierge & IA Chineur ?',
+          en: 'How do the AI Concierge and Hunter AI work?',
         },
         a: {
-          fr: 'Ouvrez la page Conciergerie et posez votre question en français, anglais, espagnol, allemand, italien, portugais ou néerlandais. La recherche tolère les accents (creche = crèche), le pluriel et des alias (DAB, bank, cash). Le concierge renvoie au plus 5 adresses du quartier, avec priorité aux membres Premium Pro, un budget estimé, et les actions directes seulement si le commerce est Premium Pro.',
-          en: 'Open the Concierge page and ask in French, English, Spanish, German, Italian, Portuguese or Dutch. Search tolerates accents (creche = crèche), plurals and aliases (ATM, bank, cash). The concierge returns at most 5 neighborhood addresses, with Premium Pro priority, an estimated budget, and direct actions only for Premium Pro businesses.',
+          fr: 'Une recherche unifiée par langage naturel capable de recommander des commerces, de dénicher des objets / antiquités ou d’orienter vers les événements locaux. Posez la question dans la barre du haut : le Concierge IA reste cantonné aux Chartrons. Sur l’onglet Brocanteurs, l’IA Chineur cherche dans les pépites actives (style, époque, meuble) et propose une balade entre les boutiques, en priorisant les partenaires Premium.',
+          en: 'A unified natural-language search that can recommend shops, hunt down objects / antiques, or point you to local events. Ask from the top bar: the AI Concierge stays scoped to the Chartrons. On the Brocanteurs tab, Hunter AI searches active finds (style, era, furniture) and suggests a walk between shops, with Premium partners first.',
         },
       },
       {
@@ -275,8 +330,8 @@ export interface FaqComparisonRow {
 export const FAQ_COMPARISON = {
   title: { fr: 'Fiche gratuite vs Premium Pro', en: 'Free listing vs Premium Pro' },
   subtitle: {
-    fr: 'Tous les commerces locaux restent visibles. L’adhésion Premium Pro débloque le site web, la priorité IA et les modules d’action.',
-    en: 'Every local business stays visible. Premium Pro unlocks the website, AI priority and action modules.',
+    fr: 'Tous les commerces locaux restent visibles. L’adhésion Premium Pro débloque le site web, la priorité IA, les modules d’action et les pépites des brocanteurs.',
+    en: 'Every local business stays visible. Premium Pro unlocks the website, AI priority, action modules and antique dealers’ finds.',
   },
   freeHeader: {
     fr: 'Fiche gratuite (contacts cliquables & réseaux)',
@@ -328,6 +383,12 @@ export const FAQ_COMPARISON = {
       feature: { fr: 'Réservation / Click & Collect', en: 'Booking / Click & Collect' },
       free: { fr: 'Non', en: 'No' },
       premium: { fr: 'Selon l’activité', en: 'By activity' },
+    },
+    {
+      id: 'pepites',
+      feature: { fr: 'Pépites & Arrivages (brocanteurs)', en: 'Finds & arrivals (antique dealers)' },
+      free: { fr: 'Fiche carte & annuaire', en: 'Map & directory listing' },
+      premium: { fr: 'Jusqu’à 10 objets actifs + badge Notre-Dame', en: 'Up to 10 active items + Notre-Dame badge' },
     },
   ] satisfies FaqComparisonRow[],
 };

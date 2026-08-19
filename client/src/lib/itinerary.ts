@@ -1,21 +1,12 @@
+import { formatDistanceMeters, haversineKm as haversineKmShared } from '@idea-chartrons/shared';
+
 export interface GeoPoint {
   latitude: number;
   longitude: number;
 }
 
-function toRad(value: number): number {
-  return (value * Math.PI) / 180;
-}
-
 export function haversineKm(a: GeoPoint, b: GeoPoint): number {
-  const earthKm = 6371;
-  const dLat = toRad(b.latitude - a.latitude);
-  const dLng = toRad(b.longitude - a.longitude);
-  const lat1 = toRad(a.latitude);
-  const lat2 = toRad(b.latitude);
-  const h =
-    Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
-  return 2 * earthKm * Math.asin(Math.min(1, Math.sqrt(h)));
+  return haversineKmShared(a, b);
 }
 
 export function itineraryDistanceKm(points: GeoPoint[]): number {
@@ -118,4 +109,18 @@ export function walkingItineraryUrl(stops: GeoPoint[]): string | null {
   if (stops.length === 0) return null;
   if (stops.length === 1) return walkingDirectionsUrl(stops[0]);
   return walkingDirectionsUrl(stops[stops.length - 1], stops.slice(0, -1));
+}
+
+/** Vitesse piéton de quartier (~4,8 km/h). */
+export const WALKING_SPEED_M_PER_MIN = 80;
+
+export function walkingEtaMinutes(meters: number, speedMPerMin = WALKING_SPEED_M_PER_MIN): number {
+  if (!Number.isFinite(meters) || meters <= 0) return 1;
+  return Math.max(1, Math.round(meters / speedMPerMin));
+}
+
+/** Ex. « 344 m - 4 min » */
+export function formatWalkingItinerary(meters: number, locale = 'fr'): string {
+  const distance = formatDistanceMeters(meters, locale) || `${Math.round(Math.max(0, meters))} m`;
+  return `${distance} - ${walkingEtaMinutes(meters)} min`;
 }

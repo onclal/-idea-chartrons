@@ -305,7 +305,40 @@ html.confort-mode main {
   padding-bottom: 6.5rem;
 }
 
+html.confort-mode .concierge-order-shell {
+  font-size: 1.25rem;
+  line-height: 1.45;
+}
+
+html.confort-mode .concierge-order-shell h3 {
+  font-size: 1.5rem;
+  line-height: 1.3;
+}
+
+html.confort-mode .concierge-order-cta,
+html.confort-mode .concierge-order-shell button,
+html.confort-mode .concierge-order-shell a[href] {
+  min-height: 72px;
+  font-size: 1.25rem;
+  font-weight: 800;
+  border-width: 2px;
+}
+
+html.confort-mode .concierge-order-shell .audio-reader {
+  min-height: 72px;
+  font-size: 1.35rem;
+  font-weight: 800;
+  background: #ffe14d;
+  color: #000;
+  border: 3px solid #fff;
+}
+
 @media print {
+  @page {
+    size: A6 portrait;
+    margin: 8mm;
+  }
+
   header,
   nav,
   footer,
@@ -319,14 +352,34 @@ html.confort-mode main {
   }
 
   .storefront-poster,
-  .storefront-poster * {
+  .storefront-poster *,
+  .qr-flyer-print,
+  .qr-flyer-print * {
     visibility: visible;
   }
 
-  .storefront-poster {
+  .storefront-poster,
+  .qr-flyer-print {
     position: absolute;
     inset: 0;
     background: #fff;
     color: #000;
+  }
+
+  .qr-flyer-print {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    max-width: none;
+    width: 100%;
+    height: 100%;
+  }
+
+  .qr-flyer-print article {
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    box-shadow: none;
+    border-radius: 0;
   }
 }

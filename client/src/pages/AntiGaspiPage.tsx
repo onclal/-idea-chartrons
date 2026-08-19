@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import {
   PostStatus,
   isActiveAntiGaspiOffer,
+  type ActeurLocal,
   type PostAnnonce,
 } from '@idea-chartrons/shared';
 import { Badge, Button, Card, EmptyState, Loading } from '../components/ui';
@@ -17,20 +18,24 @@ import { useToast } from '../context/ToastContext';
 import { api } from '../lib/api';
 import { formatDateTime, formatEuro } from '../lib/format';
 import { ownsPost } from '../lib/guestCarnet';
+import { DistanceBadge } from '../components/DistanceBadge';
 
 export function AntiGaspiPage() {
   const { t, i18n } = useTranslation();
   const { showToast } = useToast();
   const [posts, setPosts] = useState<PostAnnonce[]>([]);
+  const [acteurs, setActeurs] = useState<ActeurLocal[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
   const [checkoutPost, setCheckoutPost] = useState<PostAnnonce | null>(null);
 
   const load = (opts?: { silent?: boolean }) => {
     if (!opts?.silent) setLoading(true);
-    api
-      .getPosts()
-      .then(setPosts)
+    Promise.all([api.getPosts(), api.getActeurs()])
+      .then(([postsData, acteursData]) => {
+        setPosts(postsData);
+        setActeurs(acteursData);
+      })
       .catch(console.error)
       .finally(() => setLoading(false));
   };
@@ -38,6 +43,11 @@ export function AntiGaspiPage() {
   useEffect(() => {
     load();
   }, []);
+
+  const acteursById = useMemo(
+    () => new Map(acteurs.map((acteur) => [acteur.id, acteur])),
+    [acteurs],
+  );
 
   const offers = useMemo(
     () =>
@@ -117,6 +127,13 @@ export function AntiGaspiPage() {
                     <div className="min-w-0">
                       <h3 className="font-semibold text-chartrons-olive-dark text-base leading-snug">{post.titre}</h3>
                       {shop && <p className="text-xs text-chartrons-warm-gray mt-1">{shop}</p>}
+                      {post.acteurId && (
+                        <DistanceBadge
+                          latitude={acteursById.get(post.acteurId)?.latitude}
+                          longitude={acteursById.get(post.acteurId)?.longitude}
+                          className="mt-1"
+                        />
+                      )}
                     </div>
                     <Badge variant={active ? 'olive' : post.statut === PostStatus.EnAttente ? 'gold' : 'stone'}>
                       {t(`posts.status.${post.statut}`)}

@@ -1,4 +1,5 @@
 import { DEMO_DEVICE_ID, generateCarnetToken } from '@idea-chartrons/shared';
+import { clearReceipts } from './receipts';
 import { writeLocalStorage } from './storage';
 
 /**
@@ -103,4 +104,5 @@ export function clearGuestTraces(): void {
   } catch {
     // ignore
   }
+  clearReceipts();
 }

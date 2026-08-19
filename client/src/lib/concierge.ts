@@ -1,4 +1,5 @@
 import type {
+  AntiqueItem,
   BudgetEstimate,
   BudgetUnit,
   ConciergeLang,
@@ -20,6 +21,21 @@ import {
 
 export type { AskConciergeInput, ConciergeAnswer, ConciergeLangChoice, ConciergeSource };
 
+export interface ConciergeOrderLine {
+  name: string;
+  quantity?: string;
+  price: number;
+}
+
+export interface ConciergeOrderShop {
+  poiId: string;
+  name: string;
+  address: string;
+  coordinates: { lat: number; lng: number };
+  hasDelivery?: boolean;
+  distanceMeters?: number;
+}
+
 export interface ConciergeMessage {
   id: string;
   role: 'user' | 'assistant';
@@ -30,6 +46,7 @@ export interface ConciergeMessage {
   recommendations?: ConciergeRecommendation[];
   heritage?: StreetHeritage[];
   posts?: PostAnnonce[];
+  antiqueItems?: AntiqueItem[];
   basket?: LocalBasket | null;
   checklist?: string[];
 }
@@ -105,6 +122,53 @@ export function conciergeWalkingRouteUrl(recommendations: ConciergeRecommendatio
     longitude: item.coordinates.lng,
   }));
   return walkingItineraryUrl(stops);
+}
+
+export function canPlaceConciergeOrder(item: ConciergeRecommendation): boolean {
+  return item.action === 'click_collect' || item.clickAndCollect || item.hasDelivery;
+}
+
+export function orderShopFromRecommendation(item: ConciergeRecommendation): ConciergeOrderShop {
+  return {
+    poiId: item.poiId,
+    name: item.name,
+    address: item.address,
+    coordinates: item.coordinates,
+    hasDelivery: item.hasDelivery,
+    distanceMeters: item.distanceMeters,
+  };
+}
+
+export function orderLinesFromRecommendation(item: ConciergeRecommendation): ConciergeOrderLine[] {
+  return [
+    {
+      name: item.specialty || item.name,
+      quantity: '1',
+      price: item.budget?.min ?? 12,
+    },
+  ];
+}
+
+export function orderShopFromBasket(basket: LocalBasket): ConciergeOrderShop | null {
+  const stop = basket.stops[0];
+  if (!stop) return null;
+  return {
+    poiId: stop.poiId,
+    name: basket.stops.length > 1 ? basket.title : stop.name,
+    address: stop.address,
+    coordinates: stop.coordinates,
+    hasDelivery: true,
+  };
+}
+
+export function orderLinesFromBasket(basket: LocalBasket): ConciergeOrderLine[] {
+  return basket.stops.flatMap((stop) =>
+    stop.lines.map((line) => ({
+      name: basket.stops.length > 1 ? `${line.name} · ${stop.name}` : line.name,
+      quantity: line.quantity,
+      price: line.price,
+    })),
+  );
 }
 
 export const CONCIERGE_LANG_OPTIONS: { value: ConciergeLangChoice; label: string }[] = [

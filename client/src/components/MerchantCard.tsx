@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   hasQrVitrine,
+  isNotreDameCertifiedDealer,
   isPremiumProMerchant,
   isRestaurantCategory,
   type ActeurLocal,
@@ -24,6 +26,7 @@ import { VipOfferCard } from './VipOfferCard';
 import { getAverageRating } from '../services/reviewService';
 import { AudioReader } from './AudioReader';
 import { AccessibilityBadges } from './AccessibilityBadges';
+import { DistanceBadge } from './DistanceBadge';
 
 interface MerchantCardProps {
   acteur: ActeurLocal;
@@ -81,6 +84,9 @@ export function MerchantCard({
               {vip && (
                 <Badge variant="vip" icon="⭐">{t('badges.premiumPro')}</Badge>
               )}
+              {isNotreDameCertifiedDealer(acteur) && (
+                <Badge variant="gold" icon="✦">{t('brocanteurs.certifiedBadge')}</Badge>
+              )}
               {reviewSummary.count > 0 && (
                 <Badge variant="gold">
                   {t('acteurs.reviews.badge', {
@@ -105,6 +111,7 @@ export function MerchantCard({
           specialite={acteur.specialite}
         />
         <p className="text-xs text-chartrons-olive-dark/70 mt-2">📍 {acteur.adresse}</p>
+        <DistanceBadge latitude={acteur.latitude} longitude={acteur.longitude} className="mt-1" />
         <div className="mt-2">
           <AccessibilityBadges source={acteur} />
         </div>
@@ -199,6 +206,15 @@ export function MerchantCard({
                 )}
               </>
             )}
+            <Link
+              to={`/pro?shop=${encodeURIComponent(acteur.id)}&tab=kit`}
+              className="w-full"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <Button type="button" variant="secondary" size="sm" className="w-full">
+                {t('proSpace.tabs.kit')}
+              </Button>
+            </Link>
           </div>
         )}
       </div>

@@ -6,14 +6,16 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import type { PostAnnonce } from '@idea-chartrons/shared';
+import type { ConciergePersona, PostAnnonce } from '@idea-chartrons/shared';
 import {
   askConcierge,
   type ConciergeLangChoice,
   type ConciergeMessage,
 } from '../lib/concierge';
 import { hasRichConciergeContent } from '../lib/conciergeRich';
+import { useUserLocation } from './UserLocationContext';
 
 function createMessage(
   role: ConciergeMessage['role'],
@@ -39,6 +41,7 @@ interface ConciergePanelContextValue {
   matchingPosts: PostAnnonce[];
   checklist: string[];
   lastAssistant: ConciergeMessage | undefined;
+  persona: ConciergePersona;
   ask: (question: string) => Promise<void>;
   openPanel: () => void;
   closePanel: () => void;
@@ -50,6 +53,9 @@ const ConciergePanelContext = createContext<ConciergePanelContextValue | null>(n
 
 export function ConciergePanelProvider({ children }: { children: ReactNode }) {
   const { t, i18n } = useTranslation();
+  const location = useLocation();
+  const persona: ConciergePersona = location.pathname.startsWith('/brocanteurs') ? 'chineur' : 'default';
+  const { origin, originSource } = useUserLocation();
   const [open, setOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [pending, setPending] = useState(false);
@@ -83,6 +89,9 @@ export function ConciergePanelProvider({ children }: { children: ReactNode }) {
           history,
           lang: replyLang,
           uiLang: i18n.language,
+          origin,
+          originSource,
+          persona,
         });
         const next = createMessage('assistant', answer.reply, {
           source: answer.source,
@@ -90,6 +99,7 @@ export function ConciergePanelProvider({ children }: { children: ReactNode }) {
           recommendations: answer.recommendations,
           heritage: answer.heritage,
           posts: answer.posts,
+          antiqueItems: answer.antiqueItems,
           basket: answer.basket,
           checklist: answer.checklist,
         });
@@ -102,6 +112,7 @@ export function ConciergePanelProvider({ children }: { children: ReactNode }) {
             checklist: answer.checklist,
             posts: answer.posts,
             basket: Boolean(answer.basket),
+            antiqueItems: answer.antiqueItems.length,
           })
         ) {
           setOpen(true);
@@ -113,7 +124,7 @@ export function ConciergePanelProvider({ children }: { children: ReactNode }) {
         setPending(false);
       }
     },
-    [i18n.language, messages, pending, replyLang, t],
+    [i18n.language, messages, origin, originSource, pending, persona, replyLang, t],
   );
 
   const value = useMemo<ConciergePanelContextValue>(
@@ -127,6 +138,7 @@ export function ConciergePanelProvider({ children }: { children: ReactNode }) {
       matchingPosts,
       checklist,
       lastAssistant,
+      persona,
       ask,
       openPanel: () => {
         setOpen(true);
@@ -139,7 +151,7 @@ export function ConciergePanelProvider({ children }: { children: ReactNode }) {
         setMatchingPosts([]);
       },
     }),
-    [ask, checklist, collapsed, lastAssistant, matchingPosts, messages, open, pending, replyLang],
+    [ask, checklist, collapsed, lastAssistant, matchingPosts, messages, open, pending, persona, replyLang],
   );
 
   return <ConciergePanelContext.Provider value={value}>{children}</ConciergePanelContext.Provider>;

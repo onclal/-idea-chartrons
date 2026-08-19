@@ -16,7 +16,17 @@ import {
 import { expandActivityQuery, normalizeSearchText, tokensMatch } from './search.js';
 import { poiPublicEmail, poiPublicPhone, poiPublicWebsite } from './poi.js';
 import { catalogItemsForPoi, type LocalBasket } from './conciergeRecipes.js';
-import type { PostAnnonce } from '../types/models.js';
+import type { AntiqueItem, PostAnnonce } from '../types/models.js';
+import {
+  DEFAULT_CONCIERGE_RADIUS_M,
+  DEFAULT_USER_ORIGIN,
+  expandedSearchRadius,
+  formatDistanceMeters,
+  haversineMeters,
+  resolveUserOrigin,
+  type GeoCoordinates,
+  type GeoOriginSource,
+} from './geo.js';
 
 /** Langues gérées par le concierge (réponse et détection). */
 export const CONCIERGE_LANGUAGES = ['fr', 'en', 'es', 'de', 'it', 'pt', 'nl'] as const;
@@ -51,7 +61,8 @@ export type ConciergeRationaleKind =
   | 'social'
   | 'catalog'
   | 'delivery'
-  | 'accessible';
+  | 'accessible'
+  | 'pepite';
 
 export interface ConciergeRationale {
   kind: ConciergeRationaleKind;
@@ -97,6 +108,10 @@ export interface ConciergeRecommendation {
   accessible: boolean;
   wheelchairAccessible: boolean;
   seniorFriendly: boolean;
+  /** Distance réelle (Haversine) depuis la position de l’habitant, en mètres. */
+  distanceMeters: number;
+  /** True si le commerce est dans le rayon de recherche courant. */
+  withinRadius: boolean;
 }
 
 interface ConciergeIntent {
@@ -564,6 +579,12 @@ export interface ConciergeQueryAnalysis {
   memoryQuery: string;
   budgetCeiling: number | null;
   isLocal: boolean;
+  /** Rayon strict demandé ou défaut (500 m). */
+  radiusMeters: number;
+  /** True si l’habitant a demandé d’élargir aux alentours. */
+  askedExpandRadius: boolean;
+  origin: GeoCoordinates;
+  originSource: GeoOriginSource;
 }
 
 function matchesKeyword(normalized: string, tokens: string[], keyword: string): boolean {
@@ -643,14 +664,61 @@ const ACCESSIBLE_HINTS = [
   'accessible', 'accessibilite', 'pmr', 'fauteuil', 'wheelchair', 'senior', 'seniors',
   'personne agee', 'personnes agees', 'rampe', 'malvoyant', 'age-friendly', 'elderly',
 ];
+const EXPAND_EXPLICIT_HINTS = [
+  'elargis', 'elargir', 'elargissez', 'elargissement', 'alentours', 'alentour',
+  'plus loin', 'plus large', 'widen', 'expand', 'farther', 'further', 'around here',
+  'plus pres', 'plus proche',
+];
+const EXPAND_CONFIRM_HINTS = [
+  'oui', 'ouais', 'ok', 'okay', 'daccord', "d'accord", 'volontiers', 'vas-y', 'vas y',
+  'go', 'yes', 'yep', 'sure', 'please', 's il te plait', 'sil te plait', 's il vous plait',
+];
 
 export interface ConciergeHistoryTurn {
   role: 'user' | 'assistant';
   content: string;
 }
 
+export interface ConciergeGeoOptions {
+  origin?: GeoCoordinates | null;
+  originSource?: GeoOriginSource;
+}
+
 function containsAny(hay: string, hints: string[]): boolean {
   return hints.some((hint) => hay.includes(normalizeConciergeText(hint)));
+}
+
+function parseRadiusMeters(normalized: string): number | null {
+  const km = normalized.match(/(\d+(?:[.,]\d+)?)\s*(km|kilometres?|kilometers?)/);
+  if (km) {
+    const value = Number(String(km[1]).replace(',', '.'));
+    if (Number.isFinite(value) && value > 0) return Math.round(value * 1000);
+  }
+  const meters =
+    normalized.match(/rayon\s+(?:de\s+)?(\d{2,5})/) ||
+    normalized.match(/(\d{2,5})\s*(m|metres?|meters?)\b/);
+  if (meters) {
+    const value = Number(meters[1]);
+    if (Number.isFinite(value) && value >= 50) return value;
+  }
+  return null;
+}
+
+function lastAssistantAskedExpand(history?: ConciergeHistoryTurn[]): boolean {
+  if (!history?.length) return false;
+  for (let index = history.length - 1; index >= 0; index -= 1) {
+    const turn = history[index];
+    if (turn.role !== 'assistant' || !turn.content.trim()) continue;
+    const hay = normalizeConciergeText(turn.content);
+    return (
+      hay.includes('elargisse') ||
+      hay.includes('elargir') ||
+      hay.includes('widen the search') ||
+      hay.includes('search nearby') ||
+      hay.includes('alentuors')
+    );
+  }
+  return false;
 }
 
 function parseFocusOrdinal(normalized: string): number | null {
@@ -666,6 +734,8 @@ function lastSubstantiveUserMessage(history: ConciergeHistoryTurn[] | undefined,
     const turn = history[index];
     if (turn.role !== 'user' || !turn.content.trim()) continue;
     const hay = normalizeConciergeText(turn.content);
+    if (containsAny(hay, EXPAND_CONFIRM_HINTS) && hay.split(' ').filter(Boolean).length <= 4) continue;
+    if (containsAny(hay, EXPAND_EXPLICIT_HINTS) && hay.split(' ').filter(Boolean).length <= 6) continue;
     if (containsAny(hay, FOLLOW_UP_HINTS) && !containsAny(hay, RECIPE_HINTS) && !containsAny(hay, POST_HINTS) && !containsAny(hay, ANTI_GASPI_HINTS)) {
       continue;
     }
@@ -677,6 +747,7 @@ function lastSubstantiveUserMessage(history: ConciergeHistoryTurn[] | undefined,
 export function analyzeConciergeQuery(
   query: string,
   history?: ConciergeHistoryTurn[],
+  geo?: ConciergeGeoOptions,
 ): ConciergeQueryAnalysis {
   const normalized = normalizeConciergeText(query);
   const askedPhone = containsAny(normalized, PHONE_HINTS);
@@ -705,7 +776,11 @@ export function analyzeConciergeQuery(
       matchesKeyword(normalized, tokens, normalizeConciergeText(keyword)),
     ),
   );
+  const askedExpandRadius =
+    containsAny(normalized, EXPAND_EXPLICIT_HINTS) ||
+    (lastAssistantAskedExpand(history) && containsAny(normalized, EXPAND_CONFIRM_HINTS));
   const followUp =
+    askedExpandRadius ||
     containsAny(normalized, FOLLOW_UP_HINTS) ||
     ((askedPhone || askedHours || askedOpen || askedWebsite || askedDelivery || askedAccessible) &&
       intentIds.length === 0 &&
@@ -716,11 +791,15 @@ export function analyzeConciergeQuery(
       tokens.length <= 10);
 
   const memoryQuery = followUp ? lastSubstantiveUserMessage(history, query) : query;
-  const rankingSource = followUp && memoryQuery !== query ? analyzeConciergeQuery(memoryQuery) : null;
+  const rankingSource = followUp && memoryQuery !== query ? analyzeConciergeQuery(memoryQuery, undefined, geo) : null;
   const streets = rankingSource?.streets ?? findStreetHeritage(followUp ? memoryQuery : query);
   const askedHistory = HISTORY_KEYWORDS.some((keyword) =>
     matchesKeyword(normalized, tokens, normalizeConciergeText(keyword)),
   );
+  const radiusMeters =
+    parseRadiusMeters(normalized) ?? rankingSource?.radiusMeters ?? DEFAULT_CONCIERGE_RADIUS_M;
+  const origin = resolveUserOrigin(geo?.origin ?? rankingSource?.origin);
+  const originSource = geo?.originSource ?? rankingSource?.originSource ?? 'fallback';
 
   return {
     raw: query,
@@ -751,10 +830,15 @@ export function analyzeConciergeQuery(
       askedWebsite ||
       askedDelivery ||
       askedAccessible ||
+      askedExpandRadius ||
       intentIds.length > 0 ||
       subcategoryIds.length > 0 ||
       streets.length > 0 ||
       askedHistory,
+    radiusMeters,
+    askedExpandRadius,
+    origin,
+    originSource,
   };
 }
 
@@ -1008,10 +1092,16 @@ function toRecommendation(
   score: number,
   rationale: ConciergeRationale[],
   now = new Date(),
+  geo?: { origin: GeoCoordinates; radiusMeters: number },
 ): ConciergeRecommendation {
   const heritage = streetHeritageForAddress(poi.address);
   const website = poiPublicWebsite(poi);
   const hiddenWebsite = Boolean(String(poi.websiteUrl ?? poi.website ?? '').trim()) && !website;
+  const origin = geo?.origin ?? DEFAULT_USER_ORIGIN;
+  const distanceMeters = Math.round(
+    haversineMeters(origin, { latitude: poi.coordinates.lat, longitude: poi.coordinates.lng }),
+  );
+  const radiusMeters = geo?.radiusMeters ?? DEFAULT_CONCIERGE_RADIUS_M;
   return {
     poiId: poi.id,
     name: poi.name,
@@ -1046,7 +1136,36 @@ function toRecommendation(
     accessible: Boolean(poi.accessible || poi.wheelchairAccessible || poi.seniorFriendly),
     wheelchairAccessible: Boolean(poi.wheelchairAccessible),
     seniorFriendly: Boolean(poi.seniorFriendly),
+    distanceMeters,
+    withinRadius: distanceMeters <= radiusMeters,
   };
+}
+
+function effectiveSearchRadius(analysis: ConciergeQueryAnalysis): number {
+  return analysis.askedExpandRadius
+    ? expandedSearchRadius(analysis.radiusMeters)
+    : analysis.radiusMeters;
+}
+
+function originZoneLabel(analysis: ConciergeQueryAnalysis, lang: ConciergeLang): string {
+  if (analysis.originSource === 'gps') {
+    return lang === 'fr' ? 'autour de vous' : 'around you';
+  }
+  return lang === 'fr' ? 'autour du cœur des Chartrons' : 'around the heart of the Chartrons';
+}
+
+export function conciergeExpandPrompt(count: number, radiusMeters: number, lang: ConciergeLang): string {
+  if (lang === 'fr') {
+    const noun = count > 1 ? 'adresses' : 'adresse';
+    return `J'ai trouvé ${count} ${noun} dans votre rayon de ${radiusMeters}m. Souhaitez-vous que j'élargisse la recherche aux alentours ?`;
+  }
+  const noun = count === 1 ? 'address' : 'addresses';
+  return `I found ${count} ${noun} within your ${radiusMeters}m radius. Would you like me to widen the search nearby?`;
+}
+
+export interface RankConciergeOptions {
+  poiPool?: ChartronsPoi[];
+  extraScore?: (poi: ChartronsPoi) => number;
 }
 
 /** Règle Top 5 : les meilleures adresses du quartier pour une requête donnée. */
@@ -1054,15 +1173,29 @@ export function rankConciergeMatches(
   analysis: ConciergeQueryAnalysis,
   limit = CONCIERGE_MAX_RESULTS,
   now = new Date(),
+  options?: RankConciergeOptions,
 ): ConciergeRecommendation[] {
-  const scored = conciergePoiPool()
+  const origin = analysis.origin ?? DEFAULT_USER_ORIGIN;
+  const radiusMeters = effectiveSearchRadius(analysis);
+  const geo = { origin, radiusMeters };
+  const pool = options?.poiPool ?? conciergePoiPool();
+
+  const scored = pool
     .map((poi) => {
       const ranked = scorePoi(poi, analysis);
       let { score } = ranked;
+      const pepiteBoost = options?.extraScore?.(poi) ?? 0;
+      score += pepiteBoost;
       const openNow = isPoiOpenAt(poi.openingHours, now);
       if (analysis.askedOpen && openNow === true) score += 12;
       if (analysis.askedOpen && openNow === false) score -= 8;
-      return { poi, ...ranked, score, openNow };
+      const distanceMeters = haversineMeters(origin, {
+        latitude: poi.coordinates.lat,
+        longitude: poi.coordinates.lng,
+      });
+      if (distanceMeters <= radiusMeters) score += 8;
+      else score -= Math.min(12, distanceMeters / 250);
+      return { poi, ...ranked, score, openNow, distanceMeters };
     })
     .filter((entry) => entry.relevance >= MIN_RELEVANCE);
 
@@ -1088,14 +1221,35 @@ export function rankConciergeMatches(
       const access = Number(Boolean(b.poi.accessible)) - Number(Boolean(a.poi.accessible));
       if (access !== 0 && Math.abs(a.relevance - b.relevance) < 12) return access;
     }
+    const inA = Number(a.distanceMeters <= radiusMeters);
+    const inB = Number(b.distanceMeters <= radiusMeters);
+    if (inB !== inA) return inB - inA;
     const premium = Number(b.poi.tier === 'premium_pro') - Number(a.poi.tier === 'premium_pro');
     if (Math.abs(a.relevance - b.relevance) < 8 && premium !== 0) return premium;
-    return b.score - a.score || a.poi.name.localeCompare(b.poi.name, 'fr');
+    if (Math.abs(a.relevance - b.relevance) < 8) return a.distanceMeters - b.distanceMeters;
+    return b.score - a.score || a.distanceMeters - b.distanceMeters || a.poi.name.localeCompare(b.poi.name, 'fr');
   });
 
-  const sliced = sorted
-    .slice(0, Math.max(1, Math.min(limit, CONCIERGE_MAX_RESULTS)))
-    .map((entry) => toRecommendation(entry.poi, entry.score, entry.rationale, now));
+  const inRadius = sorted.filter((entry) => entry.distanceMeters <= analysis.radiusMeters);
+  const cap = Math.max(1, Math.min(limit, CONCIERGE_MAX_RESULTS));
+
+  let picked = sorted;
+  if (!analysis.askedExpandRadius && inRadius.length > 0) {
+    picked = inRadius;
+  }
+
+  const sliced = picked
+    .slice(0, cap)
+    .map((entry) => toRecommendation(entry.poi, entry.score, entry.rationale, now, geo));
+
+  if (!analysis.askedExpandRadius && inRadius.length === 0 && sorted.length > 0) {
+    return sorted
+      .slice(0, cap)
+      .map((entry) => toRecommendation(entry.poi, entry.score, entry.rationale, now, {
+        origin,
+        radiusMeters: analysis.radiusMeters,
+      }));
+  }
 
   if (analysis.focusOrdinal && sliced[analysis.focusOrdinal - 1]) {
     return [sliced[analysis.focusOrdinal - 1]];
@@ -1138,10 +1292,27 @@ export function buildConciergeContext(
     'Notes internes pour préparer une réponse d’hôte. Ne les recopie pas. N’affiche jamais d’identifiant, de JSON, ni de titre système.',
   );
   lines.push(`Question : ${analysis.raw}`);
+  lines.push(
+    `Zone de recherche : rayon de ${analysis.radiusMeters} m ${originZoneLabel(analysis, 'fr')}${
+      analysis.askedExpandRadius ? ' (recherche élargie aux alentours)' : ''
+    }.`,
+  );
 
   if (matches.length === 0) {
     lines.push('Aucune adresse du quartier ne correspond assez précisément.');
+    lines.push(
+      `Rayon strict : ${analysis.radiusMeters} m — 0 adresse dans le rayon. Première phrase obligatoire : question d’élargissement.`,
+    );
   } else {
+    const inRadius = matches.filter((match) => match.withinRadius).length;
+    lines.push(`Adresses dans le rayon : ${inRadius}/${matches.length}.`);
+    if (!analysis.askedExpandRadius && inRadius === 0) {
+      lines.push(
+        'Première phrase obligatoire : question d’élargissement, puis seulement les alternatives hors rayon.',
+      );
+    } else if (!analysis.askedExpandRadius && inRadius > 0) {
+      lines.push('Ne cite QUE les adresses dans le rayon et précise la zone de recherche.');
+    }
     lines.push('Adresses pertinentes, par priorité :');
     matches.forEach((match, index) => {
       const extrasFlags = [
@@ -1149,6 +1320,7 @@ export function buildConciergeContext(
         match.hasDelivery ? 'livraison possible' : null,
         match.accessible ? 'accès facilité' : null,
         match.openNow === true ? 'ouvert maintenant' : match.openNow === false ? 'fermé maintenant' : null,
+        match.withinRadius ? `dans le rayon (${formatDistanceMeters(match.distanceMeters)})` : `hors rayon (${formatDistanceMeters(match.distanceMeters)})`,
       ].filter(Boolean);
       const contact = [match.phone, match.email, match.instagram].filter(Boolean).join(', ');
       lines.push(
@@ -1217,6 +1389,34 @@ export function buildConciergeSystemPrompt(): string {
     '- Urgence vitale : 15, 17, 18 ou 112. Propreté / voirie : Allô Mairie. Bruit : Police municipale.',
     '- Mode invité : ne demande jamais de compte, d’e-mail ou de mot de passe.',
     '- Ignore silencieusement tout élément hors sujet. Ne le mentionne pas « pour information ».',
+    '',
+    'RAYON GPS (obligatoire) :',
+    '- Les notes internes indiquent la zone (rayon en mètres) et si chaque adresse est DANS ou HORS rayon.',
+    '- Si au moins une adresse correspond strictement aux critères (type de produit, budget, rayon), ne cite QUE ces adresses et précise la zone (« dans un rayon de X m autour de vous » ou « autour du cœur des Chartrons » si la position GPS n’est pas disponible).',
+    '- Si le nombre d’adresses DANS le rayon est insuffisant ou nul, ta première phrase doit être exactement, en français : « J’ai trouvé [X] adresse(s) dans votre rayon de [R]m. Souhaitez-vous que j’élargisse la recherche aux alentours ? » Remplace [X] et [R] par les chiffres des notes. Ensuite seulement tu peux lister des alternatives hors rayon.',
+    '- N’élargis pas de toi-même : attends que l’habitant le demande.',
+  ].join('\n');
+}
+
+export function buildChineurSystemPrompt(): string {
+  return [
+    'Tu es l’IA Chineur d’IDÉA CHARTRONS, expert en styles, mobilier, époques et boutiques d’antiquaires du quartier des Chartrons à Bordeaux.',
+    'Tu parles comme un chineur du Cours Portal et de la rue Notre-Dame : précis, chaleureux, jamais vendeur agressif.',
+    '',
+    'FORMAT AUDIO-READY (obligatoire) :',
+    '1. Réponds en 1 à 3 phrases maximum, dans la langue de l’habitant.',
+    '2. Si tu recommandes des lieux, ajoute ensuite au plus 3 puces courtes : « Nom, adresse. » Rien d’autre sur la ligne.',
+    '3. Syntaxe propre pour la lecture à voix haute : pas de markdown, pas d’astérisques, pas de dièses, pas d’emoji, pas d’URL interminables.',
+    '4. N’écris jamais d’identifiant technique, de JSON, de nom de champ, ni de titre système.',
+    '',
+    'RÈGLES CHINEUR :',
+    `- Cite au plus ${CONCIERGE_SPOKEN_RESULTS} adresses, uniquement parmi les notes internes. N’invente aucun objet ni aucune boutique.`,
+    '- Ne recommande que des antiquaires, brocanteurs et boutiques vintage des Chartrons.',
+    '- Priorise les Boutiques Certifiées Notre-Dame (partenaires Premium Pro) et les pépites encore en vitrine.',
+    '- Si des pépites correspondent au style, au meuble ou à l’époque demandés, cite-les avec la boutique (titre, style, époque).',
+    '- Propose un petit parcours à pied entre 2 ou 3 adresses du quartier, du plus proche au plus loin.',
+    '- Hors quartier : une phrase pour le dire, puis une piste locale.',
+    '- Mode invité : ne demande jamais de compte, d’e-mail ou de mot de passe.',
   ].join('\n');
 }
 
@@ -1408,7 +1608,7 @@ export function buildLocalConciergeReply(
   analysis: ConciergeQueryAnalysis,
   recommendations: ConciergeRecommendation[],
   lang: ConciergeLang,
-  extras: { posts?: PostAnnonce[]; basket?: LocalBasket | null } = {},
+  extras: { posts?: PostAnnonce[]; basket?: LocalBasket | null; antiqueItems?: AntiqueItem[] } = {},
 ): string {
   const book = PHRASEBOOK[lang];
   const fr = lang === 'fr';
@@ -1458,19 +1658,93 @@ export function buildLocalConciergeReply(
   }
 
   if (spoken.length > 0) {
-    const top = spoken[0];
-    const flags = spokenPlaceFlags(top, analysis, lang);
-    const lead = flags.length
-      ? fr
-        ? `Avec plaisir. Je vous oriente d’abord vers ${top.name}, ${flags.join(', ')}.`
-        : `Gladly. I would start with ${top.name}, ${flags.join(', ')}.`
-      : book.intro;
-    const bullets = spoken.map((item) => `- ${item.name}, ${item.address}.`);
+    const inRadiusCount = recommendations.filter((item) => item.withinRadius).length;
+    const flags = spokenPlaceFlags(spoken[0], analysis, lang);
+    const zone = originZoneLabel(analysis, lang);
+    let lead: string;
+    if (!analysis.askedExpandRadius && inRadiusCount === 0) {
+      lead = conciergeExpandPrompt(0, analysis.radiusMeters, lang);
+    } else if (!analysis.askedExpandRadius && spoken.every((item) => item.withinRadius)) {
+      lead = fr
+        ? `Avec plaisir. Voici ce que je trouve dans un rayon de ${analysis.radiusMeters} m ${zone}.`
+        : `Gladly. Here is what I find within ${analysis.radiusMeters} m ${zone}.`;
+      if (flags.length) {
+        lead = fr
+          ? `${lead} Je vous oriente d’abord vers ${spoken[0].name}, ${flags.join(', ')}.`
+          : `${lead} I would start with ${spoken[0].name}, ${flags.join(', ')}.`;
+      }
+    } else if (!analysis.askedExpandRadius && inRadiusCount < CONCIERGE_SPOKEN_RESULTS) {
+      lead = conciergeExpandPrompt(inRadiusCount, analysis.radiusMeters, lang);
+    } else {
+      lead = flags.length
+        ? fr
+          ? `Avec plaisir. Je vous oriente d’abord vers ${spoken[0].name}, ${flags.join(', ')}.`
+          : `Gladly. I would start with ${spoken[0].name}, ${flags.join(', ')}.`
+        : book.intro;
+    }
+    const bullets = spoken.map((item) => {
+      const distance = formatDistanceMeters(item.distanceMeters, lang);
+      return `- ${item.name}, ${item.address}, ${distance}.`;
+    });
     return formatAudioReadyReply([lead, ...bullets, heritageLine].filter(Boolean).join('\n'));
   }
 
   if (heritageLine) return formatAudioReadyReply(heritageLine);
+  if (analysis.isLocal && !analysis.askedPosts && !analysis.askedRecipe && !analysis.askedAntiGaspi) {
+    return formatAudioReadyReply(conciergeExpandPrompt(0, analysis.radiusMeters, lang));
+  }
   return formatAudioReadyReply(book.noMatch);
+}
+
+export function buildChineurReply(
+  analysis: ConciergeQueryAnalysis,
+  recommendations: ConciergeRecommendation[],
+  items: AntiqueItem[],
+  lang: ConciergeLang,
+): string {
+  const fr = lang === 'fr';
+  const spoken = recommendations.slice(0, CONCIERGE_SPOKEN_RESULTS);
+  const pepites = items.filter((item) => item.status === 'active').slice(0, CONCIERGE_SPOKEN_RESULTS);
+
+  if (spoken.length === 0 && pepites.length === 0) {
+    return formatAudioReadyReply(
+      fr
+        ? 'Je n’ai pas encore de boutique ou de pépite qui colle exactement. Précisez un style, une époque ou un meuble, je chine dans le quartier.'
+        : 'I do not yet have a shop or a find that matches closely. Tell me a style, an era or a piece of furniture, and I will hunt in the neighborhood.',
+    );
+  }
+
+  const certified = spoken.find((item) => item.tier === 'premium_pro');
+  const lead = certified
+    ? fr
+      ? `Je chine pour vous. Je commencerais par ${certified.name}, boutique certifiée Notre-Dame.`
+      : `I would hunt for you starting at ${certified.name}, a Notre-Dame certified shop.`
+    : spoken[0]
+      ? fr
+        ? `Je chine pour vous autour de ${spoken[0].name}.`
+        : `I would hunt around ${spoken[0].name}.`
+      : fr
+        ? 'Voici les pépites encore en vitrine dans le quartier.'
+        : 'Here are the finds still in the neighborhood windows.';
+
+  const walkHint =
+    spoken.length >= 2
+      ? fr
+        ? ' Je vous trace une petite balade à pied entre ces adresses.'
+        : ' I can sketch a short walking route between these addresses.'
+      : '';
+
+  const shopBullets = spoken.map((item) => {
+    const distance = formatDistanceMeters(item.distanceMeters, lang);
+    return `- ${item.name}, ${item.address}, ${distance}.`;
+  });
+  const pepiteBullets = pepites.slice(0, 2).map((item) =>
+    fr
+      ? `- ${item.title}, ${item.style}, ${item.era}.`
+      : `- ${item.title}, ${item.style}, ${item.era}.`,
+  );
+
+  return formatAudioReadyReply([`${lead}${walkHint}`, ...shopBullets, ...pepiteBullets].filter(Boolean).join('\n'));
 }
 
 export function conciergePhrasebookLang(lang: string): ConciergeLang {

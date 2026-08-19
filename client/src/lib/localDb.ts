@@ -7,9 +7,12 @@ import {
   CivicReportChannel,
   CivicReportStatus,
   classifySubcategory,
+  canPublishPepite,
   computeTourDeControle,
   createSeedData,
   createUpcomingMarcheChartronsEvents,
+  createUpcomingCoursPortalBrocanteEvents,
+  createUpcomingSundayPucesEvents,
   DEFAULT_MERCHANT_PIN,
   defaultMerchantEmail,
   defaultRegleForCategory,
@@ -46,6 +49,7 @@ import {
   slotFromId,
   type ActeurLocal,
   type AgendaEvenement,
+  type AntiqueItem,
   type ChartronsSubcategory,
   type CivicReport,
   type DatabaseSchema,
@@ -108,7 +112,13 @@ function compactSchema(data: DatabaseSchema, aggressive = false): DatabaseSchema
     })),
     agendaEvenements: (data.agendaEvenements ?? [])
       .filter((event) => {
-        if (!event.id.startsWith('event-marche-chartrons-')) return true;
+        if (
+          !event.id.startsWith('event-marche-chartrons-') &&
+          !event.id.startsWith('event-brocante-portal-') &&
+          !event.id.startsWith('event-puces-dimanche-')
+        ) {
+          return true;
+        }
         return new Date(event.dateFin).getTime() >= marcheCutoff;
       })
       .map((event) => (aggressive ? { ...event, image: null } : event)),
@@ -149,6 +159,7 @@ function mergeCatalogActeur(current: ActeurLocal | undefined, seedActeur: Acteur
     telephone: current.telephone ?? seedActeur.telephone,
     isMerchant: seedActeur.isMerchant,
     isVip: seedActeur.isVip,
+    tier: seedActeur.tier ?? current.tier,
     isDemo: seedActeur.isDemo === true || current.isDemo === true,
     pinCode: current.pinCode ?? seedActeur.pinCode,
     merchantEmail: current.merchantEmail ?? seedActeur.merchantEmail,
@@ -381,6 +392,16 @@ class LocalDatabase {
         changed = true;
       }
     }
+    for (const brocante of [
+      ...createUpcomingCoursPortalBrocanteEvents('Brocante des Chartrons', new Date().toISOString()),
+      ...createUpcomingSundayPucesEvents('Brocanteurs des Chartrons', new Date().toISOString()),
+    ]) {
+      if (!knownEventIds.has(brocante.id)) {
+        agendaEvenements.push(brocante);
+        knownEventIds.add(brocante.id);
+        changed = true;
+      }
+    }
 
     let postsAnnonces = (data.postsAnnonces ?? []).map((post) => {
       const seedMatch = seed.postsAnnonces.find((item) => item.id === post.id);
@@ -428,7 +449,13 @@ class LocalDatabase {
 
     const marcheCutoff = Date.now() - 2 * 86400000;
     const prunedEvents = agendaEvenements.filter((event) => {
-      if (!event.id.startsWith('event-marche-chartrons-')) return true;
+      if (
+        !event.id.startsWith('event-marche-chartrons-') &&
+        !event.id.startsWith('event-brocante-portal-') &&
+        !event.id.startsWith('event-puces-dimanche-')
+      ) {
+        return true;
+      }
       return new Date(event.dateFin).getTime() >= marcheCutoff;
     });
     if (prunedEvents.length !== agendaEvenements.length) changed = true;
@@ -461,10 +488,22 @@ class LocalDatabase {
     const civicReports = data.civicReports ?? seed.civicReports;
     if (!data.civicReports) changed = true;
 
+    const antiqueItems = [...(data.antiqueItems ?? [])];
+    const knownAntiqueIds = new Set(antiqueItems.map((item) => item.id));
+    for (const seedItem of seed.antiqueItems ?? []) {
+      if (!knownAntiqueIds.has(seedItem.id)) {
+        antiqueItems.push(seedItem);
+        knownAntiqueIds.add(seedItem.id);
+        changed = true;
+      }
+    }
+    if (!data.antiqueItems) changed = true;
+
     const migrated = {
       ...data,
       acteursLocaux,
       civicReports,
+      antiqueItems,
       agendaEvenements: prunedEvents,
       postsAnnonces,
       relaisCreneaux,
@@ -863,6 +902,64 @@ class LocalDatabase {
   deleteEvent(eventId: string): void {
     if (!this.remove('agendaEvenements', eventId)) {
       throw new Error('Event not found');
+    }
+  }
+
+  getAntiqueItems(): AntiqueItem[] {
+    return [...this.getAll('antiqueItems')];
+  }
+
+  createAntiqueItem(data: {
+    title: string;
+    description: string;
+    style: string;
+    era: string;
+    photoUrl?: string | null;
+    merchantId: string;
+  }): AntiqueItem {
+    const merchant = this.getById('acteursLocaux', data.merchantId);
+    if (!merchant) throw new Error('Merchant not found');
+    const allowed = canPublishPepite(merchant, this.getAntiqueItems());
+    if (!allowed.ok) {
+      throw new Error(allowed.reason === 'quota' ? 'Pepite quota reached' : 'Premium dealer required');
+    }
+    const now = new Date().toISOString();
+    return this.create('antiqueItems', {
+      id: `pepite-${Date.now()}`,
+      title: data.title,
+      description: data.description,
+      style: data.style,
+      era: data.era,
+      photoUrl: data.photoUrl?.trim() || null,
+      status: 'active',
+      merchantId: data.merchantId,
+      createdAt: now,
+      updatedAt: now,
+    });
+  }
+
+  updateAntiqueItem(
+    itemId: string,
+    patch: Partial<Omit<AntiqueItem, 'id' | 'createdAt' | 'merchantId'>>,
+  ): AntiqueItem {
+    const current = this.getById('antiqueItems', itemId);
+    if (!current) throw new Error('Antique item not found');
+    if (patch.status === 'active' && current.status !== 'active') {
+      const merchant = this.getById('acteursLocaux', current.merchantId);
+      if (!merchant) throw new Error('Merchant not found');
+      const allowed = canPublishPepite(merchant, this.getAntiqueItems());
+      if (!allowed.ok) {
+        throw new Error(allowed.reason === 'quota' ? 'Pepite quota reached' : 'Premium dealer required');
+      }
+    }
+    const updated = this.update('antiqueItems', itemId, patch);
+    if (!updated) throw new Error('Antique item not found');
+    return updated;
+  }
+
+  deleteAntiqueItem(itemId: string): void {
+    if (!this.remove('antiqueItems', itemId)) {
+      throw new Error('Antique item not found');
     }
   }
 
